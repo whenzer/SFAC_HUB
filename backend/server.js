@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use('/api/user', userRoutes);
+app.use('/admin', adminRoutes);
 
 app.listen(PORT, () => {
   connectUsersDB();
