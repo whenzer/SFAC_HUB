@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import connectUsersDB from './config/users.db.js';
 import userRoutes from './routes/user.route.js';
-import {adminRoutes} from './routes/admin.route.js'
+import adminRoutes from './routes/admin.route.js'
 import { verifyAdmin } from './middleware/admin.verify.js';
 
 dotenv.config();
