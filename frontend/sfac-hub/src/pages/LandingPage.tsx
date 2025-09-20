@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './landing.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
@@ -33,9 +33,9 @@ const LandingPage = () => {
         <div className="hero-bg-elements"></div>
         
         <div className="hero-container">
-          {/* Logo - SF Placeholder */}
+          {/* Logo */}
           <div className="hero-logo">
-          <img src={SFACLogo} alt="SFAC Logo" />
+            <img src={SFACLogo} alt="SFAC Logo" className="logo-image" />
           </div>
           
           {/* Title */}
@@ -246,10 +246,10 @@ const LandingPage = () => {
               </div>
               <div className="footer-text">
                 <p className="footer-copyright">
-                   2024 SFAC Hub - Saint Francis of Assisi College, Bacoor Campus
+                  © 2024 SFAC Hub - Saint Francis of Assisi College, Bacoor Campus
                 </p>
                 <p className="footer-developer">
-                  Developed by SFAC Students  Making campus life more efficient
+                  Developed by SFAC Students | Making campus life more efficient
                 </p>
               </div>
             </div>
