@@ -3,7 +3,12 @@ import User from '../models/user.model.js';
 export const userRegister = async (req, res) => {
     const user = req.body;
 
-    
+    try{
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        user.password = hashedPassword;
+    }catch(error) {
+        res.status(500).json({success: false, message: error.message});
+    }
 
     const newUser = new User(user);
     try{
@@ -13,4 +18,8 @@ export const userRegister = async (req, res) => {
         console.error("Error in Create User: ", error.message);
         res.status(500).json({success: false, message: error.message});
     }
+}
+
+export const userLogin = async (req, res) => {
+    
 }
