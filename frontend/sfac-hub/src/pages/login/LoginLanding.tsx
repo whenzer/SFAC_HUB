@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import './login.css'
 import logo from '../../assets/images/SFAC-Logo.png'
+import { Link } from 'react-router-dom'
 
 function LoginLanding() {
 	const cardRef = useRef<HTMLDivElement>(null)
@@ -75,7 +76,7 @@ function LoginLanding() {
 					<div className="form-footer">
 						<a href="#" className="muted-link">Forgot password?</a>
 						<span></span>
-						<span className="muted-text">Need an account? <a href="#" className="muted-link strong">Sign up</a></span>
+						<span className="muted-text">Need an account? <Link to="/register" className="muted-link strong">Sign up</Link></span>
 					</div>
 				</div>
 			</main>
@@ -89,4 +90,4 @@ function LoginLanding() {
 	)
 }
 
-export default LoginLanding 
+export default LoginLanding

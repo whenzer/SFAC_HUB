@@ -246,7 +246,7 @@ const LandingPage = () => {
               </div>
               <div className="footer-text">
                 <p className="footer-copyright">
-                  © 2024 SFAC Hub - Saint Francis of Assisi College, Bacoor Campus
+                  © 2025 SFAC Hub - Saint Francis of Assisi College, Bacoor Campus
                 </p>
                 <p className="footer-developer">
                   Developed by SFAC Students | Making campus life more efficient
