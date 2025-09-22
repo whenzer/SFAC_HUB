@@ -220,6 +220,7 @@ function RegistrationPage() {
         },
         role
       };
+      
 
       try {
         const response = await fetch('https://sfac-hub.onrender.com/api/user/register', {
