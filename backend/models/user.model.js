@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    id: {
+    idpic: {
         filename: {
             type: String,
             required: true

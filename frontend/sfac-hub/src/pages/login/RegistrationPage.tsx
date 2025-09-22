@@ -214,13 +214,13 @@ function RegistrationPage() {
       const payload = {
         email,
         password,
-        id: {
+        idpic: {
           filename: studentId.name,
           image: base64Image
         },
         role
       };
-      
+
 
       try {
         const response = await fetch('https://sfac-hub.onrender.com/api/user/register', {
