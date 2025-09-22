@@ -133,10 +133,10 @@ function RegistrationPage() {
     }
   };
 
-  // Student ID file validation
+  // ID file validation
   const validateStudentId = (file: File | null) => {
     if (!file) {
-      setStudentIdError('Student ID photo is required');
+      setStudentIdError('ID photo is required');
       return false;
     }
 
@@ -376,8 +376,8 @@ function RegistrationPage() {
               </div>
               {confirmPasswordError && <p className="error-message">{confirmPasswordError}</p>}
               
-              {/* Student ID Upload */}
-              <label className="label">Student ID Photo</label>
+              {/* ID Upload */}
+              <label className="label">ID Photo</label>
               <div className={`file-upload ${studentIdError ? 'file-upload-error' : ''}`}>
                 <input 
                   type="file" 
@@ -394,14 +394,14 @@ function RegistrationPage() {
                 </label>
                 {studentId && (
                   <div className="file-preview">
-                    <img src={studentIdPreview || undefined} alt="Student ID Preview" className="preview-image" />
+                    <img src={studentIdPreview || undefined} alt="ID Preview" className="preview-image" />
                     <button 
                       type="button" 
                       className="remove-file-btn" 
                       onClick={() => {
                         setStudentId(null);
                         setStudentIdPreview(null);
-                        setStudentIdError('Student ID photo is required');
+                        setStudentIdError('ID photo is required');
                       }}
                     >
                       {/* <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="m6 6 12 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg> */}
