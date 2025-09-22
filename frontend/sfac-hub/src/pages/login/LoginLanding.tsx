@@ -7,6 +7,7 @@ function LoginLanding() {
 	const cardRef = useRef<HTMLDivElement>(null)
 	const footerRef = useRef<HTMLElement>(null)
 	const [showPassword, setShowPassword] = useState(false)
+	const [role, setRole] = useState('') // Add state for role
 
 	useEffect(() => {
 		requestAnimationFrame(() => {
@@ -45,6 +46,26 @@ function LoginLanding() {
 					<p className="card-sub">Sign in to continue</p>
 
 					<form className="form" onSubmit={(e) => e.preventDefault()}>
+						{/* Role Dropdown */}
+						<label className="label">Role</label>
+						<div className="input-group">
+							<span className="input-icon" aria-hidden="true">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+							</span>
+							<select
+								className="input"
+								value={role}
+								onChange={(e) => setRole(e.target.value)}
+								required
+							>
+								<option value="" disabled>Select your role</option>
+								<option value="admin">Admin</option>
+								<option value="teacher">Teacher</option>
+								<option value="student">Student</option>
+								<option value="staff">Staff</option>
+							</select>
+						</div>
+
 						<label className="label">Email</label>
 						<div className="input-group">
 							<span className="input-icon" aria-hidden="true">

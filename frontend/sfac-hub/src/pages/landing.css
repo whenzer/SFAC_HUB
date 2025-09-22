@@ -247,7 +247,7 @@ html, body, #root {
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border: 2px solid white;
-  backdrop-filter: blur(10px);
+  /* backdrop-filter: blur(10px); */
 }
 
 .hero-btn-secondary:hover {
@@ -673,7 +673,7 @@ html, body, #root {
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border: 2px solid white;
-  backdrop-filter: blur(10px);
+  /* backdrop-filter: blur(10px); */
 }
 
 .cta-btn-secondary:hover {

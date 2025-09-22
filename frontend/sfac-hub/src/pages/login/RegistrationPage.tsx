@@ -15,6 +15,7 @@ function RegistrationPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [studentId, setStudentId] = useState<File | null>(null);
   const [studentIdPreview, setStudentIdPreview] = useState<string | null>(null);
+  const [role, setRole] = useState(''); // Add state for role
   
   // State for validation errors
   const [emailError, setEmailError] = useState('');
@@ -188,8 +189,14 @@ function RegistrationPage() {
     const isPasswordValid = validatePassword(password);
     const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
     const isStudentIdValid = validateStudentId(studentId);
+    const isRoleValid = !!role; // Validate role
 
-    if (isEmailValid && isPasswordValid && isConfirmPasswordValid && isStudentIdValid) {
+    if (!isRoleValid) {
+      // You might want to set an error state for role here if needed
+      return;
+    }
+
+    if (isEmailValid && isPasswordValid && isConfirmPasswordValid && isStudentIdValid && isRoleValid) {
       setIsSubmitting(true);
       setSubmissionError('');
 
@@ -207,6 +214,7 @@ function RegistrationPage() {
           setStudentId(null);
           setStudentIdPreview(null);
           setPasswordStrength('');
+          setRole(''); // Reset role
         }, 3000);
       }, 1500);
     }
@@ -240,6 +248,26 @@ function RegistrationPage() {
             </div>
           ) : (
             <form className="form" onSubmit={handleSubmit}>
+              {/* Role Dropdown */}
+              <label className="label">Role</label>
+              <div className="input-group">
+                <span className="input-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+                </span>
+                <select
+                  className="input"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Select your role</option>
+                  <option value="admin">Admin</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="student">Student</option>
+                  <option value="staff">Staff</option>
+                </select>
+              </div>
+
               {/* Email Field */}
               <label className="label">Email</label>
               <div className="input-group">
@@ -292,7 +320,7 @@ function RegistrationPage() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M10.73 6.17A8.7 8.7 0 0 1 12 6c5 0 8.5 5.5 8.5 5.5a13.7 13.7 0 0 1-3.08 3.44" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M6.5 6.5A13.6 13.6 0 0 0 3.5 11.5S7 17 12 17c1.07 0 2.08-.22 3-.62" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
                   ) : (
                     // eye
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6c5 0 8.5 5.5 8.5 5.5S17 17 12 17 3.5 11.5 3.5 11.5 7 6 12 6Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.6"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6c5 0 8.5 5.5 8.5 5.5S17 17 12 17 3.5 11.5 3.5 11.5 7 6 12 6Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
                   )}
                 </button>
               </div>
@@ -342,7 +370,7 @@ function RegistrationPage() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M10.73 6.17A8.7 8.7 0 0 1 12 6c5 0 8.5 5.5 8.5 5.5a13.7 13.7 0 0 1-3.08 3.44" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M6.5 6.5A13.6 13.6 0 0 0 3.5 11.5S7 17 12 17c1.07 0 2.08-.22 3-.62" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
                   ) : (
                     // eye
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6c5 0 8.5 5.5 8.5 5.5S17 17 12 17 3.5 11.5 3.5 11.5 7 6 12 6Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.6"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6c5 0 8.5 5.5 8.5 5.5S17 17 12 17 3.5 11.5 3.5 11.5 7 6 12 6Z" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
                   )}
                 </button>
               </div>
@@ -376,7 +404,7 @@ function RegistrationPage() {
                         setStudentIdError('Student ID photo is required');
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="m6 6 12 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                      {/* <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="m6 6 12 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg> */}
                     </button>
                   </div>
                 )}
