@@ -182,43 +182,81 @@ function RegistrationPage() {
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Validate all fields
-    const isEmailValid = validateEmail(email);
-    const isPasswordValid = validatePassword(password);
-    const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
-    const isStudentIdValid = validateStudentId(studentId);
-    const isRoleValid = !!role; // Validate role
+  // Validate all fields
+  const isEmailValid = validateEmail(email);
+  const isPasswordValid = validatePassword(password);
+  const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
+  const isStudentIdValid = validateStudentId(studentId);
+  const isRoleValid = !!role;
 
-    if (!isRoleValid) {
-      // You might want to set an error state for role here if needed
+  if (!isRoleValid) {
+    // Optionally set an error for role
+    return;
+  }
+
+  if (isEmailValid && isPasswordValid && isConfirmPasswordValid && isStudentIdValid && isRoleValid) {
+    setIsSubmitting(true);
+    setSubmissionError('');
+
+    if (!studentId) {
+      setSubmissionError('Student ID photo is required');
+      setIsSubmitting(false);
       return;
     }
 
-    if (isEmailValid && isPasswordValid && isConfirmPasswordValid && isStudentIdValid && isRoleValid) {
-      setIsSubmitting(true);
-      setSubmissionError('');
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Image = reader.result as string;
 
-      // Simulate API call
-      setTimeout(() => {
+      // Prepare payload to match user.model.js
+      const payload = {
+        email,
+        password,
+        idpic: {
+          filename: studentId.name,
+          image: base64Image
+        },
+        role
+      };
+
+
+      try {
+        const response = await fetch('https://sfac-hub.onrender.com/api/user/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
         setIsSubmitting(false);
-        setSubmissionSuccess(true);
-        
-        // Reset form after successful submission
-        setTimeout(() => {
-          setSubmissionSuccess(false);
-          setEmail('');
-          setPassword('');
-          setConfirmPassword('');
-          setStudentId(null);
-          setStudentIdPreview(null);
-          setPasswordStrength('');
-          setRole(''); // Reset role
-        }, 3000);
-      }, 1500);
-    }
-  };
+
+        if (response.ok) {
+          setSubmissionSuccess(true);
+          setTimeout(() => {
+            setSubmissionSuccess(false);
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+            setStudentId(null);
+            setStudentIdPreview(null);
+            setPasswordStrength('');
+            setRole('');
+          }, 3000);
+        } else {
+          const data = await response.json();
+          setSubmissionError(data.message || 'Registration failed');
+        }
+      } catch (error) {
+        setIsSubmitting(false);
+        setSubmissionError('Network error. Please try again.');
+      }
+    };
+    reader.readAsDataURL(studentId);
+  }
+};
 
   // Animation classes for card
   const cardClasses = [
