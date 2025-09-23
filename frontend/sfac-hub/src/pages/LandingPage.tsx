@@ -1,10 +1,11 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './landing.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 
 const LandingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [activeModal, setActiveModal] = useState<'stock' | 'reservation' | 'lostfound' | null>(null);
 
   useEffect(() => {
     // Simulate loading time
@@ -14,6 +15,21 @@ const LandingPage = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const openModal = (modalType: 'stock' | 'reservation' | 'lostfound') => {
+    setActiveModal(modalType);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+
+  // Close modal when clicking outside
+  const handleModalBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -97,7 +113,7 @@ const LandingPage = () => {
                 <li>Multiple locations</li>
                 <li>Instant updates</li>
               </ul>
-              <button className="feature-btn">
+              <button className="feature-btn" onClick={() => openModal('stock')}>
                 Explore Feature
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
@@ -121,7 +137,7 @@ const LandingPage = () => {
                 <li>Automated reminders</li>
                 <li>Confirmed reservations</li>
               </ul>
-              <button className="feature-btn">
+              <button className="feature-btn" onClick={() => openModal('reservation')}>
                 Explore Feature
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
@@ -145,7 +161,7 @@ const LandingPage = () => {
                 <li>Admin approval</li>
                 <li>Success tracking</li>
               </ul>
-              <button className="feature-btn">
+              <button className="feature-btn" onClick={() => openModal('lostfound')}>
                 Explore Feature
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
@@ -235,6 +251,154 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Modals */}
+      {activeModal && (
+        <div className="modal-backdrop" onClick={handleModalBackdropClick}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                {activeModal === 'stock' && 'Stock Availability'}
+                {activeModal === 'reservation' && 'Reservation System'}
+                {activeModal === 'lostfound' && 'Lost & Found'}
+              </h3>
+              <button className="modal-close" onClick={closeModal}>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {activeModal === 'stock' && (
+                <div className="modal-feature-content">
+                  <div className="modal-icon">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    </svg>
+                  </div>
+                  <h4>Real-Time Stock Monitoring</h4>
+                  <p>Stay updated with live inventory levels across all campus locations. Our system provides instant notifications when items are restocked or running low.</p>
+                  
+                  <div className="modal-features-list">
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Live inventory tracking</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Multiple campus locations</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Automated restock alerts</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Search and filter options</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'reservation' && (
+                <div className="modal-feature-content">
+                  <div className="modal-icon">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <h4>Smart Reservation System</h4>
+                  <p>Reserve items in advance with our intelligent 3-day pickup system. Get automated reminders and guaranteed availability for your reserved items.</p>
+                  
+                  <div className="modal-features-list">
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>3-day guaranteed hold</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Email and SMS reminders</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Reservation history tracking</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Priority booking system</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'lostfound' && (
+                <div className="modal-feature-content">
+                  <div className="modal-icon">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <h4>Community Lost & Found</h4>
+                  <p>Connect with the campus community to report and recover lost items. Our social feed interface makes it easy to help others and find your missing belongings.</p>
+                  
+                  <div className="modal-features-list">
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Social media-style feed</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Photo upload capability</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Admin moderation system</span>
+                    </div>
+                    <div className="modal-feature-item">
+                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>Success rate tracking</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-footer">
+              <Link to="/login" className="modal-cta-btn">
+                Get Started
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="footer">

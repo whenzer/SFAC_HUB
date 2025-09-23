@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './login.css';
 import logo from '../../assets/images/SFAC-Logo.png';
 
 function RegistrationPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
   
   // State for form fields
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +31,7 @@ function RegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
 
   // Animation effects
   useEffect(() => {
@@ -235,6 +237,9 @@ function RegistrationPage() {
 
         if (response.ok) {
           setSubmissionSuccess(true);
+          setShowNotification(true);
+          
+          // Show notification and redirect after 3 seconds
           setTimeout(() => {
             setSubmissionSuccess(false);
             setEmail('');
@@ -282,7 +287,8 @@ function RegistrationPage() {
                 <path d="M8 12l3 3 6-6" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <h3>Registration Successful!</h3>
-              <p>You can now sign in to your account.</p>
+              <p>Successfully registered. Please wait for admin verification of your account.</p>
+              <p className="redirect-text">Redirecting to sign-in page...</p>
             </div>
           ) : (
             <form className="form" onSubmit={handleSubmit}>
@@ -457,12 +463,11 @@ function RegistrationPage() {
               >
                 {isSubmitting ? (
                   <span className="loading-spinner">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto' }}>
                       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="18 18" strokeDashoffset="0" strokeLinecap="round">
                         <animate attributeName="stroke-dashoffset" from="0" to="36" dur="1s" repeatCount="indefinite"/>
                       </circle>
                     </svg>
-                    Registering...
                   </span>
                 ) : 'Register'}
               </button>
