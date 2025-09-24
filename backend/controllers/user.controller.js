@@ -36,5 +36,20 @@ export const userRegister = async (req, res) => {
 };
 
 export const userLogin = async (req, res) => {
-    
+    const user = req.body;
+
+    try {
+        const existingUser = await User.find({ email: user.email });
+        if (existingUser.length === 0) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        const passwordMatch = await bcrypt.compare(user.password, existingUser[0].password);
+        if (!passwordMatch) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        res.status(200).json({ success: true, data: existingUser[0] });
+    } catch (error) {
+        console.error("Error in User Login: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
 }

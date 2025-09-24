@@ -7,6 +7,9 @@ function LoginLanding() {
 	const cardRef = useRef<HTMLDivElement>(null)
 	const footerRef = useRef<HTMLElement>(null)
 	const [showPassword, setShowPassword] = useState(false)
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
+	const [error, setError] = useState<string | null>(null)
 
 
 	useEffect(() => {
@@ -35,6 +38,26 @@ function LoginLanding() {
 		return () => observer.disconnect()
 	}, [])
 
+	const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    try {
+      const response = await fetch('https://sfac-hub.onrender.com/api/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await response.json()
+      if (response.ok) {
+        // handle successful login (e.g., redirect, save token, etc.)
+      } else {
+        setError(data.message || 'Login failed')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    }
+  }
+  
 	return (
 		<div className="login-landing">
 			<main className="center-stage">
