@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react'
 import './login.css'
 import logo from '../../assets/images/SFAC-Logo.png'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 function LoginLanding() {
+	const navigate = useNavigate()
 	const cardRef = useRef<HTMLDivElement>(null)
 	const footerRef = useRef<HTMLElement>(null)
 	const [showPassword, setShowPassword] = useState(false)
@@ -51,7 +52,7 @@ function LoginLanding() {
       if (response.ok) {
         // Handle successful login, e.g., redirect or store token
 		// redirect to dashboard
-		window.location.href = '/dashboard'
+		navigate('/dashboard')
       } else {
         setError(data.message || 'Login failed')
       }

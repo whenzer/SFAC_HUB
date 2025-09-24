@@ -32,6 +32,7 @@ function RegistrationPage() {
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
   const [showNotification, setShowNotification] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Animation effects
   useEffect(() => {
@@ -236,20 +237,13 @@ function RegistrationPage() {
         setIsSubmitting(false);
 
         if (response.ok) {
-          setSubmissionSuccess(true);
-          setShowNotification(true);
+          // Clear all existing notifications
+          setSubmissionError('');
+          setShowNotification(false);
           
-          // Show notification and redirect after 3 seconds
-          setTimeout(() => {
-            setSubmissionSuccess(false);
-            setEmail('');
-            setPassword('');
-            setConfirmPassword('');
-            setStudentId(null);
-            setStudentIdPreview(null);
-            setPasswordStrength('');
-            setRole('');
-          }, 10000);
+          // Show success modal
+          setSubmissionSuccess(true);
+          setShowSuccessModal(true);
         } else {
           const data = await response.json();
           setSubmissionError(data.message || 'Registration failed');
@@ -280,18 +274,7 @@ function RegistrationPage() {
           <h1 className="card-title">Create an Account</h1>
           <p className="card-sub">Register to access SFAC Hub</p>
 
-          {submissionSuccess ? (
-            <div className="success-message">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" fill="#10b981" fillOpacity="0.1" />
-                <path d="M8 12l3 3 6-6" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <h3>Registration Successful!</h3>
-              <p>Successfully registered. Please wait for admin verification of your account.</p>
-              <p className="redirect-text">Redirecting to sign-in page...</p>
-            </div>
-          ) : (
-            <form className="form" onSubmit={handleSubmit}>
+          <form className="form" onSubmit={handleSubmit}>
               {/* Role Dropdown */}
               <label className="label">Role</label>
               <div className="input-group">
@@ -475,13 +458,52 @@ function RegistrationPage() {
               {/* Submission Error */}
               {submissionError && <p className="error-message">{submissionError}</p>}
             </form>
-          )}
 
           <div className="form-footer">
             <span className="muted-text">Already have an account? <Link to="/login" className="muted-link strong">Sign in</Link></span>
           </div>
         </div>
       </main>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div 
+          className="modal-overlay" 
+          role="dialog" 
+          aria-modal="true" 
+          aria-labelledby="success-modal-title"
+          aria-describedby="success-modal-description"
+        >
+          <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-icon success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" fill="#10b981" fillOpacity="0.1" />
+                  <path d="M8 12l3 3 6-6" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h2 id="success-modal-title" className="modal-title">Registration Successful!</h2>
+            </div>
+            <div className="modal-body">
+              <p id="success-modal-description" className="modal-description">
+                Registration successful, wait for the admin's approval
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="modal-btn primary"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  navigate('/login');
+                }}
+                autoFocus
+              >
+                Go to Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer ref={footerRef} className="footer fade-on-scroll">
         <div className="container footer-inner">
