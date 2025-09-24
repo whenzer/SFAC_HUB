@@ -2,8 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import connectUsersDB from './config/users.db.js';
 import userRoutes from './routes/user.route.js';
-import adminRoutes from './routes/admin.route.js'
-import { verifyAdmin } from './middleware/admin.verify.js';
+import adminRoutes from './routes/admin.route.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -21,7 +20,7 @@ app.use(cors({
 
 app.use(express.json({ limit: '5mb' }));
 app.use('/api/user', userRoutes);
-app.use('/admin', verifyAdmin, adminRoutes);
+app.use('/admin', adminRoutes);
 
 
 app.listen(PORT, () => {
