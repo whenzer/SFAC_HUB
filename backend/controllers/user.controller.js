@@ -35,9 +35,14 @@ export const userRegister = async (req, res) => {
     }
 };
 
+//
 export const userLogin = async (req, res) => {
     const user = req.body;
 
+    if (!user.email || !user.password) {
+        return res.status(400).json({ success: false, message: "Email and password are required" });
+    }
+    
     try {
         const existingUser = await User.find({ email: user.email });
         if (existingUser.length === 0) {

@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-
+// This file defines the User model for the Users database
+// It includes fields for email, password, idpic, and verification status
+// Importing mongoose to define the schema
 const userSchema = new mongoose.Schema({
     email: {
         type: String,

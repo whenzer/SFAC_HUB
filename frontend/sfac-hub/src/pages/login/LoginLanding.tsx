@@ -49,7 +49,9 @@ function LoginLanding() {
       })
       const data = await response.json()
       if (response.ok) {
-        // handle successful login (e.g., redirect, save token, etc.)
+        // Handle successful login, e.g., redirect or store token
+		// redirect to dashboard
+		window.location.href = '/dashboard'
       } else {
         setError(data.message || 'Login failed')
       }
