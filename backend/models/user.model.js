@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     idpic: {
         filename: {
             type: String,
-            required: true
+            required: true 
         },
         image: {
             type: String,
