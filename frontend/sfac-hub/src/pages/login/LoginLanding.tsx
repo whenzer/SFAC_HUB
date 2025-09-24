@@ -57,7 +57,7 @@ function LoginLanding() {
       setError('Network error. Please try again.')
     }
   }
-  
+
 	return (
 		<div className="login-landing">
 			<main className="center-stage">
@@ -68,13 +68,20 @@ function LoginLanding() {
 					<h1 className="card-title">Welcome to SFAC Hub</h1>
 					<p className="card-sub">Sign in to continue</p>
 
-					<form className="form" onSubmit={(e) => e.preventDefault()}>
+					<form className="form" onSubmit={handleSubmit}>
 						<label className="label">Email</label>
 						<div className="input-group">
 							<span className="input-icon" aria-hidden="true">
 								<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-11Z" stroke="currentColor" strokeWidth="1.6"/><path d="m5 7 7 5 7-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
 							</span>
-							<input type="email" placeholder="you@example.com" className="input" required />
+							<input
+								type="email"
+								placeholder="you@example.com"
+								className="input"
+								required
+								value={email}
+								onChange={e => setEmail(e.target.value)}
+								/>
 						</div>
 
 						<label className="label">Password</label>
@@ -82,7 +89,14 @@ function LoginLanding() {
 							<span className="input-icon" aria-hidden="true">
 								<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" stroke="currentColor" strokeWidth="1.6"/><path d="M8 10V8a4 4 0 1 1 8 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
 							</span>
-							<input type={showPassword ? 'text' : 'password'} placeholder="••••••••" className="input input-has-toggle" required />
+							<input
+								type={showPassword ? 'text' : 'password'}
+								placeholder="••••••••"
+								className="input input-has-toggle"
+								required
+								value={password}
+								onChange={e => setPassword(e.target.value)}
+								/>
 							<button type="button" className="toggle-btn" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((v) => !v)}>
 								{showPassword ? (
 									// eye-off
