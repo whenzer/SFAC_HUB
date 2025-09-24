@@ -249,7 +249,7 @@ function RegistrationPage() {
             setStudentIdPreview(null);
             setPasswordStrength('');
             setRole('');
-          }, 3000);
+          }, 10000);
         } else {
           const data = await response.json();
           setSubmissionError(data.message || 'Registration failed');
