@@ -109,7 +109,8 @@ function LoginLanding() {
 								)}
 							</button>
 						</div>
-
+						{error && <div className="error-message">{error}</div>}
+						
 						<button className="cta-btn primary" type="submit">Sign in</button>
 					</form>
 
