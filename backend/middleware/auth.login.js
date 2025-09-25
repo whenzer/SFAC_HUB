@@ -24,13 +24,15 @@ const authenticateLogin = async (req, res, next) => {
         if (!existingUser[0].verifiedEmail || !existingUser[0].verifiedID){
             return res.status(401).json({ success: false, message: "Access denied: your account is not yet verified by the Admin" });
         }
-        
+
         req.body.user = existingUser[0].toObject();
 
     }catch (error) {
         console.error("Error in User Login: ", error.message);
-        return res.status(500).json({ success: false,user: existingUser[0], message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 
-    next()
+    next();
 }
+
+export default authenticateLogin;
