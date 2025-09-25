@@ -89,9 +89,15 @@ const Dashboard = () => {
         // Save user data to localStorage
         localStorage.setItem('userData', JSON.stringify(data.user));
 
-        // Update state
-        setUserName(data.user.firstname + ' ' + data.user.middlename + ' ' + data.user.lastname);
-      } else {
+        const user = data.user;
+        
+        // Use a safe concatenation: filter out any falsy values (like null, undefined, or empty strings)
+        // and join the remaining parts with a single space.
+        const fullNameParts = [user.firstname, user.middlename, user.lastname].filter(Boolean);
+        
+        // Set the name. If fullNameParts is empty (i.e., no name parts were available), default to 'Student'.
+        setUserName(fullNameParts.length > 0 ? fullNameParts.join(' ') : 'Student');
+      }  else {
         console.error('Failed to fetch user:', data.message);
         navigate('/login');
       }
