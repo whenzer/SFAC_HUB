@@ -18,10 +18,11 @@
 
 // Development override flag - SET TO FALSE FOR PRODUCTION
 export const ENABLE_DEV_OVERRIDES = true;
+export const VITE_ENABLE_DEV_OVERRIDES = true;
 
 // Environment check - automatically disables overrides in production
-export const IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev';
-
+export const IS_DEVELOPMENT =
+  import.meta.env.MODE === "development" || import.meta.env.MODE === "dev";
 // Final flag that determines if overrides should be active
 export const DEV_OVERRIDES_ACTIVE = ENABLE_DEV_OVERRIDES && IS_DEVELOPMENT;
 
