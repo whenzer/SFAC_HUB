@@ -50,7 +50,7 @@ const Dashboard = () => {
 
   //   return () => clearTimeout(timer);
   // }, [navigate]);
-  
+
   useEffect(() => { 
   // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
   if (DEV_OVERRIDES_ACTIVE) {
@@ -90,7 +90,7 @@ const Dashboard = () => {
         localStorage.setItem('userData', JSON.stringify(data.user));
 
         // Update state
-        setUserName(data.user.name || 'Student');
+        setUserName(data.user.firstname + ' ' + data.user.middlename + ' ' + data.user.lastname);
       } else {
         console.error('Failed to fetch user:', data.message);
         navigate('/login');
