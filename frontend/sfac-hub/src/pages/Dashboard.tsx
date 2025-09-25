@@ -147,9 +147,10 @@ const handleLogout = useCallback(async () => {
   // 3. RENDER LOGIC
   if (isLoading) {
     return (
-      <div className="loading-dashboard">
-        <div className="spinner"></div>
-        <h1>Loading Dashboard...</h1>
+      <div className="loading-screen">
+        <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
+        <div className="loading-text">Loading Dashboard</div>
+        <div className="loading-spinner"></div>
       </div>
     );
   }

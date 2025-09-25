@@ -93,7 +93,7 @@ export const userToken = async (req, res) => {
         if (!existingToken) {
             return res.status(403).json({ success: false, message: "Invalid token" });
         }
-        jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
             if (err) return res.status(403).json({ success: false, message: "Invalid token" });
             const { iat, exp, ...userPayload } = user; // Exclude iat and exp from payload
             const accessToken = jwt.sign(
