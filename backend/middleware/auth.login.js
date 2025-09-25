@@ -29,7 +29,7 @@ const authenticateLogin = async (req, res, next) => {
 
     }catch (error) {
         console.error("Error in User Login: ", error.message);
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false,user: existingUser[0], message: error.message });
     }
 
     next()
