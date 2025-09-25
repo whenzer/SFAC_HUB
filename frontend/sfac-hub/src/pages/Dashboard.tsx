@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import fetchWithRefresh from '../utils/apiService';
-import { API_BASE_URL } from '../utils/apiService'; // Assuming you expose API_BASE_URL in apiService.ts
+// Assuming API_BASE_URL is exported from your apiService file
+import { API_BASE_URL } from '../utils/apiService'; 
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
@@ -12,7 +13,7 @@ interface UserData {
   middlename?: string;
   lastname?: string;
   role?: string;
-  [key: string]: any; // Allows for other properties like email, verified, etc.
+  [key: string]: any; 
 }
 
 const Dashboard = () => {
@@ -21,47 +22,46 @@ const Dashboard = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
-  // 1. LOGOUT HANDLER (Guarantees server deletion and client cleanup)
-  const handleLogout = useCallback(async () => {
-    
-    const refreshToken = localStorage.getItem('refreshToken');
-    
-    // SERVER-SIDE TOKEN DELETION (DELETE method)
-    if (refreshToken) {
-        try {
-            // We use fetch directly here because we don't want the refresh logic
-            await fetch(`${API_BASE_URL}/api/user/logout`, {
-                method: 'DELETE', 
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token: refreshToken }), 
-            });
-            
-        } catch (error) {
-            // Log error but proceed with client-side cleanup
-            console.error('Server-side logout failed (network error or server down):', error);
-        }
-    }
-
-    // CLIENT-SIDE CLEANUP (Essential)
+  // 1. CLIENT-SIDE CLEANUP (Used for automatic failure recovery - NO SERVER CALL)
+  const clientSideLogout = useCallback(() => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken'); 
     localStorage.removeItem('userData');
-    
-    // Redirect the user
     navigate('/login');
   }, [navigate]);
 
-  // 2. CONFIRMATION HANDLER (Ensures manual logout waits for cleanup)
-  const confirmLogout = async () => { // ⬅️ FIX 1: Must be async
+  // 2. MANUAL LOGOUT HANDLER (Calls server DELETE + Client cleanup)
+  const handleLogout = useCallback(async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    // ⚠️ SERVER-SIDE TOKEN DELETION (DELETE method)
+    if (refreshToken) {
+        try {
+            // This is the only place we call the server to delete the RT
+            await fetch(`${API_BASE_URL}/api/user/logout`, {
+                method: 'DELETE', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: refreshToken }), 
+            });
+        } catch (error) {
+            console.error('Server-side logout failed:', error);
+            // Proceed to client cleanup even if server failed
+        }
+    }
+
+    // Always perform client cleanup regardless of server success
+    clientSideLogout();
+  }, [clientSideLogout]);
+
+  // 3. CONFIRMATION HANDLER (Ensures manual logout waits for cleanup)
+  const confirmLogout = async () => {
     setShowLogoutModal(false);
-    await handleLogout(); // ⬅️ FIX 1: Must await handleLogout
+    await handleLogout(); 
   };
 
-  // 3. DATA FETCHING AND AUTHENTICATION LOGIC
+  // 4. DATA FETCHING AND AUTHENTICATION LOGIC (Monitors for failure)
   useEffect(() => {
-    // ... (DEV_OVERRIDES_ACTIVE logic remains) ...
+    // ⚠️ DEVELOPMENT OVERRIDE... (Code remains the same)
 
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
@@ -78,12 +78,10 @@ const Dashboard = () => {
         });
         
         if (!response.ok) {
-            // The session is valid, but the API request failed (e.g., 403 or 500).
-            // Do NOT clean up tokens here. Just throw an error.
             console.error(`Dashboard fetch failed with status: ${response.status}`);
             throw new Error(`Dashboard API error: Status ${response.status}`);
         }
-
+        
         const data = await response.json();
         const user: UserData = data.user;
 
@@ -101,15 +99,15 @@ const Dashboard = () => {
       } catch (error) {
         console.error('Error fetching user:', error);
 
-        // ⬅️ FIX 2: AUTOMATIC LOGOUT ON SESSION FAILURE
-        // Check for existing tokens to see if a session existed when the error occurred.
+        // ⬅️ CRITICAL FIX: AUTOMATIC LOGOUT ON SESSION FAILURE
         const currentAccessToken = localStorage.getItem('accessToken');
         const currentRefreshToken = localStorage.getItem('refreshToken');
 
         if (currentAccessToken || currentRefreshToken) {
-            console.warn("Session failure detected (Refresh Token likely expired). Forcing logout.");
-            // This ensures a clean cleanup and redirect if fetchWithRefresh failed to do so.
-            await handleLogout(); 
+            console.warn("Session failure detected (Refresh Token expired/invalid). Forcing client-side logout.");
+            
+            // 🛑 Call clientSideLogout to preserve the Refresh Token on the server
+            clientSideLogout(); 
             return;
         }
 
@@ -122,7 +120,8 @@ const Dashboard = () => {
     };
 
     fetchUser();
-  }, [navigate, handleLogout]);
+    // Dependencies must include the new clientSideLogout
+  }, [navigate, clientSideLogout]); 
 
 
   // 3. RENDER LOGIC
