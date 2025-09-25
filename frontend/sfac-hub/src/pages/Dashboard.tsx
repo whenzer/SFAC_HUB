@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import fetchWithRefresh from '../utils/apiService';
-// Assuming API_BASE_URL is exported from your apiService file
-import { API_BASE_URL } from '../utils/apiService'; 
+import { API_BASE_URL } from '../utils/apiService';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
@@ -13,59 +12,74 @@ interface UserData {
   middlename?: string;
   lastname?: string;
   role?: string;
-  [key: string]: any; 
+  [key: string]: any; // Allows for other properties like email, verified, etc.
 }
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [userName, setUserName] = useState('Student');
+  // Default to 'Student' if name is unavailable
+  const [userName, setUserName] = useState('Student'); 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
-  // 1. CLIENT-SIDE CLEANUP (Used for automatic failure recovery - NO SERVER CALL)
-  const clientSideLogout = useCallback(() => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken'); 
-    localStorage.removeItem('userData');
-    navigate('/login');
-  }, [navigate]);
-
-  // 2. MANUAL LOGOUT HANDLER (Calls server DELETE + Client cleanup)
-  const handleLogout = useCallback(async () => {
+  // 1. LOGOUT HANDLER (Uses useCallback for stability)
+const handleLogout = useCallback(async () => {
+    
     const refreshToken = localStorage.getItem('refreshToken');
     
-    // ⚠️ SERVER-SIDE TOKEN DELETION (DELETE method)
+    // ⚠️ SERVER-SIDE TOKEN DELETION
     if (refreshToken) {
         try {
-            // This is the only place we call the server to delete the RT
             await fetch(`${API_BASE_URL}/api/user/logout`, {
+                // ⬅️ FIX: Changed method to DELETE
                 method: 'DELETE', 
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // Send the refresh token in the request body, matching your backend
                 body: JSON.stringify({ token: refreshToken }), 
             });
+            
+            // The request finishes (success or failure), and we proceed.
+            
         } catch (error) {
             console.error('Server-side logout failed:', error);
-            // Proceed to client cleanup even if server failed
+            // We continue with client-side cleanup regardless of this server error.
         }
     }
 
-    // Always perform client cleanup regardless of server success
-    clientSideLogout();
-  }, [clientSideLogout]);
-
-  // 3. CONFIRMATION HANDLER (Ensures manual logout waits for cleanup)
-  const confirmLogout = async () => {
+    // 2. CLIENT-SIDE CLEANUP (Essential)
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken'); 
+    localStorage.removeItem('userData');
+    
+    // Redirect the user
+    navigate('/login');
+    }, [navigate]);
+  
+  // Confirms logout from the modal
+  const confirmLogout = () => {
     setShowLogoutModal(false);
-    await handleLogout(); 
+    handleLogout();
   };
 
-  // 4. DATA FETCHING AND AUTHENTICATION LOGIC (Monitors for failure)
+  // 2. DATA FETCHING AND AUTHENTICATION LOGIC
   useEffect(() => {
-    // ⚠️ DEVELOPMENT OVERRIDE... (Code remains the same)
+    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
+    if (DEV_OVERRIDES_ACTIVE) {
+      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
+      setUserName(DEV_USER_DATA.name || 'Developer');
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
 
+    // PRODUCTION AUTHENTICATION CHECK
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
 
+    // If neither token exists, force login
     if (!accessToken && !refreshToken) {
       navigate('/login');
       return;
@@ -73,44 +87,51 @@ const Dashboard = () => {
 
     const fetchUser = async () => {
       try {
+        // Use the wrapper function for all authenticated requests
         const response = await fetchWithRefresh('/dashboard', { 
             method: 'GET',
         });
         
+        // Check if the response is valid before parsing JSON
         if (!response.ok) {
+            // Handle non-401 errors (e.g., 403 Forbidden, 500 Internal Error)
             console.error(`Dashboard fetch failed with status: ${response.status}`);
-            throw new Error(`Dashboard API error: Status ${response.status}`);
+            // If the failure is persistent and not network/refresh-related, force logout
+            handleLogout(); 
+            return;
         }
-        
+
         const data = await response.json();
         const user: UserData = data.user;
 
         if (user) {
-          // Success logic (Set name, etc.)
+          // Save and set display name
           localStorage.setItem('userData', JSON.stringify(user));
+          
+          // Safe name concatenation logic:
           const nameParts = [user.firstname, user.middlename, user.lastname].filter(Boolean) as string[];
-          let displayUsername = nameParts.length > 0 ? nameParts.join(' ') : (user.role || 'Student');
+          let displayUsername: string;
+
+          if (nameParts.length > 0) {
+            displayUsername = nameParts.join(' ');
+          } else if (user.role) {
+            displayUsername = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          } else {
+            displayUsername = 'Student';
+          }
+          
           setUserName(displayUsername);
           
         } else {
           console.error('API responded successfully, but user data is missing.');
-          throw new Error('User data is missing from successful response.');
+          handleLogout();
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
-
-        // ⬅️ CRITICAL FIX: AUTOMATIC LOGOUT ON SESSION FAILURE
-        const currentAccessToken = localStorage.getItem('accessToken');
-        const currentRefreshToken = localStorage.getItem('refreshToken');
-
-        if (currentAccessToken || currentRefreshToken) {
-            console.warn("Session failure detected (Refresh Token expired/invalid). Forcing client-side logout.");
-            
-            // 🛑 Call clientSideLogout to preserve the Refresh Token on the server
-            clientSideLogout(); 
-            return;
-        }
-
+        // This catch handles network errors or the error thrown by fetchWithRefresh 
+        // if the session is fully expired (refresh token failed).
+        console.error('Error fetching user or session expired:', error);
+        // fetchWithRefresh handles the redirect on session expiration, 
+        // but we handle network errors here.
         if (!navigator.onLine) {
             alert('Network error. Please check your connection.');
         }
@@ -120,17 +141,15 @@ const Dashboard = () => {
     };
 
     fetchUser();
-    // Dependencies must include the new clientSideLogout
-  }, [navigate, clientSideLogout]); 
+  }, [navigate, handleLogout]);
 
 
   // 3. RENDER LOGIC
   if (isLoading) {
     return (
-      <div className="loading-screen">
-        <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
-        <div className="loading-text">Loading Dashboard</div>
-        <div className="loading-spinner"></div>
+      <div className="loading-dashboard">
+        <div className="spinner"></div>
+        <h1>Loading Dashboard...</h1>
       </div>
     );
   }

@@ -83,13 +83,13 @@ export const userLogin = async (req, res) => {
 }
 
 export const userToken = async (req, res) => {
-    const { token } = req.body;
+    const { refreshToken } = req.body;
 
-    if (!token) {
+    if (!refreshToken) {
         return res.status(401).json({ success: false, message: "Token is required" });
     }
     try {
-        const existingToken = await Token.findOne({ refreshToken: token });
+        const existingToken = await Token.findOne({ refreshToken });
         if (!existingToken) {
             return res.status(403).json({ success: false, message: "Invalid token" });
         }
