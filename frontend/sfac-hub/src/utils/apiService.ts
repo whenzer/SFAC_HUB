@@ -40,6 +40,8 @@ async function fetchWithRefresh(url: string, options: FetchOptions = {}): Promis
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
+    console.log(refreshToken)
+
     let response: Response = await fetch(fullUrl, { ...options, headers });
 
     // 2. Check for expired token (401)
