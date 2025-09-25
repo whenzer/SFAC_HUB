@@ -17,12 +17,17 @@ function RegistrationPage() {
   const [studentId, setStudentId] = useState<File | null>(null);
   const [studentIdPreview, setStudentIdPreview] = useState<string | null>(null);
   const [role, setRole] = useState(''); // Add state for role
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [lastName, setLastName] = useState('');
   
   // State for validation errors
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [studentIdError, setStudentIdError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
   
   // State for password strength
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | ''>('');
@@ -161,6 +166,34 @@ function RegistrationPage() {
     return true;
   };
 
+  // First name validation
+  const validateFirstName = (firstName: string) => {
+    if (!firstName.trim()) {
+      setFirstNameError('First Name is required');
+      return false;
+    } else if (firstName.trim().length < 2) {
+      setFirstNameError('First Name must be at least 2 characters');
+      return false;
+    } else {
+      setFirstNameError('');
+      return true;
+    }
+  };
+
+  // Last name validation
+  const validateLastName = (lastName: string) => {
+    if (!lastName.trim()) {
+      setLastNameError('Last Name is required');
+      return false;
+    } else if (lastName.trim().length < 2) {
+      setLastNameError('Last Name must be at least 2 characters');
+      return false;
+    } else {
+      setLastNameError('');
+      return true;
+    }
+  };
+
   // Handle file upload and preview
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -174,13 +207,25 @@ function RegistrationPage() {
     } else {
       setStudentIdPreview(null);
     }
+  };
 
-    // Clean up preview URL when component unmounts
+  // Clean up preview URL when component unmounts
+  useEffect(() => {
     return () => {
       if (studentIdPreview) {
         URL.revokeObjectURL(studentIdPreview);
       }
     };
+  }, [studentIdPreview]);
+
+  // Handle photo removal
+  const handleRemovePhoto = () => {
+    if (studentIdPreview) {
+      URL.revokeObjectURL(studentIdPreview);
+    }
+    setStudentId(null);
+    setStudentIdPreview(null);
+    setStudentIdError('ID photo is required');
   };
 
   // Handle form submission
@@ -193,13 +238,15 @@ function RegistrationPage() {
   const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
   const isStudentIdValid = validateStudentId(studentId);
   const isRoleValid = !!role;
+  const isFirstNameValid = validateFirstName(firstName);
+  const isLastNameValid = validateLastName(lastName);
 
   if (!isRoleValid) {
     // Optionally set an error for role
     return;
   }
 
-  if (isEmailValid && isPasswordValid && isConfirmPasswordValid && isStudentIdValid && isRoleValid) {
+  if (isEmailValid && isPasswordValid && isConfirmPasswordValid && isStudentIdValid && isRoleValid && isFirstNameValid && isLastNameValid) {
     setIsSubmitting(true);
     setSubmissionError('');
 
@@ -217,6 +264,9 @@ function RegistrationPage() {
       const payload = {
         email,
         password,
+        firstName,
+        middleName,
+        lastName,
         idpic: {
           filename: studentId.name,
           image: base64Image
@@ -294,6 +344,61 @@ function RegistrationPage() {
                   <option value="staff">Staff</option>
                 </select>
               </div>
+
+              {/* First Name Field */}
+              <label className="label">First Name <span className="required">*</span></label>
+              <div className="input-group">
+                <span className="input-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+                </span>
+                <input 
+                  type="text" 
+                  placeholder="Enter your first name" 
+                  className={`input ${firstNameError ? 'input-error' : ''}`} 
+                  value={firstName} 
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+                    validateFirstName(e.target.value);
+                  }}
+                  required 
+                />
+              </div>
+              {firstNameError && <p className="error-message">{firstNameError}</p>}
+
+              {/* Middle Name Field */}
+              <label className="label">Middle Name</label>
+              <div className="input-group">
+                <span className="input-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+                </span>
+                <input 
+                  type="text" 
+                  placeholder="Enter your middle name (optional)" 
+                  className="input" 
+                  value={middleName} 
+                  onChange={(e) => setMiddleName(e.target.value)}
+                />
+              </div>
+
+              {/* Last Name Field */}
+              <label className="label">Last Name <span className="required">*</span></label>
+              <div className="input-group">
+                <span className="input-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></svg>
+                </span>
+                <input 
+                  type="text" 
+                  placeholder="Enter your last name" 
+                  className={`input ${lastNameError ? 'input-error' : ''}`} 
+                  value={lastName} 
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+                    validateLastName(e.target.value);
+                  }}
+                  required 
+                />
+              </div>
+              {lastNameError && <p className="error-message">{lastNameError}</p>}
 
               {/* Email Field */}
               <label className="label">Email</label>
@@ -405,58 +510,67 @@ function RegistrationPage() {
               
               {/* ID Upload */}
               <label className="label">ID Photo</label>
-              <div className={`file-upload ${studentIdError ? 'file-upload-error' : ''}`}>
-                <input 
-                  type="file" 
-                  id="student-id-upload" 
-                  className="file-input" 
-                  accept=".jpg,.jpeg,.png" 
-                  onChange={handleFileChange}
-                  required
-                />
-                <label htmlFor="student-id-upload" className="file-label">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M8.5 13.5 7 19h10l-1.5-5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="m8 10 4 2 4-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  <span>Upload Photo</span>
-                  <small className="file-hint">JPG/PNG • Max 5MB</small>
-                </label>
-                {studentId && (
-                  <div className="file-preview">
-                    <img src={studentIdPreview || undefined} alt="ID Preview" className="preview-image" />
-                    <button 
-                      type="button" 
-                      className="remove-file-btn" 
-                      onClick={() => {
-                        setStudentId(null);
-                        setStudentIdPreview(null);
-                        setStudentIdError('ID photo is required');
-                      }}
-                    >
-                      {/* <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="m6 6 12 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg> */}
-                    </button>
-                  </div>
-                )}
-              </div>
+              {!studentIdPreview ? (
+                <div className={`file-upload ${studentIdError ? 'file-upload-error' : ''}`}>
+                  <input 
+                    type="file" 
+                    id="student-id-upload" 
+                    className="file-input" 
+                    accept=".jpg,.jpeg,.png" 
+                    onChange={handleFileChange}
+                    required
+                  />
+                  <label htmlFor="student-id-upload" className="file-label">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M8.5 13.5 7 19h10l-1.5-5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="m8 10 4 2 4-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <span>Upload Photo</span>
+                    <small className="file-hint">JPG/PNG • Max 5MB</small>
+                  </label>
+                </div>
+              ) : (
+                <div className="file-preview">
+                  <img src={studentIdPreview || undefined} alt="ID Preview" className="preview-image" />
+                  <button 
+                    type="button" 
+                    className="remove-file-btn" 
+                    onClick={handleRemovePhoto}
+                    aria-label="Remove photo"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="m6 6 12 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                  </button>
+                  <p className="preview-info">Student ID Photo Uploaded</p>
+                  <button 
+                    type="button" 
+                    className="change-photo-btn"
+                    onClick={handleRemovePhoto}
+                  >
+                    Change Photo
+                  </button>
+                </div>
+              )}
               {studentIdError && <p className="error-message">{studentIdError}</p>}
               
               {/* Submit Button */}
-              <button 
-                className="cta-btn primary" 
-                type="submit" 
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="loading-spinner">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto' }}>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="18 18" strokeDashoffset="0" strokeLinecap="round">
-                        <animate attributeName="stroke-dashoffset" from="0" to="36" dur="1s" repeatCount="indefinite"/>
-                      </circle>
-                    </svg>
-                  </span>
-                ) : 'Register'}
-              </button>
-              
-              {/* Submission Error */}
-              {submissionError && <p className="error-message">{submissionError}</p>}
+              <div className="submit-container">
+                <button 
+                  className="cta-btn primary" 
+                  type="submit" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <span className="loading-spinner">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto' }}>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="18 18" strokeDashoffset="0" strokeLinecap="round">
+                          <animate attributeName="stroke-dashoffset" from="0" to="36" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                      </svg>
+                      {/* <span className="loading-text">Processing...</span> */}
+                    </span>
+                  ) : 'Register'}
+                </button>
+                
+                {/* Submission Error */}
+                {submissionError && <p className="error-message">{submissionError}</p>}
+              </div>
             </form>
 
           <div className="form-footer">
