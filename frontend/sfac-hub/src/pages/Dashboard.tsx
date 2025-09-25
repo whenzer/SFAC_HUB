@@ -85,46 +85,60 @@ const handleLogout = useCallback(async () => {
       return;
     }
 
-const fetchUser = async () => {
-  try {
-    const response = await fetchWithRefresh('/dashboard', { method: 'GET' });
+    const fetchUser = async () => {
+      try {
+        // Use the wrapper function for all authenticated requests
+        const response = await fetchWithRefresh('/dashboard', { 
+            method: 'GET',
+        });
+        
+        // Check if the response is valid before parsing JSON
+        if (!response.ok) {
+            // Handle non-401 errors (e.g., 403 Forbidden, 500 Internal Error)
+            console.error(`Dashboard fetch failed with status: ${response.status}`);
+            // If the failure is persistent and not network/refresh-related, force logout
+            handleLogout(); 
+            return;
+        }
 
-    if (!response.ok) {
-      console.error(`Dashboard fetch failed with status: ${response.status}`);
-      // ❌ Don't force logout here, let fetchWithRefresh handle 401/refresh
-      return;
-    }
+        const data = await response.json();
+        const user: UserData = data.user;
 
-    const data = await response.json();
-    const user: UserData = data.user;
+        if (user) {
+          // Save and set display name
+          localStorage.setItem('userData', JSON.stringify(user));
+          
+          // Safe name concatenation logic:
+          const nameParts = [user.firstname, user.middlename, user.lastname].filter(Boolean) as string[];
+          let displayUsername: string;
 
-    if (user) {
-      localStorage.setItem('userData', JSON.stringify(user));
-
-      const nameParts = [user.firstname, user.middlename, user.lastname].filter(Boolean) as string[];
-      const displayUsername =
-        nameParts.length > 0
-          ? nameParts.join(' ')
-          : user.role
-          ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
-          : 'Student';
-
-      setUserName(displayUsername);
-    } else {
-      console.error('API responded successfully, but user data is missing.');
-      // Here you can decide: maybe logout, maybe show error
-      handleLogout();
-    }
-  } catch (error) {
-    console.error('Error fetching user or session expired:', error);
-    // fetchWithRefresh already logs out on failed refresh
-    if (!navigator.onLine) {
-      alert('Network error. Please check your connection.');
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
+          if (nameParts.length > 0) {
+            displayUsername = nameParts.join(' ');
+          } else if (user.role) {
+            displayUsername = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          } else {
+            displayUsername = 'Student';
+          }
+          
+          setUserName(displayUsername);
+          
+        } else {
+          console.error('API responded successfully, but user data is missing.');
+          handleLogout();
+        }
+      } catch (error) {
+        // This catch handles network errors or the error thrown by fetchWithRefresh 
+        // if the session is fully expired (refresh token failed).
+        console.error('Error fetching user or session expired:', error);
+        // fetchWithRefresh handles the redirect on session expiration, 
+        // but we handle network errors here.
+        if (!navigator.onLine) {
+            alert('Network error. Please check your connection.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     fetchUser();
   }, [navigate, handleLogout]);

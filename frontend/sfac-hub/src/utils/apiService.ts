@@ -41,7 +41,7 @@ async function fetchWithRefresh(
   let response = await fetch(fullUrl, { ...options, headers });
 
   // --- 3. Handle expired token ---
-  if (response.status === 401) {
+  if (response.status === 401 || response.status === 403) {
     if (!refreshToken) {
       console.error("No refresh token found. Forcing logout.");
       handleForceLogout();
