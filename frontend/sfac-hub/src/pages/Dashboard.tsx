@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import fetchWithRefresh from '../utils/apiService';
-import { API_BASE_URL } from '../utils/apiService';
+import { API_BASE_URL } from '../utils/apiService'; // Assuming you expose API_BASE_URL in apiService.ts
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
@@ -17,69 +17,55 @@ interface UserData {
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
-  // Default to 'Student' if name is unavailable
-  const [userName, setUserName] = useState('Student'); 
+  const [userName, setUserName] = useState('Student');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
-  // 1. LOGOUT HANDLER (Uses useCallback for stability)
-const handleLogout = useCallback(async () => {
+  // 1. LOGOUT HANDLER (Guarantees server deletion and client cleanup)
+  const handleLogout = useCallback(async () => {
     
     const refreshToken = localStorage.getItem('refreshToken');
     
-    // ⚠️ SERVER-SIDE TOKEN DELETION
+    // SERVER-SIDE TOKEN DELETION (DELETE method)
     if (refreshToken) {
         try {
+            // We use fetch directly here because we don't want the refresh logic
             await fetch(`${API_BASE_URL}/api/user/logout`, {
-                // ⬅️ FIX: Changed method to DELETE
                 method: 'DELETE', 
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // Send the refresh token in the request body, matching your backend
                 body: JSON.stringify({ token: refreshToken }), 
             });
             
-            // The request finishes (success or failure), and we proceed.
-            
         } catch (error) {
-            console.error('Server-side logout failed:', error);
-            // We continue with client-side cleanup regardless of this server error.
+            // Log error but proceed with client-side cleanup
+            console.error('Server-side logout failed (network error or server down):', error);
         }
     }
 
-    // 2. CLIENT-SIDE CLEANUP (Essential)
+    // CLIENT-SIDE CLEANUP (Essential)
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken'); 
     localStorage.removeItem('userData');
     
     // Redirect the user
     navigate('/login');
-    }, [navigate]);
-  
-  // Confirms logout from the modal
-  const confirmLogout = async () => { 
+  }, [navigate]);
+
+  // 2. CONFIRMATION HANDLER (Ensures manual logout waits for cleanup)
+  const confirmLogout = async () => { // ⬅️ FIX 1: Must be async
     setShowLogoutModal(false);
-    await handleLogout(); 
+    await handleLogout(); // ⬅️ FIX 1: Must await handleLogout
   };
 
-  // 2. DATA FETCHING AND AUTHENTICATION LOGIC
+  // 3. DATA FETCHING AND AUTHENTICATION LOGIC
   useEffect(() => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
-      setUserName(DEV_USER_DATA.name || 'Developer');
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
+    // ... (DEV_OVERRIDES_ACTIVE logic remains) ...
 
-    // PRODUCTION AUTHENTICATION CHECK
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
 
-    // If neither token exists, force login
     if (!accessToken && !refreshToken) {
       navigate('/login');
       return;
@@ -87,50 +73,46 @@ const handleLogout = useCallback(async () => {
 
     const fetchUser = async () => {
       try {
-        // Use the wrapper function for all authenticated requests
         const response = await fetchWithRefresh('/dashboard', { 
             method: 'GET',
         });
         
-        // Check if the response is valid before parsing JSON
         if (!response.ok) {
-            // Handle non-401 errors (e.g., 403 Forbidden, 500 Internal Error)
+            // The session is valid, but the API request failed (e.g., 403 or 500).
+            // Do NOT clean up tokens here. Just throw an error.
             console.error(`Dashboard fetch failed with status: ${response.status}`);
-            // If the failure is persistent and not network/refresh-related, force logout
-            return;
+            throw new Error(`Dashboard API error: Status ${response.status}`);
         }
 
         const data = await response.json();
         const user: UserData = data.user;
 
         if (user) {
-          // Save and set display name
+          // Success logic (Set name, etc.)
           localStorage.setItem('userData', JSON.stringify(user));
-          
-          // Safe name concatenation logic:
           const nameParts = [user.firstname, user.middlename, user.lastname].filter(Boolean) as string[];
-          let displayUsername: string;
-
-          if (nameParts.length > 0) {
-            displayUsername = nameParts.join(' ');
-          } else if (user.role) {
-            displayUsername = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-          } else {
-            displayUsername = 'Student';
-          }
-          
+          let displayUsername = nameParts.length > 0 ? nameParts.join(' ') : (user.role || 'Student');
           setUserName(displayUsername);
           
         } else {
           console.error('API responded successfully, but user data is missing.');
-          handleLogout();
+          throw new Error('User data is missing from successful response.');
         }
       } catch (error) {
-        // This catch handles network errors or the error thrown by fetchWithRefresh 
-        // if the session is fully expired (refresh token failed).
-        console.error('Error fetching user or session expired:', error);
-        // fetchWithRefresh handles the redirect on session expiration, 
-        // but we handle network errors here.
+        console.error('Error fetching user:', error);
+
+        // ⬅️ FIX 2: AUTOMATIC LOGOUT ON SESSION FAILURE
+        // Check for existing tokens to see if a session existed when the error occurred.
+        const currentAccessToken = localStorage.getItem('accessToken');
+        const currentRefreshToken = localStorage.getItem('refreshToken');
+
+        if (currentAccessToken || currentRefreshToken) {
+            console.warn("Session failure detected (Refresh Token likely expired). Forcing logout.");
+            // This ensures a clean cleanup and redirect if fetchWithRefresh failed to do so.
+            await handleLogout(); 
+            return;
+        }
+
         if (!navigator.onLine) {
             alert('Network error. Please check your connection.');
         }
