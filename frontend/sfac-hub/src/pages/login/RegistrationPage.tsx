@@ -266,7 +266,7 @@ function RegistrationPage() {
         password,
         firstname: firstName,
         middlename: middleName,
-        lastname: middleName,
+        lastname: lastName,
         idpic: {
           filename: studentId.name,
           image: base64Image
