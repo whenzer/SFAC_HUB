@@ -50,23 +50,9 @@ export const userRegister = async (req, res) => {
 
 // User Login
 export const userLogin = async (req, res) => {
-    const user = req.body;
-
-    if (!user.email || !user.password) {
-        return res.status(400).json({ success: false, message: "Email and password are required" });
-    }
-
+    
     try {
-        const existingUser = await User.find({ email: user.email });
-        if (existingUser.length === 0) {
-            return res.status(404).json({ success: false, message: "User not found" });
-        }
-        const passwordMatch = await bcrypt.compare(user.password, existingUser[0].password);
-        if (!passwordMatch) {
-            return res.status(401).json({ success: false, message: "Invalid credentials" });
-        }
-
-        const userPayload = existingUser[0].toObject();
+        const userPayload = req.body.user;
         delete userPayload.password; // Remove password from payload
         delete userPayload.__v; // Remove __v from payload 
         delete userPayload._id; // Optionally remove _id from payload
