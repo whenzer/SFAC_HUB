@@ -3,6 +3,18 @@ import mongoose from "mongoose";
 // It includes fields for email, password, idpic, and verification status
 // Importing mongoose to define the schema
 const userSchema = new mongoose.Schema({
+    firstname:{
+        type: String,
+        required: true
+    },
+    middlename:{
+        type: String,
+        default: ""
+    },
+    lastname:{
+        type:String,
+        required: true
+    },
     email: {
         type: String,
         required: true

@@ -27,6 +27,5 @@ app.use('/dashboard', dashboardRoutes);
 
 app.listen(PORT, () => {
   connectUsersDB();
-
   console.log(`Server is running on port ${PORT}`);
 });
