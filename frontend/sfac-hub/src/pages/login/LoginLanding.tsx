@@ -50,7 +50,7 @@ function LoginLanding() {
       })
       const data = await response.json()
       if (response.ok) {
-        localStorage.setItem('authToken', data.authToken)
+        localStorage.setItem('authToken', data.accessToken)
 		navigate('/dashboard')
       } else {
         setError(data.message || 'Login failed')

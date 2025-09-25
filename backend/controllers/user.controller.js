@@ -64,7 +64,7 @@ export const userLogin = async (req, res) => {
             { expiresIn: '15m' }
         );
 
-        res.status(200).json({ success: true, accessToken,  });
+        res.status(200).json({ success: true, accessToken });
     } catch (error) {
         console.error("Error in User Login: ", error.message);
         res.status(500).json({ success: false, message: error.message });
