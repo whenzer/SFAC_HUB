@@ -2,14 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
+import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState('Juan Dela Cruz');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check authentication
+    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
+    if (DEV_OVERRIDES_ACTIVE) {
+      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
+      setUserName(DEV_USER_DATA.name);
+      
+      // Simulate loading time
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+
+    // PRODUCTION AUTHENTICATION CHECK
     const authToken = localStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
     
@@ -35,9 +50,22 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleLogout = () => {
+    // ⚠️ DEVELOPMENT OVERRIDE: Handle logout differently in dev mode
+    if (DEV_OVERRIDES_ACTIVE) {
+      console.warn('🚨 DEVELOPMENT MODE: Logout redirected to login (no actual logout needed)');
+      navigate('/login');
+      return;
+    }
+
+    // PRODUCTION LOGOUT
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     navigate('/login');
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    handleLogout();
   };
 
   if (isLoading) {
@@ -52,6 +80,24 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
+      {/* ⚠️ DEVELOPMENT WARNING BANNER */}
+      {DEV_OVERRIDES_ACTIVE && (
+        <div style={{
+          backgroundColor: '#ff6b6b',
+          color: 'white',
+          padding: '12px',
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          borderBottom: '2px solid #ff5252',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000
+        }}>
+          🚨 DEVELOPMENT MODE: Authentication bypassed - Dashboard accessible without login
+        </div>
+      )}
+      
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-container">
@@ -69,7 +115,11 @@ const Dashboard = () => {
                 <span>{userName.charAt(0)}</span>
               </div>
             </div>
-            <button onClick={handleLogout} className="logout-btn" title="Logout">
+            <button 
+              onClick={() => setShowLogoutModal(true)} 
+              className="logout-btn" 
+              title="Logout"
+            >
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
               </svg>
@@ -100,7 +150,7 @@ const Dashboard = () => {
             
             <div className="quick-actions-grid">
               {/* Stock Availability Card */}
-              <Link to="/dashboard/stock" className="action-card stock-card">
+              <Link to="/stock-availability" className="action-card stock-card">
                 <div className="card-icon">
                   <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
@@ -121,7 +171,7 @@ const Dashboard = () => {
               </Link>
 
               {/* Make Reservation Card */}
-              <Link to="/dashboard/reservation" className="action-card reservation-card">
+              <Link to="/make-reservation" className="action-card reservation-card">
                 <div className="card-icon">
                   <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
@@ -142,7 +192,7 @@ const Dashboard = () => {
               </Link>
 
               {/* Lost & Found Card */}
-              <Link to="/dashboard/lost-found" className="action-card lost-found-card">
+              <Link to="/lost-and-found" className="action-card lost-found-card">
                 <div className="card-icon">
                   <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
@@ -224,6 +274,88 @@ const Dashboard = () => {
           </section>
         </div>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+  <div 
+    className="modal-overlay logout-modal-overlay" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="logout-modal-title"
+    onClick={(e) => e.target === e.currentTarget && setShowLogoutModal(false)}
+  >
+    <div className="modal-content logout-modal-content">
+      <div className="logout-modal-header">
+        <div className="logout-modal-icon">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="url(#warning-gradient)" />
+            <path 
+              d="M12 8v4m0 4h.01" 
+              stroke="white" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+            <defs>
+              <linearGradient id="warning-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#d97706" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div className="logout-modal-text">
+          <h2 id="logout-modal-title" className="logout-modal-title">
+            Ready to leave?
+          </h2>
+          <p className="logout-modal-description">
+            You'll be signed out of your account. Make sure to save any changes before logging out.
+          </p>
+        </div>
+      </div>
+      
+      <div className="logout-modal-footer">
+        <button 
+          className="logout-modal-btn logout-modal-btn--secondary"
+          onClick={() => setShowLogoutModal(false)}
+          aria-label="Cancel and stay logged in"
+        >
+          Stay Signed In
+        </button>
+        <button 
+          className="logout-modal-btn logout-modal-btn--primary"
+          onClick={confirmLogout}
+          autoFocus
+          aria-describedby="logout-modal-description"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+<footer className="footer">
+        <div className="footer-container">
+          <div className="footer-content">
+            <div className="footer-logo">
+              <div className="footer-logo-box">
+                <img src={SFACLogo} alt="SFAC Logo" />
+              </div>
+              <div className="footer-text">
+                <p className="footer-copyright">
+                  © 2025 SFAC Hub - Saint Francis of Assisi College, Bacoor Campus
+                </p>
+                <p className="footer-developer">
+                  Developed by SFAC Students | Making campus life more efficient
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
