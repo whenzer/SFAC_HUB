@@ -10,44 +10,101 @@ const Dashboard = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
-      setUserName(DEV_USER_DATA.name);
+  // useEffect(() => {
+  //   // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
+  //   if (DEV_OVERRIDES_ACTIVE) {
+  //     console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
+  //     setUserName(DEV_USER_DATA.name);
       
-      // Simulate loading time
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
+  //     // Simulate loading time
+  //     const timer = setTimeout(() => {
+  //       setIsLoading(false);
+  //     }, 1000);
       
-      return () => clearTimeout(timer);
-    }
+  //     return () => clearTimeout(timer);
+  //   }
 
-    // PRODUCTION AUTHENTICATION CHECK
-    const authToken = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
+  //   // PRODUCTION AUTHENTICATION CHECK
+  //   const authToken = localStorage.getItem('authToken');
+  //   const userData = localStorage.getItem('userData');
     
-    if (!authToken || !userData) {
-      navigate('/login');
-      return;
-    }
+  //   if (!authToken || !userData) {
+  //     navigate('/login');
+  //     return;
+  //   }
 
-    // Parse user data and set name
-    try {
-      const user = JSON.parse(userData);
-      setUserName(user.name || 'Student');
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-    }
+    
 
-    // Simulate loading time
+  //   // Parse user data and set name
+  //   try {
+  //     const user = JSON.parse(userData);
+  //     setUserName(user.name || 'Student');
+  //   } catch (error) {
+  //     console.error('Error parsing user data:', error);
+  //   }
+
+  //   // Simulate loading time
+  //   const timer = setTimeout(() => {
+  //     setIsLoading(false);
+  //   }, 1000);
+
+  //   return () => clearTimeout(timer);
+  // }, [navigate]);
+  
+  useEffect(() => { 
+  // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
+  if (DEV_OVERRIDES_ACTIVE) {
+    console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
+    setUserName(DEV_USER_DATA.name);
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }
+
+  // PRODUCTION AUTHENTICATION CHECK
+  const authToken = localStorage.getItem('authToken');
+
+  if (!authToken) {
+    navigate('/login');
+    return;
+  }
+
+  // ✅ Fetch user data from backend
+  const fetchUser = async () => {
+    try {
+      const response = await fetch('https://sfac-hub.onrender.com/dashboard', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.user) {
+        // Save user data to localStorage
+        localStorage.setItem('userData', JSON.stringify(data.user));
+
+        // Update state
+        setUserName(data.user.name || 'Student');
+      } else {
+        console.error('Failed to fetch user:', data.message);
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      navigate('/login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchUser();
+}, [navigate]);
 
   const handleLogout = () => {
     // ⚠️ DEVELOPMENT OVERRIDE: Handle logout differently in dev mode

@@ -50,8 +50,7 @@ function LoginLanding() {
       })
       const data = await response.json()
       if (response.ok) {
-        // Handle successful login, e.g., redirect or store token
-		// redirect to dashboard
+        localStorage.setItem('authToken', data.token)
 		navigate('/dashboard')
       } else {
         setError(data.message || 'Login failed')
