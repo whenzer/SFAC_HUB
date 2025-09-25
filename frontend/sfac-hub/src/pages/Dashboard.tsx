@@ -58,9 +58,9 @@ const handleLogout = useCallback(async () => {
     }, [navigate]);
   
   // Confirms logout from the modal
-  const confirmLogout = () => {
+  const confirmLogout = async () => { 
     setShowLogoutModal(false);
-    handleLogout();
+    await handleLogout(); 
   };
 
   // 2. DATA FETCHING AND AUTHENTICATION LOGIC
@@ -97,7 +97,6 @@ const handleLogout = useCallback(async () => {
             // Handle non-401 errors (e.g., 403 Forbidden, 500 Internal Error)
             console.error(`Dashboard fetch failed with status: ${response.status}`);
             // If the failure is persistent and not network/refresh-related, force logout
-            handleLogout(); 
             return;
         }
 
