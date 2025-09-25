@@ -12,7 +12,7 @@ type FetchOptions = RequestInit & {
 };
 
 // --- API Constants ---
-const REFRESH_URL: string = 'https://sfac-hub.onrender.com/api/user/refresh-token';
+const REFRESH_URL: string = 'https://sfac-hub.onrender.com/api/user/token';
 export const API_BASE_URL: string = 'https://sfac-hub.onrender.com';
 
 /**
@@ -88,7 +88,7 @@ async function fetchWithRefresh(url: string, options: FetchOptions = {}): Promis
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('userData');
-        window.location.href = '/login'; 
+        window.location.href = '/login?sessionExpired=true';
         
         throw new Error("Session expired.");
     }
