@@ -50,7 +50,7 @@ function LoginLanding() {
       })
       const data = await response.json()
       if (response.ok) {
-        localStorage.setItem('authToken', data.accessToken)
+        localStorage.setItem('accessToken', data.accessToken)
 		localStorage.setItem('refreshToken', data.refreshToken)
 		navigate('/dashboard')
       } else {
