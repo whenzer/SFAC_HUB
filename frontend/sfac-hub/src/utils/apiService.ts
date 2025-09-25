@@ -51,7 +51,7 @@ async function fetchWithRefresh(url: string, options: FetchOptions = {}): Promis
         const refreshResponse: Response = await fetch(REFRESH_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken }),
+            body: JSON.stringify({ refreshToken: refreshToken }),
         });
         
         const refreshData: RefreshResponse = await refreshResponse.json();

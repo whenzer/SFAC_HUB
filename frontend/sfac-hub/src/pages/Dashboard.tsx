@@ -58,9 +58,9 @@ const handleLogout = useCallback(async () => {
     }, [navigate]);
   
   // Confirms logout from the modal
-  const confirmLogout = () => {
+  const confirmLogout = async () => { // ⬅️ Add async
     setShowLogoutModal(false);
-    handleLogout();
+    await handleLogout(); // ⬅️ Add await
   };
 
   // 2. DATA FETCHING AND AUTHENTICATION LOGIC
