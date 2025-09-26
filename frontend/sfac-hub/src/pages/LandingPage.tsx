@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './landing.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
@@ -11,7 +11,7 @@ const LandingPage = () => {
     // Simulate loading time
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);

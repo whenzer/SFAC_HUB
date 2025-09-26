@@ -128,7 +128,7 @@ const StockAvailability = () => {
     // Simulate loading time
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 800);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [navigate]);
