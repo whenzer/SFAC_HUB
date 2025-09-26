@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import fetchWithRefresh from '../utils/apiService';
-import { API_BASE_URL } from '../utils/apiService';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import ProtectedLayout from '../utils/ProtectedLayout';
@@ -44,6 +42,12 @@ const Dashboard = () => {
           displayName =
             user.role.charAt(0).toUpperCase() + user.role.slice(1);
         }
+        
+        const confirmLogout = async () => {
+          setShowLogoutModal(false);
+          await logout(); // logout comes from ProtectedLayout
+        };
+
         
           return (
     <div className="dashboard">
@@ -274,7 +278,7 @@ const Dashboard = () => {
         </button>
         <button 
           className="logout-modal-btn logout-modal-btn--primary"
-          onClick={logout}
+          onClick={confirmLogout}
           autoFocus
           aria-describedby="logout-modal-description"
         >

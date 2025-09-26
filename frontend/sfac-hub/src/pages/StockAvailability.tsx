@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import './dashboard.css';
 import './StockAvailability.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
+import ProtectedLayout from "../utils/ProtectedLayout";
+import "./dashboard.css";
 
 // Define type for stock items
 export interface StockItem {
@@ -94,10 +96,7 @@ const mockStockItems: StockItem[] = [
   }
 ];
 
-
 const StockAvailability = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [userName, setUserName] = useState('Juan Dela Cruz');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
@@ -106,41 +105,43 @@ const StockAvailability = () => {
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [reservationItem, setReservationItem] = useState<StockItem | null>(null);
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  useEffect(() => {
-    // PRODUCTION AUTHENTICATION CHECK
-    const authToken = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
-    
-    if (!authToken || !userData) {
-      navigate('/login');
-      return;
-    }
+  return (
+    <ProtectedLayout endpoint="/protected/stock">
+      {({ user, isLoading, logout }) => {
+          if (isLoading) {
+            return (
+              <div className="loading-screen">
+                <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
+                <div className="loading-text">Loading Stock Availability</div>
+                <div className="loading-spinner"></div>
+              </div>
+            );
+          }
 
-    // Parse user data and set name
-    try {
-      const user = JSON.parse(userData);
-      setUserName(user.name || 'Student');
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-    }
+        const nameParts = [
+          user?.firstname,
+          user?.middlename,
+          user?.lastname,
+        ].filter(Boolean) as string[];
+        let displayName = "Student";
 
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+        if (nameParts.length > 0) {
+          displayName = nameParts.join(" ");
+        } else if (user?.role) {
+          displayName =
+            user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        }
 
-    return () => clearTimeout(timer);
-  }, [navigate]);
+        const confirmLogout = async () => {
+          setShowLogoutModal(false);
+          await logout();
+        };
 
-  const handleLogout = () => {
-    // PRODUCTION LOGOUT
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    navigate('/login');
-  };
+        // DITO NA YUNG CODE MO
 
-  // Filter and search logic
+          // Filter and search logic
   const filteredItems = mockStockItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,15 +185,7 @@ const StockAvailability = () => {
     return Math.max((current / total) * 100, 0);
   };
 
-  if (isLoading) {
-    return (
-      <div className="loading-screen">
-        <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
-        <div className="loading-text">Loading Stock Availability</div>
-        <div className="loading-spinner"></div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="dashboard">
@@ -209,12 +202,12 @@ const StockAvailability = () => {
           
           <div className="header-right">
             <div className="user-info">
-              <span className="user-name">{userName}</span>
+              <span className="user-name">{displayName}</span>
               <div className="user-avatar">
-                <span>{userName.charAt(0)}</span>
+                <span>{displayName.charAt(0)}</span>
               </div>
             </div>
-            <button onClick={handleLogout} className="logout-btn" title="Logout">
+            <button onClick={confirmLogout} className="logout-btn" title="Logout">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
               </svg>
@@ -464,6 +457,9 @@ const StockAvailability = () => {
         </div>
       )}
     </div>
+  );
+      }}
+    </ProtectedLayout>
   );
 };
 
