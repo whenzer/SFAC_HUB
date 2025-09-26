@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import ProtectedLayout from '../utils/ProtectedLayout';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 // Define the expected structure for user data (adjust if your data is different)
 interface UserData {
@@ -14,7 +16,6 @@ interface UserData {
 }
 
 const Dashboard = () => {
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   return (
     <ProtectedLayout endpoint="/protected/dashboard">
       {({ user, isLoading, logout }) => {
@@ -43,44 +44,13 @@ const Dashboard = () => {
             user.role.charAt(0).toUpperCase() + user.role.slice(1);
         }
         
-        const confirmLogout = async () => {
-          setShowLogoutModal(false);
-          await logout(); // logout comes from ProtectedLayout
-        };
+        // User display name construction happens inside Header component now;
 
         
           return (
     <div className="dashboard">
-      
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-container">
-          <div className="header-left">
-            <div className="logo-container">
-              <img src={SFACLogo} alt="SFAC Logo" className="header-logo" />
-              <span className="logo-text">SFAC Hub</span>
-            </div>
-          </div>
-          
-          <div className="header-right">
-            <div className="user-info">
-              <span className="user-name">{displayName}</span>
-              <div className="user-avatar">
-                <span>{displayName.charAt(0)}</span>
-              </div>
-            </div>
-            <button 
-              onClick={() => setShowLogoutModal(true)} 
-              className="logout-btn" 
-              title="Logout"
-            >
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Reusable Header Component */}
+      <Header user={user} logout={logout} />
 
       {/* Main Content */}
       <main className="dashboard-main">
@@ -229,87 +199,9 @@ const Dashboard = () => {
         </div>
       </main>
 
-      {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-  <div 
-    className="modal-overlay logout-modal-overlay" 
-    role="dialog" 
-    aria-modal="true" 
-    aria-labelledby="logout-modal-title"
-    onClick={(e) => e.target === e.currentTarget && setShowLogoutModal(false)}
-  >
-    <div className="modal-content logout-modal-content">
-      <div className="logout-modal-header">
-        <div className="logout-modal-icon">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" fill="url(#warning-gradient)" />
-            <path 
-              d="M12 8v4m0 4h.01" 
-              stroke="white" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            />
-            <defs>
-              <linearGradient id="warning-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f59e0b" />
-                <stop offset="100%" stopColor="#d97706" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <div className="logout-modal-text">
-          <h2 id="logout-modal-title" className="logout-modal-title">
-            Ready to leave?
-          </h2>
-          <p className="logout-modal-description">
-            You'll be signed out of your account. Make sure to save any changes before logging out.
-          </p>
-        </div>
-      </div>
-      
-      <div className="logout-modal-footer">
-        <button 
-          className="logout-modal-btn logout-modal-btn--secondary"
-          onClick={() => setShowLogoutModal(false)}
-          aria-label="Cancel and stay logged in"
-        >
-          Stay Signed In
-        </button>
-        <button 
-          className="logout-modal-btn logout-modal-btn--primary"
-          onClick={confirmLogout}
-          autoFocus
-          aria-describedby="logout-modal-description"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-          </svg>
-          Sign Out
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-<footer className="footer">
-        <div className="footer-container">
-          <div className="footer-content">
-            <div className="footer-logo">
-              <div className="footer-logo-box">
-                <img src={SFACLogo} alt="SFAC Logo" />
-              </div>
-              <div className="footer-text">
-                <p className="footer-copyright">
-                  © 2025 SFAC Hub - Saint Francis of Assisi College, Bacoor Campus
-                </p>
-                <p className="footer-developer">
-                  Developed by SFAC Students | Making campus life more efficient
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Logout modal is now handled by Header component */}
+      {/* Reusable Footer Component */}
+      <Footer />
     </div>
   );
 }

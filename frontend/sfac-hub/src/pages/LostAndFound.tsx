@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import ProtectedLayout from '../utils/ProtectedLayout';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const LostAndFound = () => {
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
   return (
     <ProtectedLayout endpoint="/protected/lostandfound">
       {({ user, isLoading, logout }) => {
@@ -35,38 +35,12 @@ const LostAndFound = () => {
             user.role.charAt(0).toUpperCase() + user.role.slice(1);
         }
 
-        const confirmLogout = async () => {
-          setShowLogoutModal(false);
-          await logout(); // logout comes from ProtectedLayout
-        };
+        // User display name construction happens inside Header component now
 
         return (
           <div className="dashboard">
-            {/* Header */}
-            <header className="dashboard-header">
-              <div className="header-container">
-                <div className="header-left">
-                  <div className="logo-container">
-                    <img src={SFACLogo} alt="SFAC Logo" className="header-logo" />
-                    <span className="logo-text">SFAC Hub</span>
-                  </div>
-                </div>
-               
-                <div className="header-right">
-                  <div className="user-info">
-                    <span className="user-name">{displayName}</span>
-                    <div className="user-avatar">
-                      <span>{displayName.charAt(0)}</span>
-                    </div>
-                  </div>
-                  <button onClick={() => setShowLogoutModal(true)} className="logout-btn" title="Logout">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </header>
+            {/* Reusable Header Component */}
+            <Header user={user} logout={logout} />
 
             {/* Main Content */}
             <main className="dashboard-main">
@@ -150,33 +124,10 @@ const LostAndFound = () => {
               </div>
             </main>
 
-            {/* Logout confirmation modal */}
-            {showLogoutModal && (
-              <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
-                <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-                  <div className="modal-header">
-                    <h3>Confirm Logout</h3>
-                  </div>
-                  <div className="modal-body">
-                    <p>Are you sure you want to logout?</p>
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => setShowLogoutModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={confirmLogout}
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Logout modal is now handled by Header component */}
+            
+            {/* Reusable Footer Component */}
+            <Footer />
           </div>
         );
       }}
