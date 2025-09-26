@@ -4,6 +4,7 @@ import fetchWithRefresh from '../utils/apiService';
 import { API_BASE_URL } from '../utils/apiService';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
+import ProtectedLayout from '../utils/ProtectedLayout';
 
 // Define the expected structure for user data (adjust if your data is different)
 interface UserData {
@@ -15,136 +16,36 @@ interface UserData {
 }
 
 const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  // Default to 'Student' if name is unavailable
-  const [userName, setUserName] = useState('Student'); 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const navigate = useNavigate();
-
-  // 1. LOGOUT HANDLER (Uses useCallback for stability)
-const handleLogout = useCallback(async () => {
-    
-    const refreshToken = localStorage.getItem('refreshToken');
-    
-    // ⚠️ SERVER-SIDE TOKEN DELETION
-    if (refreshToken) {
-        try {
-            await fetch(`${API_BASE_URL}/api/user/logout`, {
-                // ⬅️ FIX: Changed method to DELETE
-                method: 'DELETE', 
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // Send the refresh token in the request body, matching your backend
-                body: JSON.stringify({ token: refreshToken }), 
-            });
-            
-            // The request finishes (success or failure), and we proceed.
-            
-        } catch (error) {
-            console.error('Server-side logout failed:', error);
-            // We continue with client-side cleanup regardless of this server error.
-        }
-    }
-
-    // 2. CLIENT-SIDE CLEANUP (Essential)
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken'); 
-    localStorage.removeItem('userData');
-    
-    // Redirect the user
-    navigate('/login');
-    }, [navigate]);
-  
-  // Confirms logout from the modal
-  const confirmLogout = async () => { // ⬅️ Add async
-    setShowLogoutModal(false);
-    await handleLogout(); // ⬅️ Add await
-  };
-
-  // 2. DATA FETCHING AND AUTHENTICATION LOGIC
-  useEffect(() => {
-    // PRODUCTION AUTHENTICATION CHECK
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-
-    // If neither token exists, force login
-    if (!accessToken && !refreshToken) {
-      navigate('/login');
-      return;
-    }
-
-    const fetchUser = async () => {
-      try {
-        // Use the wrapper function for all authenticated requests
-        const response = await fetchWithRefresh('/dashboard', { 
-            method: 'GET',
-        });
-        
-        // Check if the response is valid before parsing JSON
-        if (!response.ok) {
-            // Handle non-401 errors (e.g., 403 Forbidden, 500 Internal Error)
-            console.error(`Dashboard fetch failed with status: ${response.status}`);
-            // If the failure is persistent and not network/refresh-related, force logout
-            handleLogout(); 
-            return;
-        }
-
-        const data = await response.json();
-        const user: UserData = data.user;
-
-        if (user) {
-          // Save and set display name
-          localStorage.setItem('userData', JSON.stringify(user));
-          
-          // Safe name concatenation logic:
-          const nameParts = [user.firstname, user.middlename, user.lastname].filter(Boolean) as string[];
-          let displayUsername: string;
-
-          if (nameParts.length > 0) {
-            displayUsername = nameParts.join(' ');
-          } else if (user.role) {
-            displayUsername = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-          } else {
-            displayUsername = 'Student';
-          }
-          
-          setUserName(displayUsername);
-          
-        } else {
-          console.error('API responded successfully, but user data is missing.');
-          handleLogout();
-        }
-      } catch (error) {
-        // This catch handles network errors or the error thrown by fetchWithRefresh 
-        // if the session is fully expired (refresh token failed).
-        console.error('Error fetching user or session expired:', error);
-        // fetchWithRefresh handles the redirect on session expiration, 
-        // but we handle network errors here.
-        if (!navigator.onLine) {
-            alert('Network error. Please check your connection.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [navigate, handleLogout]);
-
-
-  // 3. RENDER LOGIC
-  if (isLoading) {
-    return (
-      <div className="loading-screen">
-        <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
-        <div className="loading-text">Loading Dashboard</div>
-        <div className="loading-spinner"></div>
-      </div>
-    );
-  }
-
   return (
+    <ProtectedLayout endpoint="/protected/dashboard">
+      {({ user, isLoading, logout }) => {
+        if (isLoading) {
+          return (
+            <div className="loading-screen">
+              <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
+              <div className="loading-text">Loading Dashboard</div>
+              <div className="loading-spinner"></div>
+            </div>
+          );
+        }
+
+        // Safe display name construction
+        const nameParts = [
+          user?.firstname,
+          user?.middlename,
+          user?.lastname,
+        ].filter(Boolean) as string[];
+        let displayName = "Student";
+
+        if (nameParts.length > 0) {
+          displayName = nameParts.join(" ");
+        } else if (user?.role) {
+          displayName =
+            user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        }
+        
+          return (
     <div className="dashboard">
       
       {/* Header */}
@@ -159,9 +60,9 @@ const handleLogout = useCallback(async () => {
           
           <div className="header-right">
             <div className="user-info">
-              <span className="user-name">{userName}</span>
+              <span className="user-name">{displayName}</span>
               <div className="user-avatar">
-                <span>{userName.charAt(0)}</span>
+                <span>{displayName.charAt(0)}</span>
               </div>
             </div>
             <button 
@@ -183,7 +84,7 @@ const handleLogout = useCallback(async () => {
           {/* Welcome Section */}
           <div className="welcome-section">
             <h1 className="welcome-title">
-              Welcome back, {userName}! 👋
+              Welcome back, {displayName}! 👋
             </h1>
             <p className="welcome-subtitle">
               Here's what's happening at SFAC today
@@ -373,7 +274,7 @@ const handleLogout = useCallback(async () => {
         </button>
         <button 
           className="logout-modal-btn logout-modal-btn--primary"
-          onClick={confirmLogout}
+          onClick={logout}
           autoFocus
           aria-describedby="logout-modal-description"
         >
@@ -407,6 +308,13 @@ const handleLogout = useCallback(async () => {
       </footer>
     </div>
   );
-};
+}
+      }
+    </ProtectedLayout>
+  );
+}
+
+
+
 
 export default Dashboard;

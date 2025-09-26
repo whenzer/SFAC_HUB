@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import connectUsersDB from './config/users.db.js';
 import userRoutes from './routes/user.route.js';
 import adminRoutes from './routes/admin.route.js';
-import dashboardRoutes from './routes/dashboard.route.js';
+import protectedRoutes from './routes/protected.route.js';
 import cors from 'cors';
 import { configureCloudinary } from './config/cloudinary.js';
 
@@ -24,7 +24,7 @@ app.use(cors({
 app.use(express.json({ limit: '5mb' }));
 app.use('/api/user', userRoutes);
 app.use('/admin', adminRoutes);
-app.use('/dashboard', dashboardRoutes);
+app.use('/protected', protectedRoutes);
 
 app.listen(PORT, () => {
   connectUsersDB();
