@@ -4,7 +4,6 @@ import fetchWithRefresh from '../utils/apiService';
 import { API_BASE_URL } from '../utils/apiService';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
-import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
 
 // Define the expected structure for user data (adjust if your data is different)
 interface UserData {
@@ -65,16 +64,6 @@ const handleLogout = useCallback(async () => {
 
   // 2. DATA FETCHING AND AUTHENTICATION LOGIC
   useEffect(() => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for dashboard access');
-      setUserName(DEV_USER_DATA.name || 'Developer');
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-
     // PRODUCTION AUTHENTICATION CHECK
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
@@ -157,23 +146,6 @@ const handleLogout = useCallback(async () => {
 
   return (
     <div className="dashboard">
-      {/* ⚠️ DEVELOPMENT WARNING BANNER */}
-      {DEV_OVERRIDES_ACTIVE && (
-        <div style={{
-          backgroundColor: '#ff6b6b',
-          color: 'white',
-          padding: '12px',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          borderBottom: '2px solid #ff5252',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000
-        }}>
-          🚨 DEVELOPMENT MODE: Authentication bypassed - Dashboard accessible without login
-        </div>
-      )}
       
       {/* Header */}
       <header className="dashboard-header">

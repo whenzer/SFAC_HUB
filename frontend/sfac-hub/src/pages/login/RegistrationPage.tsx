@@ -264,9 +264,9 @@ function RegistrationPage() {
       const payload = {
         email,
         password,
-        firstname: firstName,
-        middlename: middleName,
-        lastname: lastName,
+        firstName,
+        middleName,
+        lastName,
         idpic: {
           filename: studentId.name,
           image: base64Image

@@ -1,28 +1,113 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './dashboard.css';
+import './StockAvailability.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
-import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
+
+// Define type for stock items
+export interface StockItem {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  location: string;
+  currentStock: number;
+  totalStock: number;
+  status: 'Available' | 'Low' | 'Out';
+  lastUpdated: string;
+  image: string;
+}
+
+// Mock data for stock items
+const mockStockItems: StockItem[] = [ 
+  {
+    id: 1,
+    name: 'School Uniform - Small',
+    description: 'Official SFAC uniform shirt, size small',
+    category: 'Uniforms',
+    location: 'Storage Room A',
+    currentStock: 25,
+    totalStock: 30,
+    status: 'Available',
+    lastUpdated: '2 hours ago',
+    image: 'https://picsum.photos/200?random=1'
+  },
+  {
+    id: 2,
+    name: 'Programming Fundamentals Textbook',
+    description: 'Latest edition programming textbook',
+    category: 'Books & Materials',
+    location: 'Library - Section B',
+    currentStock: 3,
+    totalStock: 20,
+    status: 'Low',
+    lastUpdated: '1 day ago',
+    image: 'https://picsum.photos/200?random=2'
+  },
+  {
+    id: 3,
+    name: 'Scientific Calculator',
+    description: 'TI-84 Plus scientific calculator',
+    category: 'Laboratory Equipment',
+    location: 'Equipment Room',
+    currentStock: 0,
+    totalStock: 15,
+    status: 'Out',
+    lastUpdated: '3 days ago',
+    image: 'https://picsum.photos/200?random=3'
+  },
+  {
+    id: 4,
+    name: 'Chemistry Lab Kit',
+    description: 'Complete chemistry experiment kit',
+    category: 'Laboratory Equipment',
+    location: 'Science Lab 1',
+    currentStock: 12,
+    totalStock: 15,
+    status: 'Available',
+    lastUpdated: '1 hour ago',
+    image: 'https://picsum.photos/200?random=4'
+  },
+  {
+    id: 5,
+    name: 'Art Supplies Bundle',
+    description: 'Pencils, erasers, and drawing materials',
+    category: 'School Supplies',
+    location: 'Art Room',
+    currentStock: 8,
+    totalStock: 25,
+    status: 'Low',
+    lastUpdated: '5 hours ago',
+    image: 'https://picsum.photos/200?random=5'
+  },
+  {
+    id: 6,
+    name: 'School Uniform - Large',
+    description: 'Official SFAC uniform shirt, size large',
+    category: 'Uniforms',
+    location: 'Storage Room A',
+    currentStock: 18,
+    totalStock: 20,
+    status: 'Available',
+    lastUpdated: '30 minutes ago',
+    image: 'https://picsum.photos/200?random=6'
+  }
+];
+
 
 const StockAvailability = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState('Juan Dela Cruz');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedItem, setSelectedItem] = useState<StockItem | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [reservationItem, setReservationItem] = useState<StockItem | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for stock availability access');
-      setUserName(DEV_USER_DATA.name);
-      
-      // Simulate loading time
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-
     // PRODUCTION AUTHENTICATION CHECK
     const authToken = localStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
@@ -49,17 +134,54 @@ const StockAvailability = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Handle logout differently in dev mode
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Logout redirected to login (no actual logout needed)');
-      navigate('/login');
-      return;
-    }
-
     // PRODUCTION LOGOUT
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     navigate('/login');
+  };
+
+  // Filter and search logic
+  const filteredItems = mockStockItems.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'All Categories' || item.category === selectedCategory;
+    const matchesStatus = selectedStatus === 'All Status' || item.status === selectedStatus;
+    
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  // Get unique categories for filter dropdown
+  const categories = ['All Categories', ...new Set(mockStockItems.map(item => item.category))];
+  const statuses = ['All Status', 'Available', 'Low', 'Out'];
+
+  // Handle item card click
+  const handleItemClick = (item: StockItem) => {
+    setSelectedItem(item);
+    setShowItemModal(true);
+  };
+
+  // Handle reserve button click
+  const handleReserveClick = (item: StockItem) => {
+    setReservationItem(item);
+    setShowReservationModal(true);
+    setShowItemModal(false);
+  };
+
+  // Get stock level color
+  const getStockLevelColor = (status: 'Available' | 'Low' | 'Out') => {
+    switch (status) {
+      case 'Available': return '#28a745';
+      case 'Low': return '#ffc107';
+      case 'Out': return '#dc3545';
+      default: return '#6c757d';
+    }
+  };
+
+  // Get stock level width percentage
+  const getStockLevelWidth = (current: number, total: number) => {
+    return Math.max((current / total) * 100, 0);
   };
 
   if (isLoading) {
@@ -74,23 +196,6 @@ const StockAvailability = () => {
 
   return (
     <div className="dashboard">
-      {/* ⚠️ DEVELOPMENT WARNING BANNER */}
-      {DEV_OVERRIDES_ACTIVE && (
-        <div style={{
-          backgroundColor: '#ff6b6b',
-          color: 'white',
-          padding: '12px',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          borderBottom: '2px solid #ff5252',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000
-        }}>
-          🚨 DEVELOPMENT MODE: Authentication bypassed - Stock Availability accessible without login
-        </div>
-      )}
       
       {/* Header */}
       <header className="dashboard-header">
@@ -143,62 +248,221 @@ const StockAvailability = () => {
             </div>
           </div>
 
-          {/* Under Development Content */}
-          <div className="under-development">
-            <div className="development-card">
-              <div className="development-icon">
-                <svg width="64" height="64" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
-                </svg>
+          {/* Search and Filter Section */}
+          <div className="search-filter-section">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search items by name or description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              <span className="search-icon">🔍</span>
+            </div>
+            
+            <div className="filter-controls">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="filter-select"
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="filter-select"
+              >
+                {statuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Items Grid */}
+          <div className="items-grid">
+            {filteredItems.map(item => (
+              <div
+                key={item.id}
+                className={`item-card ${item.status.toLowerCase()}`}
+                onClick={() => handleItemClick(item)}
+              >
+                <div className="item-image">
+                  <img src={item.image} alt={item.name} />
+                </div>
+                
+                <div className="item-content">
+                  <h3 className="item-name">{item.name}</h3>
+                  <p className="item-description">{item.description}</p>
+                  <p className="item-location">📍 {item.location}</p>
+                  
+                  <div className="stock-info">
+                    <div className="stock-level">
+                      <div className="stock-level-bar">
+                        <div
+                          className="stock-level-fill"
+                          style={{
+                            width: `${getStockLevelWidth(item.currentStock, item.totalStock)}%`,
+                            backgroundColor: getStockLevelColor(item.status)
+                          }}
+                        />
+                      </div>
+                      <span className="stock-text">
+                        {item.currentStock} / {item.totalStock}
+                      </span>
+                    </div>
+                    
+                    <div className={`status-badge ${item.status.toLowerCase()}`}>
+                      {item.status === 'Out' ? 'Out of stock' : item.status}
+                    </div>
+                  </div>
+                  
+                  <div className="item-footer">
+                    <span className="last-updated">Updated {item.lastUpdated}</span>
+                    <button
+                      className={`reserve-btn ${item.status === 'Out' ? 'disabled' : ''}`}
+                      disabled={item.status === 'Out'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReserveClick(item);
+                      }}
+                    >
+                      {item.status === 'Out' ? 'Out of stock' : 'Reserve Item'}
+                    </button>
+                  </div>
+                </div>
               </div>
-              <h2 className="development-title">Under Development</h2>
-              <p className="development-description">
-                We're working hard to bring you the Stock Availability feature. This page will allow you to:
-              </p>
-              <ul className="development-features">
-                <li>
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
-                  View real-time stock levels for all items
-                </li>
-                <li>
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
-                  Search and filter items by category
-                </li>
-                <li>
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
-                  Get notifications when items are back in stock
-                </li>
-                <li>
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
-                  Quick access to make reservations
-                </li>
-              </ul>
-              <div className="development-actions">
-                <Link to="/dashboard" className="btn btn-primary">
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd"/>
-                  </svg>
-                  Back to Dashboard
-                </Link>
-                <Link to="/dashboard/reservation" className="btn btn-secondary">
-                  Make Reservation
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                  </svg>
-                </Link>
+            ))}
+          </div>
+
+          {filteredItems.length === 0 && (
+            <div className="no-results">
+              <p>No items found matching your search criteria.</p>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Item Detail Modal */}
+      {showItemModal && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowItemModal(false)}>
+          <div className="modal-content item-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedItem.name}</h2>
+              <button className="close-btn" onClick={() => setShowItemModal(false)}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="item-detail-image">
+                <img src={selectedItem.image} alt={selectedItem.name} />
               </div>
+              
+              <div className="item-details">
+                <p className="item-detail-description">{selectedItem.description}</p>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Category:</span>
+                  <span className="detail-value">{selectedItem.category}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Location:</span>
+                  <span className="detail-value">{selectedItem.location}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Stock Level:</span>
+                  <span className="detail-value">
+                    {selectedItem.currentStock} / {selectedItem.totalStock}
+                  </span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Status:</span>
+                  <span className={`status-badge ${selectedItem.status.toLowerCase()}`}>
+                    {selectedItem.status === 'Out' ? 'Out of stock' : selectedItem.status}
+                  </span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Last Updated:</span>
+                  <span className="detail-value">{selectedItem.lastUpdated}</span>
+                </div>
+                
+                <div className="stock-level-detail">
+                  <div className="stock-level-bar">
+                    <div
+                      className="stock-level-fill"
+                      style={{
+                        width: `${getStockLevelWidth(selectedItem.currentStock, selectedItem.totalStock)}%`,
+                        backgroundColor: getStockLevelColor(selectedItem.status)
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button
+                className={`reserve-btn-modal ${selectedItem.status === 'Out' ? 'disabled' : ''}`}
+                disabled={selectedItem.status === 'Out'}
+                onClick={() => handleReserveClick(selectedItem)}
+              >
+                {selectedItem.status === 'Out' ? 'Out of stock' : 'Reserve this item'}
+              </button>
             </div>
           </div>
         </div>
-      </main>
+      )}
+
+      {/* Reservation Confirmation Modal */}
+      {showReservationModal && reservationItem && (
+        <div className="modal-overlay" onClick={() => setShowReservationModal(false)}>
+          <div className="modal-content reservation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirm Reservation</h2>
+              <button className="close-btn" onClick={() => setShowReservationModal(false)}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="reservation-item-info">
+                <h3>{reservationItem.name}</h3>
+                <p>{reservationItem.description}</p>
+              </div>
+              
+              <div className="reservation-warning">
+                <p>⚠️ Are you sure you want to reserve this item?</p>
+                <p>This action will reduce the available stock by 1 unit.</p>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button
+                className="cancel-btn"
+                onClick={() => setShowReservationModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="confirm-btn"
+                onClick={() => {
+                  // Handle reservation logic here
+                  alert('Item reserved successfully!');
+                  setShowReservationModal(false);
+                }}
+              >
+                Confirm Reservation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

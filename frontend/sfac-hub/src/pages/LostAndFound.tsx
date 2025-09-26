@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './dashboard.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
-import { DEV_OVERRIDES_ACTIVE, DEV_USER_DATA } from '../config/devConfig';
 
 const LostAndFound = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -10,20 +9,7 @@ const LostAndFound = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Bypass authentication check
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Authentication bypassed for lost and found access');
-      setUserName(DEV_USER_DATA.name);
-      
-      // Simulate loading time
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-
-    // PRODUCTION AUTHENTICATION CHECK
+    // Check authentication
     const authToken = localStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
     
@@ -49,14 +35,6 @@ const LostAndFound = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    // ⚠️ DEVELOPMENT OVERRIDE: Handle logout differently in dev mode
-    if (DEV_OVERRIDES_ACTIVE) {
-      console.warn('🚨 DEVELOPMENT MODE: Logout redirected to login (no actual logout needed)');
-      navigate('/login');
-      return;
-    }
-
-    // PRODUCTION LOGOUT
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     navigate('/login');
@@ -74,24 +52,6 @@ const LostAndFound = () => {
 
   return (
     <div className="dashboard">
-      {/* ⚠️ DEVELOPMENT WARNING BANNER */}
-      {DEV_OVERRIDES_ACTIVE && (
-        <div style={{
-          backgroundColor: '#ff6b6b',
-          color: 'white',
-          padding: '12px',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          borderBottom: '2px solid #ff5252',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000
-        }}>
-          🚨 DEVELOPMENT MODE: Authentication bypassed - Lost & Found accessible without login
-        </div>
-      )}
-      
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-container">
