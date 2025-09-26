@@ -762,6 +762,7 @@
   z-index: 1000;
   animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 1rem;
+ 
 }
 
 .logout-modal-content {
@@ -770,7 +771,7 @@
   padding: 2rem;
   max-width: 420px;
   width: 100%;
-  box-shadow: 
+  box-shadow:
     0 25px 50px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.1);
   border: 1px solid var(--border);
@@ -848,7 +849,7 @@
   gap: 0.5rem;
   min-width: 120px;
   justify-content: center;
-  margin-right: 24px;
+  margin-right: 120px;
 }
 
 .logout-modal-btn--secondary {
@@ -903,11 +904,11 @@
 }
 
 @keyframes modalSlideUp {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
@@ -930,10 +931,10 @@
     padding: 1.5rem;
     margin: 1rem;
   }
-  
+ 
   .logout-modal-footer {
     flex-direction: column-reverse
-  } 
+  }
   .logout-modal-btn {
     min-width: auto;
     width: 100%;
@@ -946,87 +947,87 @@
   .header-container {
     padding: 1rem;
   }
-  
+ 
   .dashboard-container {
     padding: 0 1rem;
   }
-  
+ 
   .welcome-title {
     font-size: 1.75rem;
   }
-  
+ 
   .welcome-subtitle {
     font-size: 1rem;
   }
-  
+ 
   .quick-actions-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+ 
   .action-card {
     padding: 1.5rem;
   }
-  
+ 
   .action-card:hover {
     transform: translateY(-4px) scale(1.01);
   }
-  
+ 
   .popular-item {
     padding: 1rem;
   }
-  
+ 
   .stat-card {
     padding: 1.5rem;
   }
-  
+ 
   .stat-number {
     font-size: 2.5rem;
   }
-  
+ 
   .user-name {
     display: none;
   }
-  
+ 
   .development-card {
     padding: 2rem;
   }
-  
+ 
   .development-title {
     font-size: 1.75rem;
   }
-  
+ 
   .development-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+ 
   .btn {
     width: 100%;
     max-width: 200px;
     justify-content: center;
   }
-  
+ 
   .page-title-section {
     flex-direction: column;
     text-align: center;
     gap: 1.5rem;
   }
-  
+ 
   .page-title {
     font-size: 1.75rem;
   }
-  
+ 
   .logout-modal-content {
     padding: 1.5rem;
     margin: 1rem;
   }
-  
+ 
   .logout-modal-footer {
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+ 
   .logout-modal-button {
     width: 100%;
     text-align: center;
@@ -1037,43 +1038,43 @@
   .logo-text {
     display: none;
   }
-  
+ 
   .welcome-title {
     font-size: 1.5rem;
   }
-  
+ 
   .section-title {
     font-size: 1.25rem;
   }
-  
+ 
   .page-icon {
     width: 48px;
     height: 48px;
   }
-  
+ 
   .development-icon {
     width: 64px;
     height: 64px;
   }
-  
+ 
   .card-icon {
     width: 56px;
     height: 56px;
 
   }
-  
+ 
   .action-card {
     padding: 1.25rem;
   }
-  
+ 
   .card-title {
     font-size: 1.1rem;
   }
-  
+ 
   .card-description {
     font-size: 0.85rem;
   }
-  
+ 
   .logout-btn {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
