@@ -64,7 +64,6 @@ export const userLogin = async (req, res) => {
         );
 
         Token.create({ refreshToken, userId: userPayload._id });
-        delete userPayload._id; // Remove _id from payload
         // Generate JWT token
         const accessToken = jwt.sign(
             userPayload,
