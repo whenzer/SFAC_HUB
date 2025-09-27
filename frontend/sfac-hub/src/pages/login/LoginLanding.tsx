@@ -11,7 +11,7 @@ function LoginLanding() {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [error, setError] = useState<string | null>(null)
-
+	const [isLoading, setIsLoading] = useState(false) // New state for loading
 
 	useEffect(() => {
 		requestAnimationFrame(() => {
@@ -40,26 +40,32 @@ function LoginLanding() {
 	}, [])
 
 	const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    try {
-      const response = await fetch('https://sfac-hub.onrender.com/api/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-      const data = await response.json()
-      if (response.ok) {
-        localStorage.setItem('accessToken', data.accessToken)
-		localStorage.setItem('refreshToken', data.refreshToken)
-		navigate('/dashboard')
-      } else {
-        setError(data.message || 'Login failed')
-      }
-    } catch {
-      setError('Network error. Please try again.')
-    }
-  }
+		e.preventDefault()
+		setError(null)
+		setIsLoading(true) // Disable button when login starts
+
+		try {
+			const response = await fetch('https://sfac-hub.onrender.com/api/user/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password })
+			})
+			const data = await response.json()
+			
+			if (response.ok) {
+				localStorage.setItem('accessToken', data.accessToken)
+				localStorage.setItem('refreshToken', data.refreshToken)
+				navigate('/dashboard')
+				// Note: We don't set isLoading(false) here because navigate will unmount the component
+			} else {
+				setError(data.message || 'Login failed')
+				setIsLoading(false) // Re-enable button on error
+			}
+		} catch {
+			setError('Network error. Please try again.')
+			setIsLoading(false) // Re-enable button on error
+		}
+	}
 
 	return (
 		<div className="login-landing">
@@ -84,7 +90,8 @@ function LoginLanding() {
 								required
 								value={email}
 								onChange={e => setEmail(e.target.value)}
-								/>
+								disabled={isLoading} // Optional: disable inputs during loading
+							/>
 						</div>
 
 						<label className="label">Password</label>
@@ -99,8 +106,15 @@ function LoginLanding() {
 								required
 								value={password}
 								onChange={e => setPassword(e.target.value)}
-								/>
-							<button type="button" className="toggle-btn" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((v) => !v)}>
+								disabled={isLoading} // Optional: disable inputs during loading
+							/>
+							<button 
+								type="button" 
+								className="toggle-btn" 
+								aria-label={showPassword ? 'Hide password' : 'Show password'} 
+								onClick={() => setShowPassword((v) => !v)}
+								disabled={isLoading} // Optional: disable during loading
+							>
 								{showPassword ? (
 									// eye-off
 									<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M10.73 6.17A8.7 8.7 0 0 1 12 6c5 0 8.5 5.5 8.5 5.5a13.7 13.7 0 0 1-3.08 3.44" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M6.5 6.5A13.6 13.6 0 0 0 3.5 11.5S7 17 12 17c1.07 0 2.08-.22 3-.62" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
@@ -112,7 +126,13 @@ function LoginLanding() {
 						</div>
 						{error && <div className="error-message">{error}</div>}
 						
-						<button className="cta-btn primary" type="submit">Sign in</button>
+						<button 
+							className={`cta-btn primary ${isLoading ? 'loading' : ''}`} 
+							type="submit"
+							disabled={isLoading} // Button becomes disabled when loading
+						>
+							{isLoading ? 'Signing in...' : 'Sign in'}
+						</button>
 					</form>
 
 					<div className="form-footer">
