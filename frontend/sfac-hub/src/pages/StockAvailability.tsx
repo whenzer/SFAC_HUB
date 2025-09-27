@@ -7,6 +7,9 @@ import ProtectedLayout from "../utils/ProtectedLayout";
 import "./dashboard.css";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import mockStockItems from './mockStockItems';
+import { getOptimizedImageUrl, preloadImages } from '../utils/imageOptimization';
+import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
 
 // Define type for stock items
 export interface StockItem {
@@ -22,81 +25,65 @@ export interface StockItem {
   image: string;
 }
 
-// Mock data for stock items
-const mockStockItems: StockItem[] = [ 
-  {
-    id: 1,
-    name: 'School Uniform - Small',
-    description: 'Official SFAC uniform shirt, size small',
-    category: 'Uniforms',
-    location: 'Storage Room A',
-    currentStock: 25,
-    totalStock: 30,
-    status: 'Available',
-    lastUpdated: '2 hours ago',
-    image: 'https://picsum.photos/200?random=1'
-  },
-  {
-    id: 2,
-    name: 'Programming Fundamentals Textbook',
-    description: 'Latest edition programming textbook',
-    category: 'Books & Materials',
-    location: 'Library - Section B',
-    currentStock: 3,
-    totalStock: 20,
-    status: 'Low',
-    lastUpdated: '1 day ago',
-    image: 'https://picsum.photos/200?random=2'
-  },
-  {
-    id: 3,
-    name: 'Scientific Calculator',
-    description: 'TI-84 Plus scientific calculator',
-    category: 'Laboratory Equipment',
-    location: 'Equipment Room',
-    currentStock: 0,
-    totalStock: 15,
-    status: 'Out',
-    lastUpdated: '3 days ago',
-    image: 'https://picsum.photos/200?random=3'
-  },
-  {
-    id: 4,
-    name: 'Chemistry Lab Kit',
-    description: 'Complete chemistry experiment kit',
-    category: 'Laboratory Equipment',
-    location: 'Science Lab 1',
-    currentStock: 12,
-    totalStock: 15,
-    status: 'Available',
-    lastUpdated: '1 hour ago',
-    image: 'https://picsum.photos/200?random=4'
-  },
-  {
-    id: 5,
-    name: 'Art Supplies Bundle',
-    description: 'Pencils, erasers, and drawing materials',
-    category: 'School Supplies',
-    location: 'Art Room',
-    currentStock: 8,
-    totalStock: 25,
-    status: 'Low',
-    lastUpdated: '5 hours ago',
-    image: 'https://picsum.photos/200?random=5'
-  },
-  {
-    id: 6,
-    name: 'School Uniform - Large',
-    description: 'Official SFAC uniform shirt, size large',
-    category: 'Uniforms',
-    location: 'Storage Room A',
-    currentStock: 18,
-    totalStock: 20,
-    status: 'Available',
-    lastUpdated: '30 minutes ago',
-    image: 'https://picsum.photos/200?random=6'
-  }
-];
+// Optimized image component for stock items
+const StockItemImage: React.FC<{
+  src: string;
+  alt: string;
+  className?: string;
+}> = ({ src, alt, className = '' }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [optimizedSrc, setOptimizedSrc] = useState<string>('');
+  const [loadStartTime, setLoadStartTime] = useState<number>(0);
+
+  useEffect(() => {
+    const optimized = getOptimizedImageUrl(src, {
+      width: 200,
+      height: 150,
+      quality: 75,
+      format: 'webp'
+    });
+    setOptimizedSrc(optimized);
+    setLoadStartTime(Date.now());
+  }, [src]);
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    trackImageLoad(loadStartTime, false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+    trackImageError();
+  };
+
+  return (
+    <div className={`item-image ${className}`}>
+      {!imageLoaded && (
+        <div className="image-placeholder">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
+      {imageError ? (
+        <div className="image-error">
+          <svg width="32" height="32" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"/>
+          </svg>
+        </div>
+      ) : (
+        <img
+          src={optimizedSrc}
+          alt={alt}
+          className={`optimized-image ${imageLoaded ? 'loaded' : 'loading'}`}
+          loading="lazy"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+        />
+      )}
+    </div>
+  );
+};
 
 const StockAvailability = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -108,6 +95,12 @@ const StockAvailability = () => {
   const [reservationItem, setReservationItem] = useState<StockItem | null>(null);
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Preload images for better performance
+  useEffect(() => {
+    const imageUrls = mockStockItems.map(item => item.image);
+    preloadImages(imageUrls).catch(console.error);
+  }, []);
 
   return (
     <ProtectedLayout endpoint="/protected/stock">
@@ -175,7 +168,7 @@ const StockAvailability = () => {
   return (
           <div className="dashboard">
             {/* Reusable Header Component */}
-            <Header user={user} logout={logout} />
+            {user && <Header user={user} logout={logout} />}
 
       {/* Main Content */}
       <main className="dashboard-main">
@@ -246,9 +239,7 @@ const StockAvailability = () => {
                 className={`item-card ${item.status.toLowerCase()}`}
                 onClick={() => handleItemClick(item)}
               >
-                <div className="item-image">
-                  <img src={item.image} alt={item.name} />
-                </div>
+                <StockItemImage src={item.image} alt={item.name} />
                 
                 <div className="item-content">
                   <h3 className="item-name">{item.name}</h3>
@@ -313,7 +304,11 @@ const StockAvailability = () => {
             
             <div className="modal-body">
               <div className="item-detail-image">
-                <img src={selectedItem.image} alt={selectedItem.name} />
+                <StockItemImage 
+                  src={selectedItem.image} 
+                  alt={selectedItem.name}
+                  className="modal-image"
+                />
               </div>
               
               <div className="item-details">

@@ -5,6 +5,7 @@ import SFACLogo from '../assets/images/SFAC-Logo.png';
 import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import PerformanceDashboard from '../components/PerformanceDashboard';
 
 // Define the expected structure for user data (adjust if your data is different)
 interface UserData {
@@ -16,6 +17,8 @@ interface UserData {
 }
 
 const Dashboard = () => {
+  const [showPerformanceDashboard, setShowPerformanceDashboard] = useState(false);
+
   return (
     <ProtectedLayout endpoint="/protected/dashboard">
       {({ user, isLoading, logout }) => {
@@ -50,7 +53,7 @@ const Dashboard = () => {
           return (
     <div className="dashboard">
       {/* Reusable Header Component */}
-      <Header user={user} logout={logout} />
+      {user && <Header user={user} logout={logout} />}
 
       {/* Main Content */}
       <main className="dashboard-main">
@@ -202,6 +205,21 @@ const Dashboard = () => {
       {/* Logout modal is now handled by Header component */}
       {/* Reusable Footer Component */}
       <Footer />
+      
+      {/* Performance Dashboard */}
+      <PerformanceDashboard 
+        isVisible={showPerformanceDashboard}
+        onClose={() => setShowPerformanceDashboard(false)}
+      />
+      
+      {/* Performance Toggle Button */}
+      <button 
+        className="performance-toggle-btn"
+        onClick={() => setShowPerformanceDashboard(true)}
+        title="Open Performance Monitor"
+      >
+        📊
+      </button>
     </div>
   );
 }
