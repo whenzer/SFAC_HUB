@@ -502,8 +502,28 @@
   transition: all 0.3s ease;
 }
 
-.confirm-btn:hover {
+.confirm-btn:hover:not(.loading) {
   background: #b91c1c;
+}
+
+.confirm-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.confirm-btn.loading::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 /* Responsive Design */

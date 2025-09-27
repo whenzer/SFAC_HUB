@@ -51,6 +51,13 @@
   font-weight: normal;
 }
 
+.preselected-indicator {
+  color: #38a169;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
 /* Dropdown Styles */
 .dropdown-container {
   position: relative;

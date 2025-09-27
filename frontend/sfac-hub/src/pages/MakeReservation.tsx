@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './dashboard.css';
 import './MakeReservation.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
@@ -100,6 +100,7 @@ import stockItems from './mockStockItems';
 
 const MakeReservation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // State for form fields
@@ -114,6 +115,7 @@ const MakeReservation = () => {
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isPreSelected, setIsPreSelected] = useState<boolean>(false);
   
   // Generate a unique reservation ID
   const [reservationId, setReservationId] = useState<string>('');
@@ -132,18 +134,21 @@ const MakeReservation = () => {
     };
   }, []);
 
-  // Handle pre-selection of item from URL state
+  // Handle pre-selection of item from navigation state
   useEffect(() => {
-    const state = window.history.state as { state?: { itemId?: number } } | null;
-    if (state && state.state && state.state.itemId) {
-      const itemId = state.state.itemId;
-      // Check if the item exists in stockItems
-      const itemExists = stockItems.some(item => item.id === itemId);
-      if (itemExists) {
+    const state = location.state as { itemId?: number } | null;
+    if (state && state.itemId) {
+      const itemId = state.itemId;
+      // Check if the item exists in stockItems and is available
+      const item = stockItems.find(item => item.id === itemId);
+      if (item && item.currentStock > 0) {
         setSelectedItem(itemId.toString());
+        setIsPreSelected(true);
+        // Clear the state to prevent re-selection on page refresh
+        window.history.replaceState({}, document.title);
       }
     }
-  }, []);
+  }, [location.state]);
 
   // Preload images for better performance
   useEffect(() => {
@@ -316,6 +321,9 @@ const MakeReservation = () => {
                       <label className="form-label">
                         Select item
                         {errors.selectedItem && <span className="error-msg"> * {errors.selectedItem}</span>}
+                        {isPreSelected && selectedItem && (
+                          <span className="preselected-indicator"> ✓ Pre-selected from Stock Availability</span>
+                        )}
                       </label>
                       <div className="dropdown-container" ref={dropdownRef}>
                         <div 

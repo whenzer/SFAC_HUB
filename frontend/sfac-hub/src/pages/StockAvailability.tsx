@@ -93,6 +93,7 @@ const StockAvailability = () => {
   const [showItemModal, setShowItemModal] = useState(false);
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [reservationItem, setReservationItem] = useState<StockItem | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -399,8 +400,10 @@ const StockAvailability = () => {
                 Cancel
               </button>
               <button
-                className="confirm-btn"
+                className={`confirm-btn ${isNavigating ? 'loading' : ''}`}
+                disabled={isNavigating}
                 onClick={() => {
+                  setIsNavigating(true);
                   setShowReservationModal(false);
                   // Redirect to MakeReservation page with the selected item ID
                   navigate('/make-reservation', {
@@ -408,7 +411,7 @@ const StockAvailability = () => {
                   });
                 }}
               >
-                Confirm Reservation
+                {isNavigating ? 'Redirecting...' : 'Confirm Reservation'}
               </button>
             </div>
           </div>
