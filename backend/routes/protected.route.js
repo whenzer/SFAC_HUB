@@ -11,7 +11,7 @@ router.get('/', protectedController);
 router.get('/dashboard', dashboardController);
 
 router.get('/stock', stockController);
-router.post('/stock/reserve', stockreserveController);
+router.post('/stock/reserve',stockController, stockreserveController);
 
 router.get('/reservation', reservationController);
 

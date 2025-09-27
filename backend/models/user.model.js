@@ -45,7 +45,16 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true
-    }
+    },
+    reservedItems: [{ 
+        item: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        email: { type: String, required: true },
+        quantity: { type: Number, required: true, min: 1 },
+        reservationID: { type: String, required: true },
+        purpose: { type: String, default: "N/A" },
+        reservedAt: { type: Date, default: Date.now },
+        status: { type: String, enum: ["Pending", "Collected", "Cancelled"], default: "Pending"}
+    }]
 });
 
 let conn;

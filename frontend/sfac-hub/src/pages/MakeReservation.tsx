@@ -240,15 +240,47 @@ const MakeReservation = () => {
   };
   
   // Handle confirm reservation
-  const handleConfirmReservation = () => {
-    // Generate a unique reservation ID
-    const newId = 'RES' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    setReservationId(newId);
-    
+const handleConfirmReservation = async () => {
+  // Generate a unique reservation ID
+  const newId = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  setReservationId(newId);
+
+  try {
+    const response = await fetch("https://sfac-hub.onrender.com/protected/stock/reserve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // attach token if your ProtectedLayout requires auth
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({
+        reservationId: newId,
+        productID: currentItem?.id,
+        quantity: parseInt(quantity),
+        name,
+        email,
+        purpose
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Reservation failed:", data.message);
+      alert(data.message || "Reservation failed");
+      return;
+    }
+
+    console.log("Reservation successful:", data);
+
     // Show confirmation modal
     setShowSummaryModal(false);
     setShowConfirmationModal(true);
-  };
+  } catch (error) {
+    console.error("Error reserving product:", error);
+    alert("Something went wrong. Please try again.");
+  }
+};
   
   // Reset the form
   const resetForm = () => {
