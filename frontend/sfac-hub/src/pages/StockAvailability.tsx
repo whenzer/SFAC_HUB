@@ -7,7 +7,6 @@ import ProtectedLayout from "../utils/ProtectedLayout";
 import "./dashboard.css";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import mockStockItems from './mockStockItems';
 import { getOptimizedImageUrl, preloadImages } from '../utils/imageOptimization';
 import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
 import { Atom } from 'react-loading-indicators';
@@ -98,19 +97,21 @@ const StockAvailability = () => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const [products, setProducts] = useState<StockItem[]>([]);
-
   // Preload product images when products change
-  useEffect(() => {
-    if (products.length > 0) {
-      const imageUrls = products.map((item) => item.image);
-      preloadImages(imageUrls).catch(console.error);
-    }
-  }, [products]);
+
 
   return (
     <ProtectedLayout endpoint="/protected/stock">
       {({ user, isLoading, logout, extraData}) => {
+        const products: StockItem[] = extraData?.products ?? []; 
+          useEffect(() => {
+            if (products.length > 0) {
+              const imageUrls = products.map((item) => item.image);
+              preloadImages(imageUrls).catch(console.error);
+            }
+          }, [products]);
+
+
           if (isLoading) {
             return (
               <div className="loading-screen">
@@ -120,9 +121,7 @@ const StockAvailability = () => {
               </div>
             );
           }
-
-
-          const products: StockItem[] = extraData?.products ?? []; 
+          
         // DITO NA YUNG CODE MO
 
           // Filter and search logic

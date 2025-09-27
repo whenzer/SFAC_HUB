@@ -14,13 +14,14 @@ export const stockController = async (req, res, next) => {
         const products = await Product.find();
         //automated status update based on currentStock
         for (let product of products) {
-            if (product.currentStock === 0 && product.status !== "Out") {
+            const percentage = (product.currentStock / product.totalStock) * 100;
+            if (percentage === 0 && product.status !== "Out") {
                 product.status = "Out";
                 await product.save();
-            } else if (product.currentStock > 0 && product.currentStock <= 5 && product.status !== "Low") {
+            } else if (percentage > 0 && percentage < 50 && product.status !== "Low") {
                 product.status = "Low";
                 await product.save();
-            } else if (product.currentStock > 5 && product.status !== "Available") {
+            } else if (percentage > 50 && product.status !== "Available") {
                 product.status = "Available";
                 await product.save();
             }
@@ -91,37 +92,4 @@ export const stockreserveController = (req, res) => {
         console.error("Error reserving product: ", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
-    // if (!productId || !quantity || !email) {
-    //     return res.status(400).json({ success: false, message: "Product ID, quantity, and email are required" });
-    // }
-    // if (quantity <= 0) {
-    //     return res.status(400).json({ success: false, message: "Quantity must be greater than zero" });
-    // }
-    // try {
-    //     Product.findById(productId, async (err, product) => {
-    //         if (err || !product) {
-    //             return res.status(404).json({ success: false, message: "Product not found" });
-    //         }
-    //         if (product.currentStock < quantity) {
-    //             return res.status(400).json({ success: false, message: "Insufficient stock available" });
-    //         }
-    //         // Deduct stock
-    //         product.currentStock -= quantity;
-    //         // Add reserver info
-    //         product.reservers.push({ user: userId, email, quantity });
-    //         await product.save();
-    //         res.status(200).json({ success: true, message: "Product reserved successfully", product });
-    //     });
-    //     // Also update user's reservedItems
-    //     User.findById(userId, async (err, user) => {
-    //         if (err || !user) {
-    //             return res.status(404).json({ success: false, message: "User not found" });
-    //         }
-    //         user.reservedItems.push({ item: productId, quantity });
-    //         await user.save();
-    //     });
-    // } catch (error) {
-    //     console.error("Error reserving product: ", error.message);
-    //     res.status(500).json({ success: false, message: error.message });
-    // }
 }

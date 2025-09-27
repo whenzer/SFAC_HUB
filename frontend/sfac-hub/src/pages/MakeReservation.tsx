@@ -12,7 +12,7 @@ import { Atom } from 'react-loading-indicators';
 
 // Define type for stock items
 interface StockItem {
-  id: number;
+  _id: string;
   name: string;
   description: string;
   category: string;
@@ -97,7 +97,6 @@ const OptimizedImage: React.FC<{
 };
 
 // Import the stock items
-import stockItems from './mockStockItems';
 
 const MakeReservation = () => {
   const navigate = useNavigate();
@@ -136,14 +135,24 @@ const MakeReservation = () => {
   }, []);
 
   // Handle pre-selection of item from navigation state
-  useEffect(() => {
-    const state = location.state as { itemId?: number } | null;
+
+
+  return (
+    <ProtectedLayout endpoint="/protected/stock">
+      {({ user, isLoading, logout, extraData }) => {
+        const stockItems: StockItem[] = extraData?.products ?? [];
+        console.log("Fetched stock items:", stockItems);
+        //print selected item id
+        console.log("Selected item ID:", selectedItem);
+
+          useEffect(() => {
+    const state = location.state as { itemId?: string } | null;
     if (state && state.itemId) {
       const itemId = state.itemId;
       // Check if the item exists in stockItems and is available
-      const item = stockItems.find(item => item.id === itemId);
+      const item = stockItems.find(item => item._id === itemId);
       if (item && item.currentStock > 0) {
-        setSelectedItem(itemId.toString());
+        setSelectedItem(itemId);
         setIsPreSelected(true);
         // Clear the state to prevent re-selection on page refresh
         window.history.replaceState({}, document.title);
@@ -158,21 +167,23 @@ const MakeReservation = () => {
   }, []);
   
   // Get current selected item data
-  const currentItem = selectedItem ? stockItems.find(item => item.id === parseInt(selectedItem)) : null;
-  
-  // Get stock percentage for progress bar
-  const getStockPercentage = (current: number, total: number) => {
-    if (total === 0) return 0;
-    return Math.round((current / total) * 100);
-  };
-  
+  const currentItem = selectedItem ? stockItems.find(item => item._id === selectedItem) : null;
+    const getStockPercentage = (current: number, total: number) => {
+      if (total === 0) return 0;
+      return Math.round((current / total) * 100);
+    };
   // Get status class based on stock
-  const getStockStatusClass = (current: number, total: number) => {
-    const percentage = getStockPercentage(current, total);
-    if (percentage === 0) return 'out';
-    if (percentage < 30) return 'low';
-    return 'available';
-  };
+const getStockStatusClass = (status: StockItem["status"]) => {
+  switch (status) {
+    case "Out":
+      return "out";
+    case "Low":
+      return "low";
+    case "Available":
+    default:
+      return "available";
+  }
+};
   
   // Handle quantity change with validation
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,11 +262,11 @@ const handleConfirmReservation = async () => {
       headers: {
         "Content-Type": "application/json",
         // attach token if your ProtectedLayout requires auth
-        Authorization: `Bearer ${localStorage.getItem("token")}`
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`
       },
       body: JSON.stringify({
-        reservationId: newId,
-        productID: currentItem?.id,
+        reservationID: newId,
+        productId: currentItem?._id,
         quantity: parseInt(quantity),
         name,
         email,
@@ -298,9 +309,9 @@ const handleConfirmReservation = async () => {
     navigate('/reservations');
   };
 
-  return (
-    <ProtectedLayout endpoint="/protected/reservation">
-      {({ user, isLoading, logout }) => {
+
+
+
         if (isLoading) {
           return (
             <div className="loading-screen">
@@ -311,6 +322,7 @@ const handleConfirmReservation = async () => {
           );
         }
 
+        
         return (
           <div className="dashboard">
             {/* Reusable Header Component */}
@@ -371,20 +383,22 @@ const handleConfirmReservation = async () => {
                           <div className="dropdown-menu">
                             {stockItems.map(item => (
                               <div
-                                key={item.id}
-                                className={`dropdown-item ${selectedItem === item.id.toString() ? 'selected' : ''} ${item.currentStock === 0 ? 'out-of-stock' : ''}`}
+                                key={item._id}
+                                className={`dropdown-item ${selectedItem === item._id ? 'selected' : ''} ${item.currentStock === 0 ? 'out-of-stock' : ''}`}
                                 onClick={() => {
                                   if (item.currentStock > 0) {
-                                    setSelectedItem(item.id.toString());
+                                    setSelectedItem(item._id);
                                     setQuantity('1');
                                     setShowDropdown(false);
                                   }
                                 }}
                               >
                                 <span>{item.name}</span>
-                                <span className={`dropdown-item-stock-badge ${getStockStatusClass(item.currentStock, item.totalStock)}`}>
-                                  {item.currentStock === 0 ? 'Out of Stock' : `${item.currentStock} available`}
-                                </span>
+                                <span
+                                    className={`dropdown-item-stock-badge ${getStockStatusClass(item.status)}`}
+                                  >
+                                    {item.status}
+                                  </span>
                               </div>
                             ))}
                           </div>
@@ -417,7 +431,7 @@ const handleConfirmReservation = async () => {
                               </div>
                               <div>
                                 <div className="detail-label">Item ID</div>
-                                <div className="detail-value">{currentItem.id}</div>
+                                <div className="detail-value">{currentItem._id}</div>
                               </div>
                               <div>
                                 <div className="detail-label">Location</div>
@@ -426,7 +440,7 @@ const handleConfirmReservation = async () => {
                               <div>
                                 <div className="detail-label">Status</div>
                                 <div className="detail-value">{currentItem.status}</div>
-                              </div>
+                               </div>
                               <div className="full">
                                 <div className="detail-description">
                                   {currentItem.description}
@@ -440,11 +454,12 @@ const handleConfirmReservation = async () => {
                         <div className="stock-level-indicator">
                           <div className="stock-indicator-title">Stock Availability</div>
                           <div className="stock-indicator-bar">
-                            <div 
-                              className={`stock-indicator-fill ${getStockStatusClass(currentItem.currentStock, currentItem.totalStock)}`}
+                            <div
+                              className={`stock-indicator-fill ${getStockStatusClass(currentItem.status)}`}
                               style={{ width: `${getStockPercentage(currentItem.currentStock, currentItem.totalStock)}%` }}
                             />
                           </div>
+
                           <div className="stock-indicator-text">
                             <span>Available: <span className="value">{currentItem.currentStock}</span></span>
                             <span>Total: <span className="value">{currentItem.totalStock}</span></span>
@@ -644,10 +659,8 @@ const handleConfirmReservation = async () => {
                       <div className="stock-indicator-title">Remaining Stock Availability</div>
                       <div className="stock-indicator-bar">
                         <div 
-                          className={`stock-indicator-fill ${getStockStatusClass(
-                            currentItem.currentStock - parseInt(quantity), 
-                            currentItem.totalStock
-                          )}`}
+                          className={`stock-indicator-fill ${getStockStatusClass(currentItem.status)}`}
+                        
                           style={{ width: `${getStockPercentage(
                             currentItem.currentStock - parseInt(quantity), 
                             currentItem.totalStock
