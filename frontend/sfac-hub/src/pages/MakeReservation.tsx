@@ -132,6 +132,19 @@ const MakeReservation = () => {
     };
   }, []);
 
+  // Handle pre-selection of item from URL state
+  useEffect(() => {
+    const state = window.history.state as { state?: { itemId?: number } } | null;
+    if (state && state.state && state.state.itemId) {
+      const itemId = state.state.itemId;
+      // Check if the item exists in stockItems
+      const itemExists = stockItems.some(item => item.id === itemId);
+      if (itemExists) {
+        setSelectedItem(itemId.toString());
+      }
+    }
+  }, []);
+
   // Preload images for better performance
   useEffect(() => {
     const imageUrls = stockItems.map(item => item.image);
@@ -340,7 +353,7 @@ const MakeReservation = () => {
                     
                     {/* Item Details Panel */}
                     {selectedItem && currentItem && (
-                      <div className="item-details-panel">
+                      <div className="item-details-panel fade-in">
                         <div className="details-container">
                           <div className="details-image">
                             <OptimizedImage 

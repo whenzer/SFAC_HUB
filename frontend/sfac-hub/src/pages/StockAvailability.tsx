@@ -401,9 +401,11 @@ const StockAvailability = () => {
               <button
                 className="confirm-btn"
                 onClick={() => {
-                  // Handle reservation logic here
-                  alert('Item reserved successfully!');
                   setShowReservationModal(false);
+                  // Redirect to MakeReservation page with the selected item ID
+                  navigate('/make-reservation', {
+                    state: { itemId: reservationItem.id }
+                  });
                 }}
               >
                 Confirm Reservation
