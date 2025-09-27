@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import './landing.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
+import { Atom } from 'react-loading-indicators';
 
 const LandingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +37,7 @@ const LandingPage = () => {
       <div className="loading-screen">
         <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
         <div className="loading-text">Welcome to SFAC Hub</div>
-        <div className="loading-spinner"></div>
+        <Atom color="#ffffff" size="medium"/>
       </div>
     );
   }

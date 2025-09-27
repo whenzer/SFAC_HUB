@@ -10,6 +10,7 @@ import Footer from '../components/Footer';
 import mockStockItems from './mockStockItems';
 import { getOptimizedImageUrl, preloadImages } from '../utils/imageOptimization';
 import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
+import { Atom } from 'react-loading-indicators';
 
 // Define type for stock items
 export interface StockItem {
@@ -111,7 +112,7 @@ const StockAvailability = () => {
               <div className="loading-screen">
                 <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
                 <div className="loading-text">Loading Stock Availability</div>
-                <div className="loading-spinner"></div>
+                <Atom color="#ffffff" size="medium"/>
               </div>
             );
           }

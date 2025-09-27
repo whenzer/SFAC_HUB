@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './login.css';
 import logo from '../../assets/images/SFAC-Logo.png';
+import { Atom } from 'react-loading-indicators';
 
 function RegistrationPage() {
   const cardRef = useRef<HTMLDivElement>(null);

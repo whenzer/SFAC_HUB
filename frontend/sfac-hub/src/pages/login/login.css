@@ -1,4 +1,4 @@
-/* Base palette (updated to red and white theme) */
+﻿/* Base palette (updated to red and white theme) */
 :root {
 --bg: #ffffff; /* pure white background */
 --surface: #ffffff;
@@ -475,7 +475,7 @@ transform: translateY(-10px);
   font-weight: 700;
   color: var(--text);
   margin: 0 auto;
-  padding-right: 100px;
+  padding-right: 200px;
   /* align-items: center; */
   line-height: 1.5;
  

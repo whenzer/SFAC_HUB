@@ -6,6 +6,7 @@ import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PerformanceDashboard from '../components/PerformanceDashboard';
+import { Atom } from 'react-loading-indicators';
 
 // Define the expected structure for user data (adjust if your data is different)
 interface UserData {
@@ -27,7 +28,7 @@ const Dashboard = () => {
             <div className="loading-screen">
               <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
               <div className="loading-text">Loading Dashboard</div>
-              <div className="loading-spinner"></div>
+              <Atom color="#ffffff" size="medium"/>
             </div>
           );
         }

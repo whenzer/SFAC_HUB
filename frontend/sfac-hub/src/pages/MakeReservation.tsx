@@ -8,6 +8,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { getOptimizedImageUrl, preloadImages } from '../utils/imageOptimization';
 import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
+import { Atom } from 'react-loading-indicators';
 
 // Define type for stock items
 interface StockItem {
@@ -273,7 +274,7 @@ const MakeReservation = () => {
             <div className="loading-screen">
               <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
               <div className="loading-text">Loading Make Reservation</div>
-              <div className="loading-spinner"></div>
+              <Atom color="#ffffff" size="medium"/>
             </div>
           );
         }

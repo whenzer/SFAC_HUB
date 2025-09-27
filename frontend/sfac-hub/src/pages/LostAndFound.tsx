@@ -5,6 +5,7 @@ import SFACLogo from '../assets/images/SFAC-Logo.png';
 import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { Atom } from 'react-loading-indicators';
 
 const LostAndFound = () => {
   return (
@@ -15,7 +16,7 @@ const LostAndFound = () => {
             <div className="loading-screen">
               <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
               <div className="loading-text">Loading Lost & Found</div>
-              <div className="loading-spinner"></div>
+              <Atom color="#ffffff" size="medium"/>
             </div>
           );
         }
@@ -40,7 +41,7 @@ const LostAndFound = () => {
         return (
           <div className="dashboard">
             {/* Reusable Header Component */}
-            <Header user={user} logout={logout} />
+            {user && <Header user={user} logout={logout} />}
 
             {/* Main Content */}
             <main className="dashboard-main">
