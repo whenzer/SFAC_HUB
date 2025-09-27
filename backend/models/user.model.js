@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-// This file defines the User model for the Users database
-// It includes fields for email, password, idpic, and verification status
-// Importing mongoose to define the schema
+import dotenv from "dotenv";
+dotenv.config();
+
 const userSchema = new mongoose.Schema({
     firstname:{
         type: String,
@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     password: {
         type: String,
@@ -46,5 +47,14 @@ const userSchema = new mongoose.Schema({
         required: true
     }
 });
-const User = mongoose.model('User', userSchema);
+
+let conn;
+try {
+    conn = mongoose.createConnection(process.env.USERS_URI);
+    console.log("Connected to Users database");
+} catch (error) {
+    console.error("Error connecting to Users database:", error);
+}
+
+const User = conn.model('User', userSchema);
 export default User;

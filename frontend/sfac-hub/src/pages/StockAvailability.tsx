@@ -98,15 +98,19 @@ const StockAvailability = () => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Preload images for better performance
+  const [products, setProducts] = useState<StockItem[]>([]);
+
+  // Preload product images when products change
   useEffect(() => {
-    const imageUrls = mockStockItems.map(item => item.image);
-    preloadImages(imageUrls).catch(console.error);
-  }, []);
+    if (products.length > 0) {
+      const imageUrls = products.map((item) => item.image);
+      preloadImages(imageUrls).catch(console.error);
+    }
+  }, [products]);
 
   return (
     <ProtectedLayout endpoint="/protected/stock">
-      {({ user, isLoading, logout }) => {
+      {({ user, isLoading, logout, extraData}) => {
           if (isLoading) {
             return (
               <div className="loading-screen">
@@ -117,12 +121,12 @@ const StockAvailability = () => {
             );
           }
 
-        // User display name construction happens inside Header component now
 
+          const products: StockItem[] = extraData?.products ?? []; 
         // DITO NA YUNG CODE MO
 
           // Filter and search logic
-  const filteredItems = mockStockItems.filter(item => {
+  const filteredItems = products.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -134,7 +138,7 @@ const StockAvailability = () => {
   });
 
   // Get unique categories for filter dropdown
-  const categories = ['All Categories', ...new Set(mockStockItems.map(item => item.category))];
+  const categories = ['All Categories', ...new Set(products.map(item => item.category))];
   const statuses = ['All Status', 'Available', 'Low', 'Out'];
 
   // Handle item card click
