@@ -69,7 +69,7 @@ export const userLogin = async (req, res) => {
         const accessToken = jwt.sign(
             userPayload,
             process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '15s' }
+            { expiresIn: '15m' }
         );
         
 
@@ -99,7 +99,7 @@ export const userToken = async (req, res) => {
             const accessToken = jwt.sign(
                 userPayload,
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '15s' }
+                { expiresIn: '15m' }
             );
             res.status(200).json({ success: true, accessToken });
         });
