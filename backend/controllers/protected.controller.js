@@ -11,6 +11,19 @@ export const dashboardController = (req, res) => {
 export const stockController = async (req, res) => {
     try{
         const products = await Product.find();
+        //automated status update based on currentStock
+        for (let product of products) {
+            if (product.currentStock === 0 && product.status !== "Out") {
+                product.status = "Out";
+                await product.save();
+            } else if (product.currentStock > 0 && product.currentStock <= 5 && product.status !== "Low") {
+                product.status = "Low";
+                await product.save();
+            } else if (product.currentStock > 5 && product.status !== "Available") {
+                product.status = "Available";
+                await product.save();
+            }
+        }
         res.status(200).json({ success: true, message: "welcome to Stock Availability!", user: req.user, products });
     } catch (error) {
         console.error("Error fetching products: ", error.message);
