@@ -26,12 +26,18 @@ export const stockController = async (req, res, next) => {
             }
         }
 
-        req.hello = "hello middleware";
-        req.products = products;
+            if (req.originalUrl.endsWith("/stock")) {
+                return res.status(200).json({
+                success: true,
+                message: "welcome to Stock Availability!",
+                user: req.user,
+                products,
+            });
+        }
 
-        if(next) return next();
+    // Otherwise, pass control to the next handler (e.g., stockreserveController)
+    next();
 
-        res.status(200).json({ success: true, message: "welcome to Stock Availability!", user: req.user, products });
     } catch (error) {
         console.error("Error fetching products: ", error.message);
         res.status(500).json({ success: false, message: error.message });
