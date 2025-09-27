@@ -56,7 +56,7 @@ export const userLogin = async (req, res) => {
         const userPayload = req.body.user;
         delete userPayload.password; // Remove password from payload
         delete userPayload.__v; // Remove __v from payload 
-        
+        delete userPayload.reservedItems; // Remove reservedItems from payload
         const refreshToken = jwt.sign(
             userPayload,
             process.env.REFRESH_TOKEN_SECRET,
