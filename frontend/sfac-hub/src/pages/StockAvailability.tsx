@@ -13,7 +13,7 @@ import { Atom } from 'react-loading-indicators';
 
 // Define type for stock items
 export interface StockItem {
-  id: number;
+  _id: string;
   name: string;
   description: string;
   category: string;
@@ -240,7 +240,7 @@ const StockAvailability = () => {
           <div className="items-grid">
             {filteredItems.map(item => (
               <div
-                key={item.id}
+                key={item._id}
                 className={`item-card ${item.status.toLowerCase()}`}
                 onClick={() => handleItemClick(item)}
               >
@@ -411,7 +411,7 @@ const StockAvailability = () => {
                   setShowReservationModal(false);
                   // Redirect to MakeReservation page with the selected item ID
                   navigate('/make-reservation', {
-                    state: { itemId: reservationItem.id }
+                    state: { itemId: reservationItem._id }
                   });
                 }}
               >
