@@ -48,11 +48,23 @@ export const stockController = async (req, res, next) => {
 export const reservationController = (req, res) => {
     //get user reserved items
     try {
-        User.findById(req.user._id).then((user) => {
+        User.findById(req.user._id).then(async(user) => {
             if (!user) {
                 return res.status(404).json({ success: false, message: "User not found" });
             }
-            res.status(200).json({ success: true, message: "User reservations fetched successfully",user: req.user, reservations: user.reservedItems });
+
+            const reservedItems = await Promise.all(
+            user.reservedItems.map(async (reservation) => {
+                // Fetch the product, excluding reservers
+                const product = await Product.findById(reservation.item, '-reservers -__v');
+                
+                reservation.item = product;
+                
+                console.log(reservation.item);
+                return reservation;
+            })
+            );
+            res.status(200).json({ success: true, message: "User reservations fetched successfully",user: req.user, reservations: reservedItems });
         });
     } catch (error) {
         console.error("Error fetching user reservations: ", error.message);
