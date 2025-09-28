@@ -49,12 +49,7 @@ const userSchema = new mongoose.Schema({
     },
     reservedItems: [{ 
         item: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-        email: { type: String, required: true },
-        quantity: { type: Number, required: true, min: 1 },
-        reservationID: { type: String, required: true },
-        purpose: { type: String, default: "N/A" },
-        reservedAt: { type: Date, default: Date.now },
-        status: { type: String, enum: ["Pending", "Collected", "Cancelled", "Expired"], default: "Pending"}
+        reservation: { type: mongoose.Schema.Types.ObjectId, ref: 'Reservation' }
     }]
 });
 

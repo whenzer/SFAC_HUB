@@ -1,5 +1,6 @@
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
+import Reservation from "../models/product.reservation.model.js";
 
 export const protectedController = (req, res) => {
     res.status(200).json({ success: true, message: "access granted!" });
@@ -8,53 +9,48 @@ export const protectedController = (req, res) => {
 export const dashboardController = async (req, res) => {
     
     try {
-        const products = await Product.find().select('name category reservers');
-        // 1️⃣ Per-product totals (only Pending)
-        const perProduct = products.map(product => {
-            const totalQuantity = product.reservers
-                .filter(reserver => reserver.status === "Pending")
-                .reduce((sum, reserver) => sum + reserver.quantity, 0);
-            return {
-                Product: product.name,
-                Category: product.category,
-                Total: totalQuantity
-            };
-        });
+  // 1️⃣ Get all pending reservations and populate the product info
+  const reservations = await Reservation.find({ status: "Pending" }).populate('item', 'name category');
 
-        // 2️⃣ Per-category totals (only Pending)
-        const categoryTotalsMap = {};
-        products.forEach(product => {
-            const totalQuantity = product.reservers
-                .filter(reserver => reserver.status === "Pending")
-                .reduce((sum, reserver) => sum + reserver.quantity, 0);
-
-            if (categoryTotalsMap[product.category]) {
-                categoryTotalsMap[product.category] += totalQuantity;
-            } else {
-                categoryTotalsMap[product.category] = totalQuantity;
-            }
-        });
-
-        const perCategory = Object.entries(categoryTotalsMap).map(([category, total]) => ({
-            Category: category,
-            Total: total
-        }));
-
-        // 3️⃣ Optional: overall total
-        const overallTotal = perProduct.reduce((sum, item) => sum + item.Total, 0);
-
-        res.status(200).json({
-            success: true,
-            message: "Dashboard data fetched!",
-            user: req.user,
-            perProduct,
-            perCategory,
-            overallTotal
-        });
-    } catch (error) {
-        console.error("Error fetching products: ", error.message);
-        res.status(500).json({ success: false, message: error.message });
+  // 2️⃣ Per-product totals
+  const perProductMap = {};
+  reservations.forEach(res => {
+    const productName = res.item.name;
+    const category = res.item.category;
+    if (perProductMap[productName]) {
+      perProductMap[productName].Total += res.quantity;
+    } else {
+      perProductMap[productName] = { Product: productName, Category: category, Total: res.quantity };
     }
+  });
+  const perProduct = Object.values(perProductMap);
+
+  // 3️⃣ Per-category totals
+  const perCategoryMap = {};
+  perProduct.forEach(p => {
+    if (perCategoryMap[p.Category]) {
+      perCategoryMap[p.Category] += p.Total;
+    } else {
+      perCategoryMap[p.Category] = p.Total;
+    }
+  });
+  const perCategory = Object.entries(perCategoryMap).map(([Category, Total]) => ({ Category, Total }));
+
+  // 4️⃣ Overall total
+  const overallTotal = perProduct.reduce((sum, item) => sum + item.Total, 0);
+
+  res.status(200).json({
+    success: true,
+    message: "Dashboard data fetched!",
+    user: req.user,
+    perProduct,
+    perCategory,
+    overallTotal
+  });
+} catch (error) {
+  console.error("Error fetching dashboard data: ", error.message);
+  res.status(500).json({ success: false, message: error.message });
+}
 }
 
 export const stockController = async (req, res, next) => {
@@ -102,14 +98,14 @@ export const reservationController = (req, res) => {
             }
 
             const reservedItems = await Promise.all(
-            user.reservedItems.map(async (reservation) => {
+            user.reservedItems.map(async (i) => {
                 // Fetch the product, excluding reservers
-                const product = await Product.findById(reservation.item, '-reservers -__v -currentStock -totalStock -status');
+                const product = await Product.findById(i.item, '-reservers -__v -currentStock -totalStock -status');
+                const reservation = await Reservation.findById(i.reservation);
                 
-                reservation.item = product;
-                
-                console.log(reservation.item);
-                return reservation;
+                i = reservation;
+                i.item = product;
+                return i;
             })
             );
             res.status(200).json({ success: true, message: "User reservations fetched successfully",user: req.user, reservations: reservedItems });
@@ -124,43 +120,108 @@ export const lostandfoundController = (req, res) => {
     res.status(200).json({ success: true, message: "welcome to Lost and Found!", user: req.user });
 }
 
-export const stockreserveController = (req, res) => {
-    
+export const stockreserveController = async (req, res) => {
     const { productId, quantity, email, reservationID, purpose } = req.body;
-    const userId = req.user._id;
+
     if (!productId || !quantity || !email || !reservationID) {
-        return res.status(400).json({ success: false, message: "Product ID, quantity, email, and reservationID are required" });
+    return res.status(400).json({
+        success: false,
+        message: "Product ID, quantity, email, and reservationID are required"
+    });
     }
+
     if (quantity <= 0) {
-        return res.status(400).json({ success: false, message: "Quantity must be greater than zero" });
+    return res.status(400).json({
+        success: false,
+        message: "Quantity must be greater than zero"
+    });
     }
+
     try {
-        // findbyid no longer accepts a callback
-        Product.findById(productId).then(async (product) => {
-            if (!product) {
-                return res.status(404).json({ success: false, message: "Product not found" });
-            }
-            if (product.currentStock < quantity) {
-                return res.status(400).json({ success: false, message: "Insufficient stock available" });
-            }
-            // Deduct stock
-            product.currentStock -= quantity;
-            // Add reserver info
-            product.reservers.push({ user: userId, email, quantity, reservationID, purpose });
-            await product.save();
-            res.status(200).json({ success: true, message: "Product reserved successfully", product });
+        // 1️⃣ Find product
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        if (product.currentStock < quantity) {
+            return res.status(400).json({ success: false, message: "Insufficient stock available" });
+        }
+
+        // 2️⃣ Decrement stock
+        product.currentStock -= quantity;
+
+        // 3️⃣ Create reservation
+        const reservation = await Reservation.create({
+            item: productId,
+            user: req.user._id,
+            email,
+            quantity,
+            reservationID,
+            purpose,
+            status: "Pending"
         });
-        // Also update user's reservedItems
-        User.findById(userId).then(async (user) => {
-            if (!user) {
-                return res.status(404).json({ success: false, message: "User not found" });
-            }
-            user.reservedItems.push({ item: productId, email, quantity, reservationID, purpose });
-            await user.save();
-        });
-        
+
+        // 4️⃣ Push to product.reservers
+        product.reservers.push({ user: req.user._id, reservation: reservation._id });
+        await product.save();
+
+        // 5️⃣ Push to user.reservedItems
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        user.reservedItems.push({ item: productId, reservation: reservation._id });
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Product reserved successfully",
+            reservationId: reservation._id
+    });
+
     } catch (error) {
         console.error("Error reserving product: ", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
+
+    
+    // const { productId, quantity, email, reservationID, purpose } = req.body;
+    // const userId = req.user._id;
+    // if (!productId || !quantity || !email || !reservationID) {
+    //     return res.status(400).json({ success: false, message: "Product ID, quantity, email, and reservationID are required" });
+    // }
+    // if (quantity <= 0) {
+    //     return res.status(400).json({ success: false, message: "Quantity must be greater than zero" });
+    // }
+    // try {
+
+    //     Product.findById(productId).then(async (product) => {
+    //         if (!product) {
+    //             return res.status(404).json({ success: false, message: "Product not found" });
+    //         }
+    //         if (product.currentStock < quantity) {
+    //             return res.status(400).json({ success: false, message: "Insufficient stock available" });
+    //         }
+
+    //         product.currentStock -= quantity;
+
+    //         product.reservers.push({ user: userId, email, quantity, reservationID, purpose });
+    //         await product.save();
+    //         res.status(200).json({ success: true, message: "Product reserved successfully", product });
+    //     });
+
+    //     User.findById(userId).then(async (user) => {
+    //         if (!user) {
+    //             return res.status(404).json({ success: false, message: "User not found" });
+    //         }
+    //         user.reservedItems.push({ item: productId, email, quantity, reservationID, purpose });
+    //         await user.save();
+    //     });
+        
+    // } catch (error) {
+    //     console.error("Error reserving product: ", error.message);
+    //     res.status(500).json({ success: false, message: error.message });
+    // }
 }
