@@ -56,7 +56,7 @@ export const reservationController = (req, res) => {
             const reservedItems = await Promise.all(
             user.reservedItems.map(async (reservation) => {
                 // Fetch the product, excluding reservers
-                const product = await Product.findById(reservation.item, '-reservers -__v');
+                const product = await Product.findById(reservation.item, '-reservers -__v -currentStock -totalStock -status');
                 
                 reservation.item = product;
                 
