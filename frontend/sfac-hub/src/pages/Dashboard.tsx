@@ -22,7 +22,16 @@ const Dashboard = () => {
 
   return (
     <ProtectedLayout endpoint="/protected/dashboard">
-      {({ user, isLoading, logout }) => {
+      
+      {({ user, isLoading, logout, extraData }) => {
+        const perCategory = extraData?.perCategory;
+        const perProduct = extraData?.perProduct;
+        const overallTotal = extraData?.perProduct?.reduce(
+          (sum: number, item: any) => sum + item.Total,
+          0
+        ) || 0;
+        
+        
         if (isLoading) {
           return (
             <div className="loading-screen">
