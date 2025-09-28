@@ -6,42 +6,51 @@ export const protectedController = (req, res) => {
 }
 
 export const dashboardController = async (req, res) => {
-try {
-    const products = await Product.find().select('name category reservers');
+    
+    try {
+        const products = await Product.find().select('name category reservers');
+        // 1️⃣ Per-product totals (only Pending)
+        const perProduct = products.map(product => {
+            const totalQuantity = product.reservers
+                .filter(reserver => reserver.status === "Pending")
+                .reduce((sum, reserver) => sum + reserver.quantity, 0);
+            return {
+                Product: product.name,
+                Category: product.category,
+                Total: totalQuantity
+            };
+        });
 
-    // 1️⃣ Per-product totals
-    const perProduct = products.map(product => {
-        const totalQuantity = product.reservers.reduce((sum, reserver) => sum + reserver.quantity, 0);
-        return {
-            Product: product.name,
-            Category: product.category,
-            Total: totalQuantity
-        };
-    });
+        // 2️⃣ Per-category totals (only Pending)
+        const categoryTotalsMap = {};
+        products.forEach(product => {
+            const totalQuantity = product.reservers
+                .filter(reserver => reserver.status === "Pending")
+                .reduce((sum, reserver) => sum + reserver.quantity, 0);
 
-    // 2️⃣ Per-category totals
-    const categoryTotalsMap = {};
-    products.forEach(product => {
-        const totalQuantity = product.reservers.reduce((sum, reserver) => sum + reserver.quantity, 0);
-        if (categoryTotalsMap[product.category]) {
-            categoryTotalsMap[product.category] += totalQuantity;
-        } else {
-            categoryTotalsMap[product.category] = totalQuantity;
-        }
-    });
+            if (categoryTotalsMap[product.category]) {
+                categoryTotalsMap[product.category] += totalQuantity;
+            } else {
+                categoryTotalsMap[product.category] = totalQuantity;
+            }
+        });
 
-    const perCategory = Object.entries(categoryTotalsMap).map(([category, total]) => ({
-        Category: category,
-        Total: total
-    }));
+        const perCategory = Object.entries(categoryTotalsMap).map(([category, total]) => ({
+            Category: category,
+            Total: total
+        }));
 
-    res.status(200).json({
-        success: true,
-        message: "Dashboard data fetched!",
-        user: req.user,
-        perProduct,
-        perCategory
-    });
+        // 3️⃣ Optional: overall total
+        const overallTotal = perProduct.reduce((sum, item) => sum + item.Total, 0);
+
+        res.status(200).json({
+            success: true,
+            message: "Dashboard data fetched!",
+            user: req.user,
+            perProduct,
+            perCategory,
+            overallTotal
+        });
     } catch (error) {
         console.error("Error fetching products: ", error.message);
         res.status(500).json({ success: false, message: error.message });
