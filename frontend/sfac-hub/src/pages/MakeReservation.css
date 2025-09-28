@@ -390,6 +390,38 @@
   color: #1a202c;
 }
 
+/* View Reservations Button */
+.view-reservations-container {
+  margin-top: 16px;
+}
+
+.view-reservations-btn {
+  width: 100%;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.view-reservations-btn:hover {
+  background-color: #2c5aa0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.2);
+}
+
+.view-reservations-btn:active {
+  transform: translateY(0);
+}
+
 .info-text {
   font-size: 14px;
   color: #4a5568;
