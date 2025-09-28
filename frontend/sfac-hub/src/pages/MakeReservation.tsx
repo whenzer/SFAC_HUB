@@ -106,7 +106,6 @@ const MakeReservation = () => {
   // State for form fields
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<string>('1');
-  const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [purpose, setPurpose] = useState<string>('');
   
@@ -229,10 +228,6 @@ const getStockStatusClass = (status: StockItem["status"]) => {
       newErrors.quantity = `Maximum quantity is ${currentItem.currentStock}`;
     }
     
-    if (!name.trim()) {
-      newErrors.name = 'Please enter your name';
-    }
-    
     if (!email.trim()) {
       newErrors.email = 'Please enter your email';
     } else if (!/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/.test(email)) {
@@ -268,7 +263,6 @@ const handleConfirmReservation = async () => {
         reservationID: newId,
         productId: currentItem?._id,
         quantity: parseInt(quantity),
-        name,
         email,
         purpose
       })
@@ -297,7 +291,6 @@ const handleConfirmReservation = async () => {
   const resetForm = () => {
     setSelectedItem(null);
     setQuantity('1');
-    setName('');
     setEmail('');
     setPurpose('');
     setErrors({});
@@ -490,19 +483,7 @@ const handleConfirmReservation = async () => {
                       )}
                     </div>
                     
-                    <div className="form-row">
-                      <label className="form-label">
-                        Your Full Name
-                        {errors.name && <span className="error-msg"> * {errors.name}</span>}
-                      </label>
-                      <input
-                        type="text"
-                        className={`text-input ${errors.name ? 'input-error' : ''}`}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your full name"
-                      />
-                    </div>
+
                     
                     <div className="form-row">
                       <label className="form-label">
@@ -549,9 +530,9 @@ const handleConfirmReservation = async () => {
                         Cancel
                       </button>
                       <button 
-                        className={`primary-btn ${!selectedItem || !quantity || parseInt(quantity) <= 0 ? 'disabled' : ''}`}
+                        className={`primary-btn ${!selectedItem || !quantity || parseInt(quantity) <= 0 || !email ? 'disabled' : ''}`}
                         onClick={handleReviewReservation}
-                        disabled={!selectedItem || !quantity || parseInt(quantity) <= 0}
+                        disabled={!selectedItem || !quantity || parseInt(quantity) <= 0 || !email}
                       >
                         Review Reservation
                       </button>
@@ -637,8 +618,7 @@ const handleConfirmReservation = async () => {
                             <div className="summary-value">{currentItem.currentStock - parseInt(quantity)}</div>
                           </div>
                           <div>
-                            <div className="summary-label">Reserved By</div>
-                            <div className="summary-value">{name}</div>
+
                           </div>
                           <div>
                             <div className="summary-label">Contact Email</div>
@@ -721,8 +701,7 @@ const handleConfirmReservation = async () => {
                       </>
                     )}
                     <div className="ticket-row">
-                      <div className="ticket-label">Reserved By</div>
-                      <div className="ticket-value">{name}</div>
+                     
                     </div>
                   </div>
                   
