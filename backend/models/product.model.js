@@ -30,12 +30,8 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0,
-    min: 0,
-    max: function () {
-      return this.totalStock;
-    },
+    min: 0
   },
-
   status: {
     type: String,
     enum: ["Available", "Low", "Out"],
@@ -68,6 +64,13 @@ try {
 } catch (error) {
     console.error("Error connecting to Products database:", error);
 }
+
+productSchema.pre('save', function(next) {
+  if (this.currentStock > this.totalStock) {
+    this.currentStock = this.totalStock;
+  }
+  next();
+});
 
 const Product = conn.model("Product", productSchema);
 
