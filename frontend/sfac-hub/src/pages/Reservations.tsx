@@ -1,57 +1,98 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import './dashboard.css';
+import './Reservations.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
 import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
 
-const Reservations = () => {
+type ReservationStatus = 'Pending' | 'Collected' | 'Cancelled' | 'Expired' | 'Ready';
+
+interface ProductRef {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  location: string;
+  image: string;
+  lastUpdated: string;
+}
+
+interface ReservationItem {
+  _id: string;
+  reservationID: string;
+  item: ProductRef;
+  email: string;
+  quantity: number;
+  purpose: string;
+  reservedAt: string;
+  status: ReservationStatus | 'Pending';
+}
+
+const formatDate = (iso: string) => {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit'
+    });
+  } catch {
+    return iso;
+  }
+};
+
+const Reservations: React.FC = () => {
   return (
     <ProtectedLayout endpoint="/protected/reservations">
-      {({ user, isLoading, logout }) => {
+      {({ user, isLoading, logout, extraData }) => {
+        const reservations: ReservationItem[] = extraData?.reservations ?? [];
+
+        const counts = useMemo(() => {
+          const base = { Confirmed: 0, Ready: 0, Completed: 0, Expired: 0 } as Record<string, number>;
+          for (const r of reservations) {
+            if (r.status === 'Pending') base.Confirmed += 1;
+            if (r.status === 'Collected') base.Completed += 1;
+            if (r.status === 'Expired') base.Expired += 1;
+            // Optional: treat items close to pickup as Ready if backend provides it
+            if (r.status === 'Ready') base.Ready += 1;
+          }
+          return base;
+        }, [reservations]);
+
+        const activeReservations = useMemo(
+          () => reservations.filter(r => r.status === 'Pending' || r.status === 'Ready'),
+          [reservations]
+        );
+        const pastReservations = useMemo(
+          () => reservations.filter(r => r.status === 'Collected' || r.status === 'Cancelled' || r.status === 'Expired'),
+          [reservations]
+        );
+
         if (isLoading) {
           return (
             <div className="loading-screen">
               <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
               <div className="loading-text">Loading Reservations</div>
-              <Atom color="#ffffff" size="medium"/>
+              <Atom color="#ffffff" size="medium" />
             </div>
           );
         }
 
-        // Safe display name construction
-        const nameParts = [
-          user?.firstname,
-          user?.middlename,
-          user?.lastname,
-        ].filter(Boolean) as string[];
-        let displayName = "Student";
-
-        if (nameParts.length > 0) {
-          displayName = nameParts.join(" ");
-        } else if (user?.role) {
-          displayName =
-            user.role.charAt(0).toUpperCase() + user.role.slice(1);
-        }
-
         return (
           <div className="dashboard">
-            {/* Reusable Header Component */}
             {user && <Header user={user} logout={logout} />}
 
-            {/* Main Content */}
             <main className="dashboard-main">
               <div className="dashboard-container">
-                {/* Breadcrumb */}
                 <nav className="breadcrumb">
                   <Link to="/dashboard" className="breadcrumb-link">Dashboard</Link>
                   <span className="breadcrumb-separator">/</span>
                   <span className="breadcrumb-current">My Reservations</span>
                 </nav>
 
-                {/* Page Header */}
                 <div className="page-header">
                   <div className="page-title-section">
                     <div className="page-icon reservation-icon">
@@ -61,69 +102,152 @@ const Reservations = () => {
                     </div>
                     <div>
                       <h1 className="page-title">My Reservations</h1>
-                      <p className="page-subtitle">Manage and track your equipment reservations</p>
+                      <p className="page-subtitle">View and manage all your item reservations</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Under Development Content */}
-                <div className="under-development">
-                  <div className="development-card">
-                    <div className="development-icon">
-                      <svg width="64" height="64" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.98 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
-                      </svg>
-                    </div>
-                    <h2 className="development-title">Under Development</h2>
-                    <p className="development-description">
-                      We're working hard to bring you the Reservations feature. This page will allow you to:
-                    </p>
-                    <ul className="development-features">
-                      <li>
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                        </svg>
-                        View all your current and past reservations
-                      </li>
-                      <li>
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                        </svg>
-                        Track the status of your pending reservations
-                      </li>
-                      <li>
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                        </svg>
-                        Cancel or modify existing reservations
-                      </li>
-                      <li>
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                        </svg>
-                        Get notifications about reservation expirations
-                      </li>
-                    </ul>
-                    <div className="development-actions">
-                      <Link to="/dashboard" className="btn btn-primary">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd"/>
-                        </svg>
-                        Back to Dashboard
-                      </Link>
-                      <Link to="/make-reservation" className="btn btn-secondary">
-                        Make a Reservation
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                        </svg>
-                      </Link>
-                    </div>
+                <div className="res-reservations-stats">
+                  <div className="res-stat-card res-fade-up" data-delay="0">
+                    <div className="res-stat-title">Confirmed</div>
+                    <div className="res-stat-value">{counts.Confirmed}</div>
+                  </div>
+                  <div className="res-stat-card res-fade-up" data-delay="50">
+                    <div className="res-stat-title">Ready</div>
+                    <div className="res-stat-value">{counts.Ready}</div>
+                  </div>
+                  <div className="res-stat-card res-fade-up" data-delay="100">
+                    <div className="res-stat-title">Completed</div>
+                    <div className="res-stat-value">{counts.Completed}</div>
+                  </div>
+                  <div className="res-stat-card res-fade-up" data-delay="150">
+                    <div className="res-stat-title">Expired</div>
+                    <div className="res-stat-value">{counts.Expired}</div>
                   </div>
                 </div>
+
+                <section className="res-reservations-section">
+                  <div className="res-section-header">
+                    <div className="res-section-title-with-icon">
+                      <span className="res-dot res-active" />
+                      <h2 className="res-section-title">Active Reservations</h2>
+                    </div>
+                    <span className="res-section-sub">Items currently reserved and awaiting pickup</span>
+                  </div>
+
+                  <div className="res-reservations-list">
+                    {activeReservations.length === 0 && (
+                      <div className="res-empty-state res-fade-in">
+                        <div className="res-empty-title">No active reservations</div>
+                        <div className="res-empty-sub">Make a reservation from Stock Availability.</div>
+                      </div>
+                    )}
+
+                    {activeReservations.map((r, idx) => (
+                      <div key={r._id} className="res-reservation-card res-slide-in" style={{ ['--d' as any]: `${idx * 60}ms` }}>
+                        <div className="reservation-left">
+                          <div className="res-thumb">
+                              <img src={r.item?.image} alt={r.item?.name} />
+                            </div>
+                            <div className="res-info">
+                              <div className="res-title-row">
+                                <div className="res-title">{r.item?.name}</div>
+                                <span className={`res-badge res-${r.status.toLowerCase()}`}>{r.status}</span>
+                              </div>
+                              <div className="res-sub">Waiting for preparation</div>
+                              <div className="res-meta">
+                                <div className="res-meta-item">
+                                  <span className="res-meta-label">Reserved:</span>
+                                  <span className="res-meta-value">{formatDate(r.reservedAt)}</span>
+                                </div>
+                                <div className="res-meta-item">
+                                  <span className="res-meta-label">Purpose:</span>
+                                  <span className="res-meta-value">{r.purpose || 'N/A'}</span>
+                                </div>
+                                <div className="res-meta-item">
+                                  <span className="res-meta-label">Email:</span>
+                                  <span className="res-meta-value">{r.email}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="res-reservation-right">
+                            <div className="res-meta-line">
+                              <span className="res-small-label">ID:</span>
+                              <span className="res-mono">{r.reservationID}</span>
+                            </div>
+                            <div className="res-meta-line">
+                              <span className="res-small-label">Qty:</span>
+                              <span className="res-mono">{r.quantity}</span>
+                            </div>
+                          </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="res-reservations-section">
+                  <div className="res-section-header">
+                    <div className="res-section-title-with-icon">
+                      <span className="res-dot" />
+                      <h2 className="res-section-title">Past Reservations</h2>
+                    </div>
+                    <span className="res-section-sub">Completed and expired reservations</span>
+                  </div>
+
+                  <div className="res-reservations-list">
+                    {pastReservations.length === 0 && (
+                      <div className="res-empty-state res-fade-in">
+                        <div className="res-empty-title">No past reservations</div>
+                        <div className="res-empty-sub">Completed, cancelled, or expired reservations will appear here.</div>
+                      </div>
+                    )}
+
+                    {pastReservations.map((r, idx) => (
+                      <div key={r._id} className="res-reservation-card res-slide-in" style={{ ['--d' as any]: `${idx * 60}ms` }}>
+                        <div className="res-reservation-left">
+                          <div className="res-thumb">
+                            <img src={r.item?.image} alt={r.item?.name} />
+                          </div>
+                          <div className="res-info">
+                            <div className="res-title-row">
+                              <div className="res-title">{r.item?.name}</div>
+                              <span className={`res-badge res-${r.status.toLowerCase()}`}>{r.status}</span>
+                            </div>
+                            <div className="res-sub">{r.status === 'Collected' ? 'Collected' : r.status === 'Cancelled' ? 'Cancelled' : 'Expired'}</div>
+                            <div className="res-meta">
+                              <div className="res-meta-item">
+                                <span className="res-meta-label">Reserved:</span>
+                                <span className="res-meta-value">{formatDate(r.reservedAt)}</span>
+                              </div>
+                              <div className="res-meta-item">
+                                <span className="res-meta-label">Purpose:</span>
+                                <span className="res-meta-value">{r.purpose || 'N/A'}</span>
+                              </div>
+                              <div className="res-meta-item">
+                                <span className="res-meta-label">Email:</span>
+                                <span className="res-meta-value">{r.email}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="res-reservation-right">
+                          <div className="res-meta-line">
+                            <span className="res-small-label">ID:</span>
+                            <span className="res-mono">{r.reservationID}</span>
+                          </div>
+                          <div className="res-meta-line">
+                            <span className="res-small-label">Qty:</span>
+                            <span className="res-mono">{r.quantity}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
             </main>
 
-            {/* Reusable Footer Component */}
             <Footer />
           </div>
         );
