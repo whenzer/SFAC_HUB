@@ -5,8 +5,47 @@ export const protectedController = (req, res) => {
     res.status(200).json({ success: true, message: "access granted!" });
 }
 
-export const dashboardController = (req, res) => {
-    res.status(200).json({ success: true, message: "welcome to dashboard!", user: req.user });
+export const dashboardController = async (req, res) => {
+try {
+    const products = await Product.find().select('name category reservers');
+
+    // 1️⃣ Per-product totals
+    const perProduct = products.map(product => {
+        const totalQuantity = product.reservers.reduce((sum, reserver) => sum + reserver.quantity, 0);
+        return {
+            Product: product.name,
+            Category: product.category,
+            Total: totalQuantity
+        };
+    });
+
+    // 2️⃣ Per-category totals
+    const categoryTotalsMap = {};
+    products.forEach(product => {
+        const totalQuantity = product.reservers.reduce((sum, reserver) => sum + reserver.quantity, 0);
+        if (categoryTotalsMap[product.category]) {
+            categoryTotalsMap[product.category] += totalQuantity;
+        } else {
+            categoryTotalsMap[product.category] = totalQuantity;
+        }
+    });
+
+    const perCategory = Object.entries(categoryTotalsMap).map(([category, total]) => ({
+        Category: category,
+        Total: total
+    }));
+
+    res.status(200).json({
+        success: true,
+        message: "Dashboard data fetched!",
+        user: req.user,
+        perProduct,
+        perCategory
+    });
+    } catch (error) {
+        console.error("Error fetching products: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
 }
 
 export const stockController = async (req, res, next) => {
