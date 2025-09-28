@@ -46,7 +46,18 @@ export const stockController = async (req, res, next) => {
 }
 
 export const reservationController = (req, res) => {
-    res.status(200).json({ success: true, message: "welcome to Reservation!", user: req.user });
+    //get user reserved items
+    try {
+        User.findById(req.user._id).then((user) => {
+            if (!user) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+            res.status(200).json({ success: true, message: "User reservations fetched successfully",user: req.user, reservations: user.reservedItems });
+        });
+    } catch (error) {
+        console.error("Error fetching user reservations: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
 }
 
 export const lostandfoundController = (req, res) => {

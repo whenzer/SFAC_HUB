@@ -13,7 +13,7 @@ router.get('/dashboard', dashboardController);
 router.get('/stock', stockController);
 router.post('/stock/reserve',stockController, stockreserveController);
 
-router.get('/reservation', reservationController);
+router.get('/reservations', reservationController);
 
 router.get('/lostandfound', lostandfoundController);
 
