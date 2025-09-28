@@ -23,12 +23,17 @@ const productSchema = new mongoose.Schema({
   currentStock: {
     type: Number,
     required: true,
-    default: 0
+    default: 0,
+    min: 0,
+    max: function () {
+      return this.totalStock;
+    },
   },
   totalStock: {
     type: Number,
     required: true,
-    default: 0
+    default: 0,
+    min: 0
   },
   status: {
     type: String,
