@@ -18,10 +18,10 @@ export const stockController = async (req, res, next) => {
             if (percentage === 0 && product.status !== "Out") {
                 product.status = "Out";
                 await product.save();
-            } else if (percentage > 0 && percentage < 50 && product.status !== "Low") {
+            } else if (percentage > 0 && percentage < 30 && product.status !== "Low") {
                 product.status = "Low";
                 await product.save();
-            } else if (percentage > 50 && product.status !== "Available") {
+            } else if (percentage > 30 && product.status !== "Available") {
                 product.status = "Available";
                 await product.save();
             }
