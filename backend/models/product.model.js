@@ -20,6 +20,12 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+    totalStock: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
+  },
   currentStock: {
     type: Number,
     required: true,
@@ -29,12 +35,7 @@ const productSchema = new mongoose.Schema({
       return this.totalStock;
     },
   },
-  totalStock: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0
-  },
+
   status: {
     type: String,
     enum: ["Available", "Low", "Out"],
