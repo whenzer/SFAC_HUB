@@ -44,6 +44,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
+        enum: ["admin","teacher","staff", "student"],
         required: true
     },
     reservedItems: [{ 
