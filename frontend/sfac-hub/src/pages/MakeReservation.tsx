@@ -99,26 +99,43 @@ const OptimizedImage: React.FC<{
 // Import the stock items
 
 const MakeReservation = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  // State for form fields
+  // State for selected item
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<string>('1');
   const [email, setEmail] = useState<string>('');
   const [purpose, setPurpose] = useState<string>('');
-  
-  // State for UI interactions
-  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState<boolean>(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isPreSelected, setIsPreSelected] = useState<boolean>(false);
-  
-  // Generate a unique reservation ID
   const [reservationId, setReservationId] = useState<string>('');
-  
+  const [reservedItemName, setReservedItemName] = useState<string>('');
+  const [reservedQuantity, setReservedQuantity] = useState<string>('');
+  const [isPreSelected, setIsPreSelected] = useState<boolean>(false);
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check if we need to show the confirmation modal after a page refresh
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const lastReservation = localStorage.getItem('lastReservation');
+      if (lastReservation) {
+        try {
+          const reservation = JSON.parse(lastReservation);
+          setReservationId(reservation.id);
+          setReservedItemName(reservation.item || '');
+          setReservedQuantity(reservation.quantity || '');
+          setShowConfirmationModal(true);
+          // Clear the stored reservation after showing the modal
+          localStorage.removeItem('lastReservation');
+        } catch (error) {
+          console.error('Error parsing last reservation:', error);
+        }
+      }
+    }
+  }, []);
+
   // Handle outside click to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -133,57 +150,55 @@ const MakeReservation = () => {
     };
   }, []);
 
-  // Handle pre-selection of item from navigation state
-
-
-  return (
-    <ProtectedLayout endpoint="/protected/stock">
-      {({ user, isLoading, logout, extraData }) => {
-        const stockItems: StockItem[] = extraData?.products ?? [];
-        console.log("Fetched stock items:", stockItems);
-        //print selected item id
-        console.log("Selected item ID:", selectedItem);
-
-          useEffect(() => {
-    const state = location.state as { itemId?: string } | null;
-    if (state && state.itemId) {
-      const itemId = state.itemId;
-      // Check if the item exists in stockItems and is available
-      const item = stockItems.find(item => item._id === itemId);
-      if (item && item.currentStock > 0) {
-        setSelectedItem(itemId);
-        setIsPreSelected(true);
-        // Clear the state to prevent re-selection on page refresh
-        window.history.replaceState({}, document.title);
+  // Handle outside clicks for modals
+  useEffect(() => {
+    const handleModalOutsideClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.classList.contains('modal-overlay')) {
+        setShowSummaryModal(false);
+        setShowConfirmationModal(false);
       }
-    }
-  }, [location.state]);
+    };
+
+    document.addEventListener('mousedown', handleModalOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleModalOutsideClick);
+    };
+  }, []);
 
   // Preload images for better performance
-  useEffect(() => {
-    const imageUrls = stockItems.map(item => item.image);
-    preloadImages(imageUrls).catch(console.error);
-  }, []);
-  
-  // Get current selected item data
-  const currentItem = selectedItem ? stockItems.find(item => item._id === selectedItem) : null;
-    const getStockPercentage = (current: number, total: number) => {
-      if (total === 0) return 0;
-      return Math.round((current / total) * 100);
-    };
+  const preloadImages = async (imageUrls: string[]) => {
+    const imagePromises = imageUrls.map(url => {
+      return new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+        img.src = url;
+      });
+    });
+
+    await Promise.all(imagePromises);
+  };
+
+  // Calculate stock percentage
+  const getStockPercentage = (currentStock: number, totalStock: number) => {
+    if (totalStock === 0) return 0;
+    return Math.round((currentStock / totalStock) * 100);
+  };
+
   // Get status class based on stock
-const getStockStatusClass = (status: StockItem["status"]) => {
-  switch (status) {
-    case "Out":
-      return "out";
-    case "Low":
-      return "low";
-    case "Available":
-    default:
-      return "available";
-  }
-};
-  
+  const getStockStatusClass = (status: StockItem["status"]) => {
+    switch (status) {
+      case "Out":
+        return "out";
+      case "Low":
+        return "low";
+      case "Available":
+      default:
+        return "available";
+    }
+  };
+
   // Handle quantity change with validation
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -193,17 +208,16 @@ const getStockStatusClass = (status: StockItem["status"]) => {
       setQuantity(value);
       
       // Validate quantity against available stock
-      if (currentItem && value !== '') {
+      if (e.currentTarget && value !== '') {
         const numValue = parseInt(value);
-        if (numValue > currentItem.currentStock) {
-          setErrors(prev => ({ ...prev, quantity: `Maximum quantity is ${currentItem.currentStock}` }));
-        } else if (numValue <= 0) {
-          setErrors(prev => ({ ...prev, quantity: 'Quantity must be greater than 0' }));
-        } else {
+        const currentItem = e.currentTarget;
+        if (numValue > 0) {
           setErrors(prev => {
             const { quantity, ...rest } = prev;
             return rest;
           });
+        } else {
+          setErrors(prev => ({ ...prev, quantity: 'Quantity must be greater than 0' }));
         }
       } else {
         setErrors(prev => {
@@ -213,9 +227,15 @@ const getStockStatusClass = (status: StockItem["status"]) => {
       }
     }
   };
-  
-  // Validate the form before showing summary
-  const validateForm = (): boolean => {
+
+  // Validate email format
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/;
+    return emailRegex.test(email);
+  };
+
+  // Validate the form before showing summary - Now with currentItem parameter for stock validation
+  const validateForm = (currentItem: StockItem | null | undefined): boolean => {
     const newErrors: { [key: string]: string } = {};
     
     if (!selectedItem) {
@@ -230,77 +250,138 @@ const getStockStatusClass = (status: StockItem["status"]) => {
     
     if (!email.trim()) {
       newErrors.email = 'Please enter your email';
-    } else if (!/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/.test(email)) {
+    } else if (!isValidEmail(email)) {
       newErrors.email = 'Please enter a valid email';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
-  // Handle review reservation button click
-  const handleReviewReservation = () => {
-    if (validateForm()) {
+
+  // Handle review reservation button click - Now passes currentItem to validateForm
+  const handleReviewReservation = (currentItem: StockItem | null | undefined) => {
+    if (validateForm(currentItem)) {
       setShowSummaryModal(true);
     }
   };
   
-  // Handle confirm reservation
-const handleConfirmReservation = async () => {
-  // Generate a unique reservation ID
-  const newId = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  setReservationId(newId);
+  // Handle confirm reservation - Now with actual API call and synchronous reset
+  const handleConfirmReservation = async (currentItem: StockItem) => {
+    if (!selectedItem || !currentItem) return;
 
-  try {
-    const response = await fetch("https://sfac-hub.onrender.com/protected/stock/reserve", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // attach token if your ProtectedLayout requires auth
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-      },
-      body: JSON.stringify({
-        reservationID: newId,
-        productId: currentItem?._id,
-        quantity: parseInt(quantity),
-        email,
-        purpose
-      })
-    });
+    const newId = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    setReservationId(newId);
+    
+    // Store reservation details to keep showing them in the modal after reset
+    const reservationDetails = {
+      id: newId,
+      item: currentItem.name,
+      quantity: quantity,
+      email: email
+    };
 
-    const data = await response.json();
+    try {
+      // Make actual API call to reserve stock
+      const response = await fetch("https://sfac-hub.onrender.com/protected/stock/reserve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Attach token if your ProtectedLayout requires auth
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        },
+        body: JSON.stringify({
+          reservationID: newId,
+          productId: currentItem._id,
+          quantity: parseInt(quantity),
+          email,
+          purpose
+        })
+      });
 
-    if (!response.ok) {
-      console.error("Reservation failed:", data.message);
-      alert(data.message || "Reservation failed");
-      return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Reservation failed:", data.message);
+        alert(data.message || "Reservation failed");
+        return;
+      }
+
+      console.log("Reservation successful:", data);
+
+      // Clear all input fields immediately to reflect the reset state
+      setSelectedItem(null);
+      setQuantity('1');
+      setEmail('');
+      setPurpose('');
+      setErrors({});
+      setShowDropdown(false);
+      
+      // Store reservation details in localStorage temporarily to persist after refresh
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lastReservation', JSON.stringify(reservationDetails));
+      }
+      
+      // Show confirmation modal immediately after resetting form fields
+      setShowSummaryModal(false);
+      setShowConfirmationModal(true);
+      
+      // Force a refresh of the current page to update stock levels
+      // This will show the confirmation modal again after refresh
+      window.location.reload();
+    } catch (error) {
+      console.error("Error reserving product:", error);
+      alert("Something went wrong. Please try again.");
     }
-
-    console.log("Reservation successful:", data);
-
-    // Show confirmation modal
-    setShowSummaryModal(false);
-    setShowConfirmationModal(true);
-  } catch (error) {
-    console.error("Error reserving product:", error);
-    alert("Something went wrong. Please try again.");
-  }
-};
+  };
   
-  // Reset the form
+  // Reset the form - used when making another reservation
   const resetForm = () => {
     setSelectedItem(null);
     setQuantity('1');
     setEmail('');
     setPurpose('');
     setErrors({});
+    setShowDropdown(false);
     setShowConfirmationModal(false);
+    setReservedItemName('');
+    setReservedQuantity('');
   };
   
   // Navigate to reservations page
   const handleViewReservations = () => {
+    // Reset the form before navigating to clear all input fields
+    resetForm();
     navigate('/reservations');
   };
+
+  return (
+    <ProtectedLayout endpoint="/protected/stock">
+      {({ user, isLoading, logout, extraData }) => {
+        const stockItems: StockItem[] = extraData?.products ?? [];
+        const currentItem = selectedItem ? stockItems.find(item => item._id === selectedItem) : null;
+
+        // Handle pre-selection of item from navigation state
+        useEffect(() => {
+          const state = location.state as { itemId?: string } | null;
+          if (state && state.itemId) {
+            const itemId = state.itemId;
+            // Check if the item exists in stockItems and is available
+            const item = stockItems.find(item => item._id === itemId);
+            if (item && item.currentStock > 0) {
+              setSelectedItem(itemId);
+              setIsPreSelected(true);
+              // Clear the state to prevent re-selection on page refresh
+              window.history.replaceState({}, document.title);
+            }
+          }
+        }, [location.state, stockItems]);
+
+        // Preload images for better performance
+        useEffect(() => {
+          const imageUrls = stockItems.map(item => item.image);
+          preloadImages(imageUrls).catch(console.error);
+        }, [stockItems]);
+
 
 
 
@@ -314,7 +395,6 @@ const handleConfirmReservation = async () => {
             </div>
           );
         }
-
         
         return (
           <div className="dashboard">
@@ -531,7 +611,7 @@ const handleConfirmReservation = async () => {
                       </button>
                       <button 
                         className={`primary-btn ${!selectedItem || !quantity || parseInt(quantity) <= 0 || !email ? 'disabled' : ''}`}
-                        onClick={handleReviewReservation}
+                        onClick={() => handleReviewReservation(currentItem)}
                         disabled={!selectedItem || !quantity || parseInt(quantity) <= 0 || !email}
                       >
                         Review Reservation
@@ -665,7 +745,7 @@ const handleConfirmReservation = async () => {
                     <button className="cancel-btn" onClick={() => setShowSummaryModal(false)}>
                       Cancel
                     </button>
-                    <button className="confirm-btn" onClick={handleConfirmReservation}>
+                    <button className="confirm-btn" onClick={() => handleConfirmReservation(currentItem)}>
                       Confirm Reservation
                     </button>
                   </div>
@@ -685,21 +765,21 @@ const handleConfirmReservation = async () => {
                   
                   <div className="reservation-ticket">
                     <div className="ticket-row">
-                      <div className="ticket-label">Reservation ID</div>
-                      <div className="ticket-value">{reservationId}</div>
-                    </div>
-                    {selectedItem && currentItem && (
-                      <>
-                        <div className="ticket-row">
-                          <div className="ticket-label">Item</div>
-                          <div className="ticket-value">{currentItem.name}</div>
+                          <div className="ticket-label">Reservation ID</div>
+                          <div className="ticket-value">{reservationId}</div>
                         </div>
-                        <div className="ticket-row">
-                          <div className="ticket-label">Quantity</div>
-                          <div className="ticket-value">{quantity}</div>
-                        </div>
-                      </>
-                    )}
+                        {reservedItemName && (
+                          <>
+                            <div className="ticket-row">
+                              <div className="ticket-label">Item</div>
+                              <div className="ticket-value">{reservedItemName}</div>
+                            </div>
+                            <div className="ticket-row">
+                              <div className="ticket-label">Quantity</div>
+                              <div className="ticket-value">{reservedQuantity}</div>
+                            </div>
+                          </>
+                        )}
                     <div className="ticket-row">
                      
                     </div>
