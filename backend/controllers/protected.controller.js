@@ -101,7 +101,7 @@ export const reservationController = (req, res) => {
             user.reservedItems.map(async (i) => {
                 // Fetch the product, excluding reservers
                 const product = await Product.findById(i.item, '-reservers -__v -currentStock -totalStock -status');
-                const reservation = await Reservation.findById(i.reservation);
+                const reservation = await Reservation.findById(i.reservation, '-__v');
                 
                 i = reservation;
                 i.item = product;
