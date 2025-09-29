@@ -25,6 +25,22 @@ export interface StockItem {
   image: string;
 }
 
+// Format date function
+const formatDate = (iso: string) => {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return iso;
+  }
+};
+
 // Optimized image component for stock items
 const StockItemImage: React.FC<{
   src: string;
@@ -273,7 +289,7 @@ const StockAvailability = () => {
                   </div>
                   
                   <div className="item-footer">
-                    <span className="last-updated">Updated {item.lastUpdated}</span>
+                    <span className="last-updated">Updated {formatDate(item.lastUpdated)}</span>
                     <button
                       className={`reserve-btn ${item.status === 'Out' ? 'disabled' : ''}`}
                       disabled={item.status === 'Out'}
@@ -345,7 +361,7 @@ const StockAvailability = () => {
                 
                 <div className="detail-row">
                   <span className="detail-label">Last Updated:</span>
-                  <span className="detail-value">{selectedItem.lastUpdated}</span>
+                  <span className="detail-value">{formatDate(selectedItem.lastUpdated)}</span>
                 </div>
                 
                 <div className="stock-level-detail">
