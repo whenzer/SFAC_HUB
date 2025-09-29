@@ -1,3 +1,18 @@
+/* Fix for long purpose, email, or ID overflowing on mobile */
+.res-modal-detail-value,
+.res-meta-value,
+.res-mono {
+  white-space: normal;       /* allow wrapping */
+  word-break: break-word;    /* break long words if needed */
+  overflow-wrap: anywhere;   /* modern wrapping support */
+}
+
+/* Optional: if you prefer ellipsis instead of wrapping in cards */
+.res-meta-value {
+  display: inline-block;
+  max-width: 100%;           /* respect container size */
+}
+
 .res-reservations-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
