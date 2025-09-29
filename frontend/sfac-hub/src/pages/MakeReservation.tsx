@@ -112,6 +112,7 @@ const MakeReservation = () => {
   const [reservedQuantity, setReservedQuantity] = useState<string>('');
   const [isPreSelected, setIsPreSelected] = useState<boolean>(false);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [isSubmittingReservation, setIsSubmittingReservation] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -267,7 +268,10 @@ const MakeReservation = () => {
   
   // Handle confirm reservation - Now with actual API call and synchronous reset
   const handleConfirmReservation = async (currentItem: StockItem) => {
-    if (!selectedItem || !currentItem) return;
+    if (!selectedItem || !currentItem || isSubmittingReservation) return;
+
+    // Set loading state immediately to prevent duplicate submissions
+    setIsSubmittingReservation(true);
 
     const newId = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     setReservationId(newId);
@@ -303,6 +307,7 @@ const MakeReservation = () => {
       if (!response.ok) {
         console.error("Reservation failed:", data.message);
         alert(data.message || "Reservation failed");
+        setIsSubmittingReservation(false); // Reset loading state on error
         return;
       }
 
@@ -331,6 +336,7 @@ const MakeReservation = () => {
     } catch (error) {
       console.error("Error reserving product:", error);
       alert("Something went wrong. Please try again.");
+      setIsSubmittingReservation(false); // Reset loading state on error
     }
   };
   
@@ -345,6 +351,7 @@ const MakeReservation = () => {
     setShowConfirmationModal(false);
     setReservedItemName('');
     setReservedQuantity('');
+    setIsSubmittingReservation(false);
   };
   
   // Navigate to reservations page
@@ -751,11 +758,25 @@ const MakeReservation = () => {
                   </div>
                   
                   <div className="modal-footer">
-                    <button className="cancel-btn" onClick={() => setShowSummaryModal(false)}>
+                    <button 
+                      className="cancel-btn" 
+                      onClick={() => setShowSummaryModal(false)}
+                      disabled={isSubmittingReservation}
+                    >
                       Cancel
                     </button>
-                    <button className="confirm-btn" onClick={() => handleConfirmReservation(currentItem)}>
-                      Confirm Reservation
+                    <button 
+                      className={`confirm-btn ${isSubmittingReservation ? 'loading' : ''}`}
+                      onClick={() => handleConfirmReservation(currentItem)}
+                      disabled={isSubmittingReservation}
+                    >
+                      {isSubmittingReservation ? (
+                        <>
+                          Processing...
+                        </>
+                      ) : (
+                        'Confirm Reservation'
+                      )}
                     </button>
                   </div>
                 </div>
