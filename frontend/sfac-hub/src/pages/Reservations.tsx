@@ -111,6 +111,7 @@ const Reservations: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Stats Section */}
                 <div className="res-reservations-stats">
                   <div className="res-stat-card res-fade-up" data-delay="0">
                     <div className="res-stat-title">Pending</div>
@@ -130,6 +131,7 @@ const Reservations: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Active Reservations Section */}
                 <section className="res-reservations-section">
                   <div className="res-section-header">
                     <div className="res-section-title-with-icon">
@@ -149,33 +151,37 @@ const Reservations: React.FC = () => {
 
                     {activeReservations.map((r, idx) => (
                       <div key={r._id} className="res-reservation-card res-slide-in" style={{ ['--d' as any]: `${idx * 60}ms` }}>
-                        <div className="reservation-left">
+                        <div className="res-reservation-left">
                           <div className="res-thumb">
-                              <img src={r.item?.image} alt={r.item?.name} />
+                            <img src={r.item?.image} alt={r.item?.name} />
+                          </div>
+                          <div className="res-info">
+                            <div className="res-title-row">
+                              <div className="res-title">{r.item?.name}</div>
+                              {/* <span className={`res-badge res-${r.status.toLowerCase()}`}>{r.status}</span> */}
                             </div>
-                            <div className="res-info">
-                              <div className="res-title-row">
-                                <div className="res-title">{r.item?.name}</div>
-                                <span className={`res-badge res-${r.status.toLowerCase()}`}>{r.status}</span>
+                            <div className="res-sub">Waiting for preparation</div>
+                            <div className="res-meta">
+                              <div className="res-meta-item">
+                                <span className="res-meta-label">Reserved:</span>
+                                <span className="res-meta-value">{formatDate(r.reservedAt)}</span>
                               </div>
-                              <div className="res-sub">Waiting for preparation</div>
-                              <div className="res-meta">
-                                <div className="res-meta-item">
-                                  <span className="res-meta-label">Reserved:</span>
-                                  <span className="res-meta-value">{formatDate(r.reservedAt)}</span>
-                                </div>
-                                <div className="res-meta-item">
-                                  <span className="res-meta-label">Purpose:</span>
-                                  <span className="res-meta-value">{r.purpose || 'N/A'}</span>
-                                </div>
-                                <div className="res-meta-item">
-                                  <span className="res-meta-label">Email:</span>
-                                  <span className="res-meta-value">{r.email}</span>
-                                </div>
+                              <div className="res-meta-item">
+                                <span className="res-meta-label">Purpose:</span>
+                                <span className="res-meta-value">{r.purpose || 'N/A'}</span>
+                              </div>
+                              <div className="res-meta-item">
+                                <span className="res-meta-label">Email:</span>
+                                <span className="res-meta-value">{r.email}</span>
                               </div>
                             </div>
                           </div>
-                          <div className="res-reservation-right">
+                        </div>
+                        <div className="res-reservation-right">
+                          <div className="res-status-display">
+                            <div className={`res-status-badge-large res-${r.status.toLowerCase()}`}>
+                              {r.status}
+                            </div>
                             <div className="res-meta-line">
                               <span className="res-small-label">ID:</span>
                               <span className="res-mono">{r.reservationID}</span>
@@ -185,18 +191,20 @@ const Reservations: React.FC = () => {
                               <span className="res-mono">{r.quantity}</span>
                             </div>
                           </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </section>
 
+                {/* Past Reservations Section */}
                 <section className="res-reservations-section">
                   <div className="res-section-header">
                     <div className="res-section-title-with-icon">
                       <span className="res-dot" />
                       <h2 className="res-section-title">Past Reservations</h2>
                     </div>
-                    <span className="res-section-sub">Completed and expired reservations</span>
+                    <span className="res-section-sub">Completed, cancelled, and expired reservations</span>
                   </div>
 
                   <div className="res-reservations-list">
@@ -218,7 +226,11 @@ const Reservations: React.FC = () => {
                               <div className="res-title">{r.item?.name}</div>
                               <span className={`res-badge res-${r.status.toLowerCase()}`}>{r.status}</span>
                             </div>
-                            <div className="res-sub">{r.status === 'Collected' ? 'Collected' : r.status === 'Cancelled' ? 'Cancelled' : 'Expired'}</div>
+                            <div className="res-sub">
+                              {r.status === 'Collected' ? 'Item collected' : 
+                               r.status === 'Cancelled' ? 'Reservation cancelled' : 
+                               'Reservation expired'}
+                            </div>
                             <div className="res-meta">
                               <div className="res-meta-item">
                                 <span className="res-meta-label">Reserved:</span>
@@ -236,13 +248,18 @@ const Reservations: React.FC = () => {
                           </div>
                         </div>
                         <div className="res-reservation-right">
-                          <div className="res-meta-line">
-                            <span className="res-small-label">ID:</span>
-                            <span className="res-mono">{r.reservationID}</span>
-                          </div>
-                          <div className="res-meta-line">
-                            <span className="res-small-label">Qty:</span>
-                            <span className="res-mono">{r.quantity}</span>
+                          <div className="res-status-display">
+                            <div className={`res-status-badge-large res-${r.status.toLowerCase()}`}>
+                              {r.status}
+                            </div>
+                            <div className="res-meta-line">
+                              <span className="res-small-label">ID:</span>
+                              <span className="res-mono">{r.reservationID}</span>
+                            </div>
+                            <div className="res-meta-line">
+                              <span className="res-small-label">Qty:</span>
+                              <span className="res-mono">{r.quantity}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
