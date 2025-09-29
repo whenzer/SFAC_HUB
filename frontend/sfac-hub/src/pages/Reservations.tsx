@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
 
-type ReservationStatus = 'Pending' | 'Collected' | 'Cancelled' | 'Expired' | 'Ready';
+type ReservationStatus = 'Pending' | 'Collected' | 'Cancelled' | 'Expired';
 
 interface ProductRef {
   _id: string;
@@ -28,7 +28,7 @@ interface ReservationItem {
   quantity: number;
   purpose: string;
   reservedAt: string;
-  status: ReservationStatus | 'Pending';
+  status: ReservationStatus;
 }
 
 const formatDate = (iso: string) => {
@@ -51,23 +51,27 @@ const Reservations: React.FC = () => {
         const reservations: ReservationItem[] = extraData?.reservations ?? [];
 
         const counts = useMemo(() => {
-          const base = { Confirmed: 0, Ready: 0, Completed: 0, Expired: 0 } as Record<string, number>;
+          const base = { Pending: 0, Collected: 0, Cancelled: 0, Expired: 0 } as Record<string, number>;
           for (const r of reservations) {
-            if (r.status === 'Pending') base.Confirmed += 1;
-            if (r.status === 'Collected') base.Completed += 1;
+            if (r.status === 'Pending') base.Pending += 1;
+            if (r.status === 'Collected') base.Collected += 1;
+            if (r.status === 'Cancelled') base.Cancelled += 1;
             if (r.status === 'Expired') base.Expired += 1;
-            // Optional: treat items close to pickup as Ready if backend provides it
-            if (r.status === 'Ready') base.Ready += 1;
           }
           return base;
         }, [reservations]);
 
         const activeReservations = useMemo(
-          () => reservations.filter(r => r.status === 'Pending' || r.status === 'Ready'),
+          () => reservations
+            .filter(r => r.status === 'Pending')
+            .sort((a, b) => new Date(b.reservedAt).getTime() - new Date(a.reservedAt).getTime()),
           [reservations]
         );
+
         const pastReservations = useMemo(
-          () => reservations.filter(r => r.status === 'Collected' || r.status === 'Cancelled' || r.status === 'Expired'),
+          () => reservations
+            .filter(r => r.status === 'Collected' || r.status === 'Cancelled' || r.status === 'Expired')
+            .sort((a, b) => new Date(b.reservedAt).getTime() - new Date(a.reservedAt).getTime()),
           [reservations]
         );
 
@@ -109,16 +113,16 @@ const Reservations: React.FC = () => {
 
                 <div className="res-reservations-stats">
                   <div className="res-stat-card res-fade-up" data-delay="0">
-                    <div className="res-stat-title">Confirmed</div>
-                    <div className="res-stat-value">{counts.Confirmed}</div>
+                    <div className="res-stat-title">Pending</div>
+                    <div className="res-stat-value">{counts.Pending}</div>
                   </div>
                   <div className="res-stat-card res-fade-up" data-delay="50">
-                    <div className="res-stat-title">Ready</div>
-                    <div className="res-stat-value">{counts.Ready}</div>
+                    <div className="res-stat-title">Collected</div>
+                    <div className="res-stat-value">{counts.Collected}</div>
                   </div>
                   <div className="res-stat-card res-fade-up" data-delay="100">
-                    <div className="res-stat-title">Completed</div>
-                    <div className="res-stat-value">{counts.Completed}</div>
+                    <div className="res-stat-title">Cancelled</div>
+                    <div className="res-stat-value">{counts.Cancelled}</div>
                   </div>
                   <div className="res-stat-card res-fade-up" data-delay="150">
                     <div className="res-stat-title">Expired</div>
@@ -199,7 +203,7 @@ const Reservations: React.FC = () => {
                     {pastReservations.length === 0 && (
                       <div className="res-empty-state res-fade-in">
                         <div className="res-empty-title">No past reservations</div>
-                        <div className="res-empty-sub">Completed, cancelled, or expired reservations will appear here.</div>
+                        <div className="res-empty-sub">Collected, cancelled, or expired reservations will appear here.</div>
                       </div>
                     )}
 
