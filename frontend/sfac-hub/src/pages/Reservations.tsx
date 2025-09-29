@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './dashboard.css';
 import './Reservations.css';
@@ -44,7 +44,188 @@ const formatDate = (iso: string) => {
   }
 };
 
+const formatDateTime = (iso: string) => {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return iso;
+  }
+};
+
+// Modal Component
+interface ReservationModalProps {
+  reservation: ReservationItem | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const ReservationModal: React.FC<ReservationModalProps> = ({ reservation, isOpen, onClose }) => {
+  if (!isOpen || !reservation) return null;
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const getStatusDescription = (status: ReservationStatus) => {
+    switch (status) {
+      case 'Pending':
+        return 'Your reservation is pending and awaiting preparation.';
+      case 'Collected':
+        return 'This item has been successfully collected.';
+      case 'Cancelled':
+        return 'This reservation was cancelled.';
+      case 'Expired':
+        return 'This reservation has expired.';
+      default:
+        return '';
+    }
+  };
+
+  return (
+    <div 
+      className={`res-modal-backdrop ${isOpen ? 'res-modal-enter' : ''}`}
+      onClick={handleBackdropClick}
+    >
+      <div className="res-modal-container">
+        <div className="res-modal-content">
+          {/* Header */}
+          <div className="res-modal-header">
+            <h2 className="res-modal-title">Reservation Details</h2>
+            <button 
+              className="res-modal-close-btn"
+              onClick={onClose}
+              aria-label="Close modal"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="res-modal-body">
+            {/* Item Information */}
+            <div className="res-modal-section">
+              <h3 className="res-modal-section-title">Item Information</h3>
+              <div className="res-modal-item">
+                <div className="res-modal-thumb">
+                  <img src={reservation.item?.image} alt={reservation.item?.name} />
+                </div>
+                <div className="res-modal-item-info">
+                  <h4 className="res-modal-item-name">{reservation.item?.name}</h4>
+                  <p className="res-modal-item-description">{reservation.item?.description}</p>
+                  <div className="res-modal-item-meta">
+                    <span className="res-modal-item-category">{reservation.item?.category}</span>
+                    <span className="res-modal-item-location">{reservation.item?.location}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Reservation Details */}
+            <div className="res-modal-section">
+              <h3 className="res-modal-section-title">Reservation Details</h3>
+              <div className="res-modal-details-grid">
+                <div className="res-modal-detail">
+                  <span className="res-modal-detail-label">Reservation ID</span>
+                  <span className="res-modal-detail-value res-modal-mono">{reservation.reservationID}</span>
+                </div>
+                <div className="res-modal-detail">
+                  <span className="res-modal-detail-label">Status</span>
+                  <span className={`res-modal-status res-modal-status-${reservation.status.toLowerCase()}`}>
+                    {reservation.status}
+                  </span>
+                </div>
+                <div className="res-modal-detail">
+                  <span className="res-modal-detail-label">Quantity</span>
+                  <span className="res-modal-detail-value">{reservation.quantity}</span>
+                </div>
+                <div className="res-modal-detail">
+                  <span className="res-modal-detail-label">Reserved Date</span>
+                  <span className="res-modal-detail-value">{formatDateTime(reservation.reservedAt)}</span>
+                </div>
+                <div className="res-modal-detail res-modal-detail-full">
+                  <span className="res-modal-detail-label">Purpose</span>
+                  <span className="res-modal-detail-value">{reservation.purpose || 'Not specified'}</span>
+                </div>
+                <div className="res-modal-detail res-modal-detail-full">
+                  <span className="res-modal-detail-label">Email</span>
+                  <span className="res-modal-detail-value">{reservation.email}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Status Description */}
+            <div className="res-modal-section">
+              <div className="res-modal-status-description">
+                <div className={`res-modal-status-icon res-modal-status-${reservation.status.toLowerCase()}`}>
+                  {reservation.status === 'Pending' && (
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  {reservation.status === 'Collected' && (
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  {reservation.status === 'Cancelled' && (
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  {reservation.status === 'Expired' && (
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="res-modal-status-text">
+                  <p>{getStatusDescription(reservation.status)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="res-modal-footer">
+            <button 
+              className="res-modal-action-btn"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Reservations: React.FC = () => {
+  const [selectedReservation, setSelectedReservation] = useState<ReservationItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleReservationClick = (reservation: ReservationItem) => {
+    setSelectedReservation(reservation);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    // Delay clearing the reservation to allow animation
+    setTimeout(() => setSelectedReservation(null), 300);
+  };
+
   return (
     <ProtectedLayout endpoint="/protected/reservations">
       {({ user, isLoading, logout, extraData }) => {
@@ -150,7 +331,12 @@ const Reservations: React.FC = () => {
                     )}
 
                     {activeReservations.map((r, idx) => (
-                      <div key={r._id} className="res-reservation-card res-slide-in" style={{ ['--d' as any]: `${idx * 60}ms` }}>
+                      <div 
+                        key={r._id} 
+                        className="res-reservation-card res-slide-in res-clickable" 
+                        style={{ ['--d' as any]: `${idx * 60}ms` }}
+                        onClick={() => handleReservationClick(r)}
+                      >
                         <div className="res-reservation-left">
                           <div className="res-thumb">
                             <img src={r.item?.image} alt={r.item?.name} />
@@ -158,7 +344,6 @@ const Reservations: React.FC = () => {
                           <div className="res-info">
                             <div className="res-title-row">
                               <div className="res-title">{r.item?.name}</div>
-                              {/* <span className={`res-badge res-${r.status.toLowerCase()}`}>{r.status}</span> */}
                             </div>
                             <div className="res-sub">Waiting for preparation</div>
                             <div className="res-meta">
@@ -216,7 +401,12 @@ const Reservations: React.FC = () => {
                     )}
 
                     {pastReservations.map((r, idx) => (
-                      <div key={r._id} className="res-reservation-card res-slide-in" style={{ ['--d' as any]: `${idx * 60}ms` }}>
+                      <div 
+                        key={r._id} 
+                        className="res-reservation-card res-slide-in res-clickable" 
+                        style={{ ['--d' as any]: `${idx * 60}ms` }}
+                        onClick={() => handleReservationClick(r)}
+                      >
                         <div className="res-reservation-left">
                           <div className="res-thumb">
                             <img src={r.item?.image} alt={r.item?.name} />
@@ -270,6 +460,13 @@ const Reservations: React.FC = () => {
             </main>
 
             <Footer />
+
+            {/* Reservation Modal */}
+            <ReservationModal 
+              reservation={selectedReservation}
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+            />
           </div>
         );
       }}
