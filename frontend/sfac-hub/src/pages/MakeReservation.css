@@ -364,6 +364,29 @@
   cursor: not-allowed;
 }
 
+/* Loading Button Styles */
+.confirm-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+  display: none !important;
+}
+
+.confirm-btn.loading:hover {
+  background-color: #3182ce;
+  display: none !important;
+}
+
+/* .button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+} */
+
 .secondary-btn,
 .cancel-btn {
   background-color: #edf2f7;
