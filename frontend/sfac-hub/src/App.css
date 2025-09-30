@@ -1,8 +1,48 @@
+/* Remove width constraints from root to allow full viewport usage */
 #root {
-  max-width: 1280px;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Create responsive container class to be used within components */
+.container {
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 1rem;
+}
+
+/* Responsive padding adjustments */
+@media (min-width: 640px) {
+  .container {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 2rem;
+  }
+}
+
+/* Full width container for components that need it */
+.container-full {
+  width: 100%;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-full {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-full {
+    padding: 2rem;
+  }
 }
 
 .logo {

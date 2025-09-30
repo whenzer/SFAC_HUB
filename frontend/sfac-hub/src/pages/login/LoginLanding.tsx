@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import './login.css'
 import logo from '../../assets/images/SFAC-Logo.png'
 import { Link, useNavigate } from 'react-router-dom'
+import Footer from '../../components/Footer'
 
 function LoginLanding() {
 	const navigate = useNavigate()
@@ -21,7 +22,6 @@ function LoginLanding() {
 
 		const elements: Element[] = []
 		if (cardRef.current) elements.push(cardRef.current)
-		if (footerRef.current) elements.push(footerRef.current)
 
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -71,6 +71,13 @@ function LoginLanding() {
 		<div className="login-landing">
 			<main className="center-stage">
 				<div ref={cardRef} className="login-card fade-on-scroll">
+					{/* Breadcrumb Navigation */}
+					<nav className="breadcrumb">
+						<Link to="/" className="breadcrumb-link">Home</Link>
+						<span className="breadcrumb-separator">/</span>
+						<span className="breadcrumb-current">Login</span>
+					</nav>
+
 					<div className="card-logo-wrap">
 						<img src={logo} alt="SFAC logo" className="card-logo" />
 					</div>
@@ -143,11 +150,8 @@ function LoginLanding() {
 				</div>
 			</main>
 
-			<footer ref={footerRef} className="footer fade-on-scroll">
-				<div className="container footer-inner">
-					<p>© {new Date().getFullYear()} SFAC Hub. All rights reserved.</p>
-				</div>
-			</footer>
+			<Footer />
+			
 		</div>
 	)
 }

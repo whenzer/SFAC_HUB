@@ -1,4 +1,4 @@
-﻿/* Base palette (updated to red and white theme) */
+/* Base palette (updated to red and white theme) */
 :root {
 --bg: #ffffff; /* pure white background */
 --surface: #ffffff;
@@ -9,6 +9,7 @@
 --ring: rgba(220, 38, 38, 0.08); /* subtle red ring for focus states */
 --ring-strong: rgba(220, 38, 38, 0.22); /* stronger red ring for hover */
 --shadow: 0 20px 60px rgba(220, 38, 38, 0.08); /* subtle red shadow */
+--breadcrumb-separator: #6b7280;
 }
 
 /* Ensure background can fill full viewport */
@@ -44,6 +45,48 @@ border: 1px solid rgba(220, 38, 38, 0.06);
 padding: clamp(24px, 4vw, 36px) clamp(20px, 3.2vw, 32px) 24px;
 text-align: center;
 animation: float 6s ease-in-out infinite;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb {
+margin-bottom: 16px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+color: var(--text);
+}
+
+.breadcrumb-link {
+color: var(--accent);
+text-decoration: none;
+transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+color: var(--accent-2);
+text-decoration: underline;
+}
+
+.breadcrumb-separator {
+margin: 0 8px;
+color: var(--breadcrumb-separator);
+}
+
+.breadcrumb-current {
+color: var(--muted);
+font-weight: 500;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+.breadcrumb {
+font-size: 12px;
+}
+
+.breadcrumb-separator {
+margin: 0 6px;
+}
 }
 .card-logo-wrap { display:flex; align-items:center; justify-content:center; margin-bottom: 14px; }
 .card-logo { width: 76px; height: 76px; border-radius: 999px; box-shadow: 0 12px 30px rgba(220, 38, 38, 0.12); }
