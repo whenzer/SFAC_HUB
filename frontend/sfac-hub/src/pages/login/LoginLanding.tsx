@@ -72,7 +72,7 @@ function LoginLanding() {
 			<main className="center-stage">
 				<div ref={cardRef} className="login-card fade-on-scroll">
 					{/* Breadcrumb Navigation */}
-					<nav className="breadcrumb">
+					<nav className="breadcrumb-login">
 						<Link to="/" className="breadcrumb-link">Home</Link>
 						<span className="breadcrumb-separator">/</span>
 						<span className="breadcrumb-current">Login</span>
