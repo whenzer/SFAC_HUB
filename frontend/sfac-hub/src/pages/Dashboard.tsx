@@ -121,18 +121,20 @@ const Dashboard = () => {
                   
                   <div className="quick-actions-grid">
                     {/* Stock Availability Card */}
-                    <Link to="/stock-availability" className="action-card stock-card">
-                      <div className="card-icon">
-                        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-                          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                        </svg>
+                    <Link to="/stock-availability" className="dashboard-action-card dashboard-stock-card">
+                      <div className="dashboard-card-icon-container">
+                        <div className="dashboard-card-icon">
+                          <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                          </svg>
+                        </div>
                       </div>
-                      <div className="card-content">
-                        <h3 className="card-title">Stock Availability</h3>
-                        <p className="card-description">
+                      <div className="dashboard-card-content">
+                        <h3 className="dashboard-card-title">Stock Availability</h3>
+                        <p className="dashboard-card-description">
                           Check what's currently available
                         </p>
-                        <div className="card-action">
+                        <div className="dashboard-card-action">
                           <span>Access</span>
                           <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
@@ -142,18 +144,20 @@ const Dashboard = () => {
                     </Link>
 
                     {/* Make Reservation Card */}
-                    <Link to="/make-reservation" className="action-card reservation-card">
-                      <div className="card-icon">
-                        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
-                        </svg>
+                    <Link to="/make-reservation" className="dashboard-action-card dashboard-reservation-card">
+                      <div className="dashboard-card-icon-container">
+                        <div className="dashboard-card-icon">
+                          <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                          </svg>
+                        </div>
                       </div>
-                      <div className="card-content">
-                        <h3 className="card-title">Make Reservation</h3>
-                        <p className="card-description">
+                      <div className="dashboard-card-content">
+                        <h3 className="dashboard-card-title">Make Reservation</h3>
+                        <p className="dashboard-card-description">
                           Reserve items for pickup
                         </p>
-                        <div className="card-action">
+                        <div className="dashboard-card-action">
                           <span>Access</span>
                           <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
@@ -163,18 +167,20 @@ const Dashboard = () => {
                     </Link>
 
                     {/* Lost & Found Card */}
-                    <Link to="/lost-and-found" className="action-card lost-found-card">
-                      <div className="card-icon">
-                        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-                        </svg>
+                    <Link to="/lost-and-found" className="dashboard-action-card dashboard-lost-found-card">
+                      <div className="dashboard-card-icon-container">
+                        <div className="dashboard-card-icon">
+                          <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                          </svg>
+                        </div>
                       </div>
-                      <div className="card-content">
-                        <h3 className="card-title">Lost & Found</h3>
-                        <p className="card-description">
+                      <div className="dashboard-card-content">
+                        <h3 className="dashboard-card-title">Lost & Found</h3>
+                        <p className="dashboard-card-description">
                           Report or find lost items
                         </p>
-                        <div className="card-action">
+                        <div className="dashboard-card-action">
                           <span>Access</span>
                           <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
