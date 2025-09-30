@@ -425,6 +425,19 @@
   margin: 0;
 }
 
+/* Center-align specific text elements */
+.welcome-message {
+  text-align: center;
+}
+
+.today-update {
+  text-align: center;
+}
+
+.feature-access {
+  text-align: center;
+}
+
 /* Section Styles */
 .section-title {
   font-size: 1.5rem;
@@ -443,6 +456,11 @@
 .quick-actions-section {
   margin-bottom: 3rem;
   animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+/* Ensure quick actions section maintains proper text alignment */
+.quick-actions-section .section-title {
+  text-align: center;
 }
 
 .quick-actions-grid {
