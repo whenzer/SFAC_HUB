@@ -52,6 +52,9 @@ const LostAndFound = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [commentInput, setCommentInput] = useState<Record<string, string>>({});
+  const [showComments, setShowComments] = useState<Record<string, boolean>>({});
 
   const [feed, setFeed] = useState<LostFoundPost[]>([]);
 
@@ -177,13 +180,52 @@ const LostAndFound = () => {
     }
   }
 
-  function onLike(id: string) {
-    setFeed((prev) => prev.map((p) => (p.id === id ? { ...p, stats: { ...p.stats, likes: p.stats.likes + 1 } } : p)));
-  }
+  const onLike = (id: string) => {
+    // Toggle like status
+    const isCurrentlyLiked = likedPosts[id] || false;
+    setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
+    
+    // Update like count in feed
+    setFeed(prev => prev.map(post => {
+      if (post.id === id) {
+        const newLikes = isCurrentlyLiked 
+          ? Math.max(0, post.stats.likes - 1) 
+          : post.stats.likes + 1;
+        return {
+          ...post,
+          stats: { ...post.stats, likes: newLikes }
+        };
+      }
+      return post;
+    }));
+  };
 
-  function onComment(id: string) {
+  const onComment = (id: string) => {
+    // Toggle comment section visibility
+    setShowComments(prev => ({ ...prev, [id]: !prev[id] }));
     setFeed((prev) => prev.map((p) => (p.id === id ? { ...p, stats: { ...p.stats, comments: p.stats.comments + 1 } } : p)));
-  }
+  };
+  
+  const submitComment = (id: string) => {
+    if (!commentInput[id]?.trim()) return;
+    
+    // Add comment to post
+    setFeed(prev => prev.map(post => {
+      if (post.id === id) {
+        return {
+          ...post,
+          stats: { 
+            ...post.stats, 
+            comments: post.stats.comments + 1 
+          }
+        };
+      }
+      return post;
+    }));
+    
+    // Clear comment input
+    setCommentInput(prev => ({ ...prev, [id]: '' }));
+  };
 
   function onClaim(id: string) {
     setFeed((prev) => prev.map((p) => (p.id === id && p.type === 'Found' ? { ...p, claimedBy: 'You' } : p)));
@@ -289,7 +331,7 @@ const LostAndFound = () => {
                       </div>
                     ) : (
                       filteredFeed.map((post) => (
-                        <article key={post.id} className="lf-post">
+                        <article key={post.id} className="lf-post" data-type={post.type}>
                           <header className="lf-post-header">
                             <div className="lf-post-avatar" aria-hidden>
                               {post.author.name.substring(0, 2).toUpperCase()}
@@ -329,15 +371,15 @@ const LostAndFound = () => {
                           <footer className="lf-post-footer">
                             <div className="lf-post-actions">
                               <button 
-                                className="lf-action-btn"
+                                className={`lf-action-btn ${likedPosts[post.id] ? 'lf-action-btn--active' : ''}`}
                                 onClick={() => onLike(post.id)}
                                 aria-label="Like post"
                               >
-                                <span>👍</span>
-                                Like {post.stats.likes > 0 && `(${post.stats.likes})`}
+                                <span>{likedPosts[post.id] ? '❤️' : '👍'}</span>
+                                {likedPosts[post.id] ? 'Liked' : 'Like'} {post.stats.likes > 0 && `(${post.stats.likes})`}
                               </button>
                               <button 
-                                className="lf-action-btn"
+                                className={`lf-action-btn ${showComments[post.id] ? 'lf-action-btn--active' : ''}`}
                                 onClick={() => onComment(post.id)}
                                 aria-label="Comment on post"
                               >
@@ -363,6 +405,32 @@ const LostAndFound = () => {
                             <div className="lf-post-views">
                               {post.stats.views} views
                             </div>
+                            
+                            {showComments[post.id] && (
+                              <div className="lf-comments-section">
+                                <div className="lf-comment-form">
+                                  <input
+                                    type="text"
+                                    placeholder="Write a comment..."
+                                    value={commentInput[post.id] || ''}
+                                    onChange={(e) => setCommentInput(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                    className="lf-comment-input"
+                                  />
+                                  <button 
+                                    className="lf-comment-submit"
+                                    onClick={() => submitComment(post.id)}
+                                    disabled={!commentInput[post.id]?.trim()}
+                                  >
+                                    Post
+                                  </button>
+                                </div>
+                                {post.stats.comments > 0 && (
+                                  <div className="lf-comments-count">
+                                    {post.stats.comments} {post.stats.comments === 1 ? 'comment' : 'comments'}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </footer>
                         </article>
                       ))
@@ -391,7 +459,11 @@ const LostAndFound = () => {
                         <div className="lf-form">
                           <div className="lf-type-selector">
                             {(['Lost', 'Found'] as ReportType[]).map((rt) => (
-                              <label key={rt} className={`lf-type-option ${form.type === rt ? 'lf-type-option--selected' : ''}`}>
+                              <label 
+                                key={rt} 
+                                className={`lf-type-option ${form.type === rt ? 'lf-type-option--selected' : ''}`}
+                                data-type={rt}
+                              >
                                 <input 
                                   type="radio" 
                                   name="reportType" 
@@ -458,7 +530,7 @@ const LostAndFound = () => {
                           </div>
 
                           <div className="lf-form-group">
-                            <label className="lf-file-upload">
+                            <label className={`lf-file-upload ${form.photoPreview ? 'lf-file-upload--has-image' : ''}`}>
                               <input 
                                 ref={fileInputRef}
                                 type="file" 
@@ -482,14 +554,33 @@ const LostAndFound = () => {
                                   <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
                                   <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
                                 </svg>
-                                Upload Photo
+                                {form.photoPreview ? 'Change Photo' : 'Upload Photo'}
                               </div>
                             </label>
                             {errors.photoFile && <div className="lf-form-error">{errors.photoFile}</div>}
                             
                             {form.photoPreview && (
                               <div className="lf-image-preview">
-                                <img src={form.photoPreview} alt="Preview" />
+                                <div className="lf-photo-preview-container">
+                                  <img src={form.photoPreview} alt="Preview" />
+                                  <button 
+                                    type="button" 
+                                    className="lf-photo-remove-btn"
+                                    onClick={() => {
+                                      setForm({
+                                        ...form,
+                                        photoFile: null,
+                                        photoPreview: ''
+                                      });
+                                      if (fileInputRef.current) fileInputRef.current.value = '';
+                                    }}
+                                    aria-label="Remove photo"
+                                  >
+                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </div>

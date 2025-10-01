@@ -493,6 +493,18 @@
   color: #334155;
 }
 
+.lf-action-btn--active {
+  background: #dbeafe;
+  color: #1e40af;
+  font-weight: 500;
+  border-color: #93c5fd;
+}
+
+.lf-action-btn--active:hover {
+  background: #bfdbfe;
+  border-color: #60a5fa;
+}
+
 .lf-action-btn--claim {
   background: #dcfce7;
   border-color: #bbf7d0;
@@ -502,6 +514,55 @@
 .lf-action-btn--claim:hover {
   background: #bbf7d0;
   border-color: #86efac;
+}
+
+/* Comment section styles */
+.lf-comments-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.lf-comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.lf-comment-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.lf-comment-submit {
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lf-comment-submit:hover {
+  background: #2563eb;
+}
+
+.lf-comment-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.lf-comments-count {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.5rem;
 }
 
 .lf-post-views {
@@ -535,6 +596,45 @@
   background: #f0f9ff;
   color: #0369a1;
   border: 1px solid #bae6fd;
+}
+
+/* Post type styling */
+.lf-post[data-type="Lost"] {
+  border-left: 4px solid #ef4444;
+}
+
+.lf-post[data-type="Found"] {
+  border-left: 4px solid #22c55e;
+}
+
+/* Type selector styling */
+.lf-type-option {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.lf-type-option[data-type="Lost"] {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.lf-type-option[data-type="Lost"].active {
+  background: #fecaca;
+  border-color: #ef4444;
+}
+
+.lf-type-option[data-type="Found"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.lf-type-option[data-type="Found"].active {
+  background: #bbf7d0;
+  border-color: #22c55e;
 }
 
 /* Modal */
@@ -807,6 +907,33 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lf-photo-preview-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.lf-photo-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.lf-photo-remove-btn:hover {
+  background-color: rgba(220, 38, 38, 0.8);
 }
 
 /* Guidelines */
