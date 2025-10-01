@@ -2,17 +2,33 @@
 .lf-dashboard {
   min-height: 100vh;
   background: linear-gradient(135deg, #fef2f2 0%,);
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .lf-main {
   padding: 2rem 0;
   min-height: calc(100vh - 140px);
+  width: 100%;
 }
 
 .lf-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 0 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .lf-main {
+    padding: 1.5rem 0;
+  }
+  
+  .lf-container {
+    padding: 0 1rem;
+  }
 }
 
 /* Loading Screen */
@@ -83,6 +99,7 @@
   justify-content: center;
   color: white;
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  flex-shrink: 0;
 }
 
 .lf-header-text {
@@ -103,6 +120,36 @@
   margin: 0;
 }
 
+@media (max-width: 768px) {
+  .lf-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .lf-header-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .lf-title {
+    font-size: 1.5rem;
+  }
+  
+  .lf-subtitle {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-header-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .lf-title {
+    font-size: 1.25rem;
+  }
+}
+
 /* Tabs */
 .lf-tabs {
   display: flex;
@@ -110,6 +157,7 @@
   border-bottom: 1px solid #e2e8f0;
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .lf-tab {
@@ -173,11 +221,13 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .lf-search {
   position: relative;
   flex: 1;
+  min-width: 200px;
 }
 
 .lf-search-icon {
@@ -196,6 +246,45 @@
   font-size: 0.95rem;
   transition: all 0.2s ease;
   background: white;
+}
+
+@media (max-width: 768px) {
+  .lf-tabs {
+    gap: 0.5rem;
+  }
+  
+  .lf-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .lf-create-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .lf-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .lf-search {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-tabs {
+    justify-content: center;
+  }
+  
+  .lf-create-btn {
+    margin-left: 0;
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .lf-search-input:focus {
@@ -252,6 +341,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1.5rem;
 }
 
 .lf-post:hover {
@@ -323,6 +415,8 @@
 .lf-post-image {
   width: 100%;
   overflow: hidden;
+  margin-top: 1rem;
+  border-radius: 12px;
 }
 
 .lf-post-image img {
@@ -337,12 +431,26 @@
   transform: scale(1.02);
 }
 
+@media (max-width: 768px) {
+  .lf-post-image img {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-post-image img {
+    max-height: 250px;
+  }
+}
+
 .lf-post-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
   border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .lf-post-actions {
@@ -350,6 +458,19 @@
   gap: 0.75rem;
   align-items: center;
   flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .lf-post-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .lf-post-views {
+    margin-top: 0.5rem;
+    width: 100%;
+    text-align: left;
+  }
 }
 
 .lf-action-btn {
@@ -440,6 +561,24 @@
   animation: lf-slideUp 0.3s ease;
 }
 
+@media (max-width: 768px) {
+  .lf-modal {
+    width: 95vw;
+    max-height: 80vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-modal {
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 16px 16px 0 0;
+    position: fixed;
+    bottom: 0;
+    max-height: 90vh;
+  }
+}
+
 @keyframes lf-fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -502,6 +641,17 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .lf-form {
+    padding: 0 1rem 1rem;
+  }
+  
+  .lf-type-selector {
+    gap: 0.5rem;
+  }
 }
 
 .lf-type-option {
@@ -542,19 +692,49 @@
 }
 
 .lf-form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.lf-form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #334155;
 }
 
 .lf-form-input,
-.lf-form-select,
-.lf-form-textarea {
+.lf-form-textarea,
+.lf-form-select {
   width: 100%;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  border-radius: 8px;
+  font-size: 1rem;
   transition: all 0.2s ease;
   background: white;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .lf-form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .lf-form-input,
+  .lf-form-textarea,
+  .lf-form-select {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-form-input,
+  .lf-form-textarea,
+  .lf-form-select {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
 }
 
 .lf-form-input:focus,
@@ -661,6 +841,24 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+}
+
+.lf-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 480px) {
+  .lf-form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .lf-form-actions button {
+    width: 100%;
+  }
 }
 
 .lf-btn {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import './LostAndFound.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
@@ -321,6 +321,7 @@ const LostAndFound = () => {
                                 src={post.photoUrl} 
                                 alt={post.title}
                                 loading="lazy"
+                                className="responsive-image"
                               />
                             </div>
                           )}
@@ -330,6 +331,7 @@ const LostAndFound = () => {
                               <button 
                                 className="lf-action-btn"
                                 onClick={() => onLike(post.id)}
+                                aria-label="Like post"
                               >
                                 <span>👍</span>
                                 Like {post.stats.likes > 0 && `(${post.stats.likes})`}
@@ -337,6 +339,7 @@ const LostAndFound = () => {
                               <button 
                                 className="lf-action-btn"
                                 onClick={() => onComment(post.id)}
+                                aria-label="Comment on post"
                               >
                                 <span>💬</span>
                                 Comment {post.stats.comments > 0 && `(${post.stats.comments})`}
@@ -345,6 +348,7 @@ const LostAndFound = () => {
                                 <button 
                                   className="lf-action-btn lf-action-btn--claim"
                                   onClick={() => onClaim(post.id)}
+                                  aria-label="Claim item"
                                 >
                                   <span>✅</span>
                                   Claim
