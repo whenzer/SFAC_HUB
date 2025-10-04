@@ -211,7 +211,6 @@ const LostAndFound = () => {
       {({ user, isLoading, logout, extraData }) => {
 
         useEffect(() => {
-          console.log('Extra Data:', extraData);
           if (extraData?.data) {
             const posts: LostFoundPost[] = extraData.data.map((item: any) => ({
               id: item._id,
@@ -223,7 +222,7 @@ const LostAndFound = () => {
               photoUrl: item.content.photo?.image,
               author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown' },
               createdAt: item.createdAt,
-              likedByMe: item.content.likes?.likedbyme || false,
+              likedByMe: item.content.likedbyme || false,
               stats: {
                 likes: item.content.likes?.count || 0,
                 comments: item.content.comments?.length || 0,
@@ -231,6 +230,7 @@ const LostAndFound = () => {
               },
               claimedBy: item.content.status === 'Claimed' ? 'Someone' : null,
             } as LostFoundPost));
+            console.log('Fetched posts:', posts);
             setFeed(posts);
 
             const initialLikes: Record<string, boolean> = {};
