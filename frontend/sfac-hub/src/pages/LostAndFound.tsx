@@ -10,6 +10,59 @@ import fetchWithRefresh from '../utils/apiService';
 
 type ReportType = 'Lost' | 'Found';
 
+
+/* REST API types ###
+
+get protected/lostandfound
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTg5ODMsImV4cCI6MTc1OTU1OTg4M30.u1AB4R82jw-a70DzwkYPf0n4qhaCClqnseXRVBcO8Cg
+###
+
+POST /protected/lostandfound/:id/like
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
+
+###
+
+POST /protected/lostandfound/:id/unlike
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
+
+###
+
+POST /protected/lostandfound/68e0a7516f40c66a583e3104/comment
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
+
+{
+    "comment": "This is a test comment"
+}
+
+###
+
+DELETE /protected/lostandfound/:postid/comment/:commentid
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
+
+###
+
+POST /protected/lostandfound/post
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTU5OTgsImV4cCI6MTc1OTU1Njg5OH0.GoWjyxiLo9quCcEcs-SLHSBDfilo8XiwduJk_iQa-O8
+
+{
+    "content": {
+        "postType": "Lost",
+        "briefTitle": "Lost Wallet",
+        "description": "Black leather wallet with ID and credit cards",
+        "category": "Accessories",
+        "location": "Library - 2nd Floor",
+        "photo": {
+            "filename": "wallet.png",
+            "image": "base64encodedstring"
+        }
+    }
+}
+    */
 type LostFoundPost = {
   id: string;
   type: ReportType;
@@ -22,6 +75,7 @@ type LostFoundPost = {
   createdAt: string;
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
+  likedByMe: boolean;
 };
 
 const CATEGORIES = [
@@ -57,37 +111,6 @@ const LostAndFound = () => {
   const [showComments, setShowComments] = useState<Record<string, boolean>>({});
 
   const [feed, setFeed] = useState<LostFoundPost[]>([]);
-
-  useEffect(() => {
-    // Simulate API call with sample data
-    setFeed([
-      {
-        id: '1',
-        type: 'Lost',
-        title: 'Lost Blue Notebook - Programming Class',
-        category: 'Books & Materials',
-        location: 'Cafeteria / CS Building',
-        description: "Blue spiral notebook with programming notes and diagrams. Name 'Maria Santos' on the cover. Lost during lunch around cafeteria.",
-        photoUrl: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1470&auto=format&fit=crop',
-        author: { name: 'Maria Santos' },
-        createdAt: new Date().toISOString(),
-        stats: { likes: 5, comments: 2, views: 42 },
-      },
-      {
-        id: '2',
-        type: 'Found',
-        title: 'Found: Phone Charger - iPhone',
-        category: 'Electronics',
-        location: 'Computer Lab 2',
-        description: 'White charging cable left in Computer Lab 2 yesterday. Please describe your phone model/brand to claim.',
-        photoUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1470&auto=format&fit=crop',
-        author: { name: 'Sarah Kim' },
-        createdAt: new Date().toISOString(),
-        stats: { likes: 3, comments: 1, views: 19 },
-        claimedBy: null,
-      },
-    ]);
-  }, []);
 
   const filteredFeed = feed.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -131,101 +154,53 @@ const LostAndFound = () => {
     return dataUrl;
   }
 
-  async function submitPost(user: any) {
-    if (!validate()) return;
-    setSubmitting(true);
-    try {
-      let photoDataUrl: string | undefined;
-      if (form.photoFile) {
-        photoDataUrl = await handleImageToDataUrl(form.photoFile);
-      }
 
-      const payload = {
-        type: form.type,
-        title: form.title.trim(),
-        category: form.category,
-        location: form.location.trim(),
-        description: form.description.trim(),
-        photo: photoDataUrl,
-      };
-
-      try {
-        await fetchWithRefresh('/api/protected/lostandfound/posts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      } catch (_) {}
-
-      const newPost: LostFoundPost = {
-        id: String(Date.now()),
-        type: form.type,
-        title: form.title.trim(),
-        category: form.category,
-        location: form.location.trim(),
-        description: form.description.trim(),
-        photoUrl: photoDataUrl,
-        author: { name: `${user?.firstname ?? ''} ${user?.lastname ?? ''}`.trim() || 'You' },
-        createdAt: new Date().toISOString(),
-        stats: { likes: 0, comments: 0, views: 0 },
-      };
-      setFeed((prev) => [newPost, ...prev]);
-      setIsCreateOpen(false);
-      setActiveTab('Active');
-      resetForm();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  const onLike = (id: string) => {
-    // Toggle like status
-    const isCurrentlyLiked = likedPosts[id] || false;
-    setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
+  // const onLike = (id: string) => {
+  //   // Toggle like status
+  //   const isCurrentlyLiked = likedPosts[id] || false;
+  //   setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
     
-    // Update like count in feed
-    setFeed(prev => prev.map(post => {
-      if (post.id === id) {
-        const newLikes = isCurrentlyLiked 
-          ? Math.max(0, post.stats.likes - 1) 
-          : post.stats.likes + 1;
-        return {
-          ...post,
-          stats: { ...post.stats, likes: newLikes }
-        };
-      }
-      return post;
-    }));
-  };
+  //   // Update like count in feed
+  //   setFeed(prev => prev.map(post => {
+  //     if (post.id === id) {
+  //       const newLikes = isCurrentlyLiked 
+  //         ? Math.max(0, post.stats.likes - 1) 
+  //         : post.stats.likes + 1;
+  //       return {
+  //         ...post,
+  //         stats: { ...post.stats, likes: newLikes }
+  //       };
+  //     }
+  //     return post;
+  //   }));
+  // };
 
-  const onComment = (id: string) => {
-    // Toggle comment section visibility
-    setShowComments(prev => ({ ...prev, [id]: !prev[id] }));
-    setFeed((prev) => prev.map((p) => (p.id === id ? { ...p, stats: { ...p.stats, comments: p.stats.comments + 1 } } : p)));
-  };
+  // const onComment = (id: string) => {
+  //   // Toggle comment section visibility
+  //   setShowComments(prev => ({ ...prev, [id]: !prev[id] }));
+  //   setFeed((prev) => prev.map((p) => (p.id === id ? { ...p, stats: { ...p.stats, comments: p.stats.comments + 1 } } : p)));
+  // };
   
-  const submitComment = (id: string) => {
-    if (!commentInput[id]?.trim()) return;
+  // const submitComment = (id: string) => {
+  //   if (!commentInput[id]?.trim()) return;
     
-    // Add comment to post
-    setFeed(prev => prev.map(post => {
-      if (post.id === id) {
-        return {
-          ...post,
-          stats: { 
-            ...post.stats, 
-            comments: post.stats.comments + 1 
-          }
-        };
-      }
-      return post;
-    }));
+  //   // Add comment to post
+  //   setFeed(prev => prev.map(post => {
+  //     if (post.id === id) {
+  //       return {
+  //         ...post,
+  //         stats: { 
+  //           ...post.stats, 
+  //           comments: post.stats.comments + 1 
+  //         }
+  //       };
+  //     }
+  //     return post;
+  //   }));
     
-    // Clear comment input
-    setCommentInput(prev => ({ ...prev, [id]: '' }));
-  };
+  //   // Clear comment input
+  //   setCommentInput(prev => ({ ...prev, [id]: '' }));
+  // };
 
   function onClaim(id: string) {
     setFeed((prev) => prev.map((p) => (p.id === id && p.type === 'Found' ? { ...p, claimedBy: 'You' } : p)));
@@ -233,7 +208,147 @@ const LostAndFound = () => {
 
   return (
     <ProtectedLayout endpoint="/protected/lostandfound">
-      {({ user, isLoading, logout }) => {
+      {({ user, isLoading, logout, extraData }) => {
+
+        useEffect(() => {
+          console.log('Extra Data:', extraData);
+          if (extraData?.data) {
+            const posts: LostFoundPost[] = extraData.data.map((item: any) => ({
+              id: item._id,
+              type: item.content.postType,
+              title: item.content.briefTitle,
+              category: item.content.category,
+              location: item.content.location,
+              description: item.content.description,
+              photoUrl: item.content.photo?.image,
+              author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown' },
+              createdAt: item.createdAt,
+              likedByMe: item.content.likes?.likedbyme || false,
+              stats: {
+                likes: item.content.likes?.count || 0,
+                comments: item.content.comments?.length || 0,
+                views: 0,
+              },
+              claimedBy: item.content.status === 'Claimed' ? 'Someone' : null,
+            } as LostFoundPost));
+            setFeed(posts);
+
+            const initialLikes: Record<string, boolean> = {};
+            posts.forEach(p => { initialLikes[p.id] = p.likedByMe });
+            setLikedPosts(initialLikes);
+          }
+        }, [extraData]);
+
+        // submitpost now here 
+        async function submitPost(user: any) {
+          if (!validate()) return;
+          setSubmitting(true);
+          try {
+            let photoDataUrl: string | undefined;
+            if (form.photoFile) {
+              photoDataUrl = await handleImageToDataUrl(form.photoFile);
+            }
+            const payload = {
+              postType: form.type,
+              briefTitle: form.title.trim(),
+              category: form.category,
+              location: form.location.trim(),
+              description: form.description.trim(),
+              photo: {
+                filename: form.photoFile?.name || 'photo.jpg',
+                image: photoDataUrl,
+              },
+            };
+            try {
+              await fetchWithRefresh('/protected/lostandfound/post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: payload }),
+              });
+            } catch (_) {}
+            setIsCreateOpen(false);
+            setActiveTab('Active');
+            resetForm();
+            
+          } catch (e) {
+            console.error(e);
+          } finally {
+            setSubmitting(false);
+          }
+        }
+
+        //like and unlike functions
+        async function onLike(id: string) {
+          // Toggle like status
+          const isCurrentlyLiked = likedPosts[id] || false;
+          setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
+          try {
+            if (isCurrentlyLiked) {
+              await fetchWithRefresh(`/protected/lostandfound/${id}/unlike`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+              });
+            } else {
+              await fetchWithRefresh(`/protected/lostandfound/${id}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+              });
+            }   
+            // Update like count in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === id) {
+                const newLikes = isCurrentlyLiked 
+                  ? Math.max(0, post.stats.likes - 1) 
+                  : post.stats.likes + 1;
+                return {
+                  ...post,
+                  stats: { ...post.stats, likes: newLikes }
+                };
+              }
+              return post;
+            }
+            ));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        // submit comment function
+        async function submitComment(id: string) {
+          if (!commentInput[id]?.trim()) return;
+          try {
+            await fetchWithRefresh(`/protected/lostandfound/${id}/comment`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ comment: commentInput[id].trim() }),
+            });
+            // Add comment to post
+            setFeed(prev => prev.map(post => {
+              if (post.id === id) {
+                return {
+                  ...post,
+                  stats: { 
+                    ...post.stats, 
+                    comments: post.stats.comments + 1
+                  }
+                };
+              }
+              return post;
+            }));
+            
+            // Clear comment input
+            setCommentInput(prev => ({ ...prev, [id]: '' }));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        // on comment function
+        function onComment(id: string) {
+          // Toggle comment section visibility
+          setShowComments(prev => ({ ...prev, [id]: !prev[id] }));
+        }
+
         if (isLoading) {
           return (
             <div className="loading-screen">
