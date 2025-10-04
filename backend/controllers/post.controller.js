@@ -5,7 +5,9 @@ import cloudinary from "../config/cloudinary.js";
 export const lostandfoundController = async (req, res) => {
     try {
         //firstname, middlename, lastname, email, role
-        const posts = await Post.find().populate('user', 'firstname middlename lastname email role').populate("content.claimedby", "firstname lastname email role").lean();
+        const posts = await Post.find().populate('user', 'firstname middlename lastname email role')
+        .populate("content.claimedby", "firstname lastname email role")
+        .populate("content.comments.user", "firstname lastname email role").lean();
         posts.forEach(post => {
             post.content.likedbyme = post.content.likes.users.some(id => id.toString() === req.user._id.toString());
         });

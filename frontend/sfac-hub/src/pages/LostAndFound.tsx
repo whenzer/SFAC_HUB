@@ -10,59 +10,6 @@ import fetchWithRefresh from '../utils/apiService';
 
 type ReportType = 'Lost' | 'Found';
 
-
-/* REST API types ###
-
-get protected/lostandfound
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTg5ODMsImV4cCI6MTc1OTU1OTg4M30.u1AB4R82jw-a70DzwkYPf0n4qhaCClqnseXRVBcO8Cg
-###
-
-POST /protected/lostandfound/:id/like
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
-
-###
-
-POST /protected/lostandfound/:id/unlike
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
-
-###
-
-POST /protected/lostandfound/68e0a7516f40c66a583e3104/comment
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
-
-{
-    "comment": "This is a test comment"
-}
-
-###
-
-DELETE /protected/lostandfound/:postid/comment/:commentid
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTUwMjUsImV4cCI6MTc1OTU1NTkyNX0.CYrQNLpgglGz5qaQ0uM_a6TBl8Ck87O6KInhHrYUfTY
-
-###
-
-POST /protected/lostandfound/post
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlbmFtZSI6IkNBQkFOR0lTX09VVFBVVC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vcmVzLmNsb3VkaW5hcnkuY29tL2R4bDh3a3hlaC9pbWFnZS91cGxvYWQvdjE3NTg4NTcwMzYvc2ZhY191c2Vycy9DQUJBTkdJU19PVVRQVVQucG5nIn0sIl9pZCI6IjY4ZDYwNzRjYTljOTNhNjJlM2IwYjExNiIsImZpcnN0bmFtZSI6IldoZW56ZXIiLCJtaWRkbGVuYW1lIjoiIiwibGFzdG5hbWUiOiJDYWJhbmdpcyIsImVtYWlsIjoia2xlZDBuZzEyM0BnbWFpbC5jb20iLCJ2ZXJpZmllZEVtYWlsIjp0cnVlLCJ2ZXJpZmllZElEIjp0cnVlLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTk1NTU5OTgsImV4cCI6MTc1OTU1Njg5OH0.GoWjyxiLo9quCcEcs-SLHSBDfilo8XiwduJk_iQa-O8
-
-{
-    "content": {
-        "postType": "Lost",
-        "briefTitle": "Lost Wallet",
-        "description": "Black leather wallet with ID and credit cards",
-        "category": "Accessories",
-        "location": "Library - 2nd Floor",
-        "photo": {
-            "filename": "wallet.png",
-            "image": "base64encodedstring"
-        }
-    }
-}
-    */
 type LostFoundPost = {
   id: string;
   type: ReportType;
@@ -77,6 +24,7 @@ type LostFoundPost = {
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
   likedByMe: boolean;
+  comments?: { user: { firstname: string; middlename: string; lastname: string }; comment: string }[];
 };
 
 const CATEGORIES = [
@@ -174,6 +122,7 @@ const LostAndFound = () => {
               author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown' },
               createdAt: item.createdAt,
               likedByMe: item.content.likedbyme || false,
+              comments: item.content.comments || [],
               stats: {
                 likes: item.content.likes?.count || 0,
                 comments: item.content.comments?.length || 0,
@@ -513,6 +462,17 @@ const LostAndFound = () => {
                                   >
                                     Post
                                   </button>
+                                </div>
+                                // display comments
+                                <div className="lf-comments-list">
+                                  {post.comments?.map((comment, index) => (
+                                    <div key={index} className="lf-comment">
+                                      <span className="lf-comment-user">
+                                        {comment.user.firstname} {comment.user.middlename} {comment.user.lastname}:
+                                      </span>
+                                      <span className="lf-comment-text">{comment.comment}</span>
+                                    </div>
+                                  ))}
                                 </div>
                                 {post.stats.comments > 0 && (
                                   <div className="lf-comments-count">
