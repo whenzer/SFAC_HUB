@@ -179,9 +179,11 @@ const LostAndFound = () => {
                 comments: item.content.comments?.length || 0,
                 views: 0,
               },
-              claimedBy: item.content.claimedBy ? (item.content.claimedBy === user?.id ? 'You' : 'Someone') : null,
+              claimedBy: item.content.claimedby 
+              ? (item.content.claimedby._id === user?._id ? "You" : "Someone")
+              : null,
             } as LostFoundPost));
-            console.log('Fetched posts:', posts);
+            console.log('Fetched posts:', posts, user);
             
             // Initialize likedPosts state
             const initialLikes: Record<string, boolean> = {};
@@ -192,7 +194,7 @@ const LostAndFound = () => {
         }, [extraData]);
 
         // submitpost now here 
-        async function submitPost(user: any) {
+        async function submitPost(_user: any) {
           if (!validate()) return;
           setSubmitting(true);
           try {
