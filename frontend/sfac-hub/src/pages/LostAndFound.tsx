@@ -24,7 +24,7 @@ type LostFoundPost = {
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
   likedByMe: boolean;
-  comments?: { user: { firstname: string; middlename: string; lastname: string }; comment: string }[];
+  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string }[];
 };
 
 const CATEGORIES = [
@@ -463,12 +463,11 @@ const LostAndFound = () => {
                                     Post
                                   </button>
                                 </div>
-                                // display comments
                                 <div className="lf-comments-list">
                                   {post.comments?.map((comment, index) => (
                                     <div key={index} className="lf-comment">
                                       <span className="lf-comment-user">
-                                        {comment.user.firstname} {comment.user.middlename} {comment.user.lastname}:
+                                        {comment.user.firstname} {comment.user.middlename} {comment.user.lastname} {comment.user.role}:
                                       </span>
                                       <span className="lf-comment-text">{comment.comment}</span>
                                     </div>
