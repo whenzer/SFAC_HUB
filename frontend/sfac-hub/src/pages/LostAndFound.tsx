@@ -66,6 +66,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZHBpYyI6eyJmaWxlb
 type LostFoundPost = {
   id: string;
   type: ReportType;
+  status?: 'Open' | 'Resolved';
   title: string;
   category: string;
   location: string;
@@ -154,68 +155,18 @@ const LostAndFound = () => {
     return dataUrl;
   }
 
-
-  // const onLike = (id: string) => {
-  //   // Toggle like status
-  //   const isCurrentlyLiked = likedPosts[id] || false;
-  //   setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
-    
-  //   // Update like count in feed
-  //   setFeed(prev => prev.map(post => {
-  //     if (post.id === id) {
-  //       const newLikes = isCurrentlyLiked 
-  //         ? Math.max(0, post.stats.likes - 1) 
-  //         : post.stats.likes + 1;
-  //       return {
-  //         ...post,
-  //         stats: { ...post.stats, likes: newLikes }
-  //       };
-  //     }
-  //     return post;
-  //   }));
-  // };
-
-  // const onComment = (id: string) => {
-  //   // Toggle comment section visibility
-  //   setShowComments(prev => ({ ...prev, [id]: !prev[id] }));
-  //   setFeed((prev) => prev.map((p) => (p.id === id ? { ...p, stats: { ...p.stats, comments: p.stats.comments + 1 } } : p)));
-  // };
-  
-  // const submitComment = (id: string) => {
-  //   if (!commentInput[id]?.trim()) return;
-    
-  //   // Add comment to post
-  //   setFeed(prev => prev.map(post => {
-  //     if (post.id === id) {
-  //       return {
-  //         ...post,
-  //         stats: { 
-  //           ...post.stats, 
-  //           comments: post.stats.comments + 1 
-  //         }
-  //       };
-  //     }
-  //     return post;
-  //   }));
-    
-  //   // Clear comment input
-  //   setCommentInput(prev => ({ ...prev, [id]: '' }));
-  // };
-
-  function onClaim(id: string) {
-    setFeed((prev) => prev.map((p) => (p.id === id && p.type === 'Found' ? { ...p, claimedBy: 'You' } : p)));
-  }
-
   return (
     <ProtectedLayout endpoint="/protected/lostandfound">
       {({ user, isLoading, logout, extraData }) => {
 
         useEffect(() => {
           if (extraData?.data) {
+            console.log('Raw fetched data:', extraData.data);
             const posts: LostFoundPost[] = extraData.data.map((item: any) => ({
               id: item._id,
               type: item.content.postType,
               title: item.content.briefTitle,
+              status: item.content.status,
               category: item.content.category,
               location: item.content.location,
               description: item.content.description,
@@ -228,7 +179,7 @@ const LostAndFound = () => {
                 comments: item.content.comments?.length || 0,
                 views: 0,
               },
-              claimedBy: item.content.status === 'Claimed' ? 'Someone' : null,
+              claimedBy: item.content.claimedBy ? (item.content.claimedBy === user?.id ? 'You' : 'Someone') : null,
             } as LostFoundPost));
             console.log('Fetched posts:', posts);
             setFeed(posts);
@@ -274,6 +225,27 @@ const LostAndFound = () => {
             console.error(e);
           } finally {
             setSubmitting(false);
+          }
+        }
+        // on claim function
+        async function onClaim(id: string) {
+          try {
+            await fetchWithRefresh(`/protected/lostandfound/${id}/claim`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            // Update claimedBy in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === id) {
+                return {
+                  ...post,
+                  claimedBy: 'You'
+                };
+              }
+              return post;
+            }));
+          } catch (e) {
+            console.error(e);
           }
         }
 

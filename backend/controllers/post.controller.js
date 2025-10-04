@@ -142,3 +142,23 @@ export const deleteCommentController = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 }
+
+export const claimItemController = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const userId = req.user._id;
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ success: false, message: "Post not found" });
+        }
+        if (post.content.claimedby) {
+            return res.status(400).json({ success: false, message: "Item has already been claimed" });
+        }
+        post.content.claimedby = userId;
+        await post.save();
+        res.status(200).json({ success: true, message: "Item claimed successfully", data: post });
+    } catch (error) {
+        console.error("Error claiming item: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
