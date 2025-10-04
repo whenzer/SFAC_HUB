@@ -1,6 +1,7 @@
 import express from 'express';
 import authenticateToken from '../middleware/auth.token.js';
-import {stockreserveController, protectedController, dashboardController, lostandfoundController, stockController, reservationController } from '../controllers/protected.controller.js';
+import {stockreserveController, protectedController, dashboardController, stockController, reservationController } from '../controllers/protected.controller.js';
+import {deleteCommentController, lostandfoundController, createPostController, likePostController, commentPostController, unlikePostController} from '../controllers/post.controller.js';
 
 const router = express.Router();
 //middleware
@@ -16,5 +17,12 @@ router.post('/stock/reserve',stockController, stockreserveController);
 router.get('/reservations', reservationController);
 
 router.get('/lostandfound', lostandfoundController);
+router.post('/lostandfound/post', createPostController);
+router.post('/lostandfound/:id/like', likePostController);
+router.post('/lostandfound/:id/unlike', unlikePostController);
+router.post('/lostandfound/:id/comment', commentPostController);
+router.delete('/lostandfound/:postId/comment/:commentId', deleteCommentController);
+
+
 
 export default router;

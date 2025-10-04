@@ -9,48 +9,48 @@ export const protectedController = (req, res) => {
 export const dashboardController = async (req, res) => {
     
     try {
-  // 1️⃣ Get all pending reservations and populate the product info
-  const reservations = await Reservation.find({ status: "Pending" }).populate('item', 'name category');
+        // 1️⃣ Get all pending reservations and populate the product info
+        const reservations = await Reservation.find({ status: "Pending" }).populate('item', 'name category');
 
-  // 2️⃣ Per-product totals
-  const perProductMap = {};
-  reservations.forEach(res => {
-    const productName = res.item.name;
-    const category = res.item.category;
-    if (perProductMap[productName]) {
-      perProductMap[productName].Total += res.quantity;
-    } else {
-      perProductMap[productName] = { Product: productName, Category: category, Total: res.quantity };
-    }
-  });
-  const perProduct = Object.values(perProductMap);
+        // 2️⃣ Per-product totals
+        const perProductMap = {};
+        reservations.forEach(res => {
+            const productName = res.item.name;
+            const category = res.item.category;
+            if (perProductMap[productName]) {
+            perProductMap[productName].Total += res.quantity;
+            } else {
+            perProductMap[productName] = { Product: productName, Category: category, Total: res.quantity };
+            }
+        });
+        const perProduct = Object.values(perProductMap);
 
-  // 3️⃣ Per-category totals
-  const perCategoryMap = {};
-  perProduct.forEach(p => {
-    if (perCategoryMap[p.Category]) {
-      perCategoryMap[p.Category] += p.Total;
-    } else {
-      perCategoryMap[p.Category] = p.Total;
-    }
-  });
-  const perCategory = Object.entries(perCategoryMap).map(([Category, Total]) => ({ Category, Total }));
+        // 3️⃣ Per-category totals
+        const perCategoryMap = {};
+        perProduct.forEach(p => {
+            if (perCategoryMap[p.Category]) {
+            perCategoryMap[p.Category] += p.Total;
+            } else {
+            perCategoryMap[p.Category] = p.Total;
+            }
+        });
+        const perCategory = Object.entries(perCategoryMap).map(([Category, Total]) => ({ Category, Total }));
 
-  // 4️⃣ Overall total
-  const overallTotal = perProduct.reduce((sum, item) => sum + item.Total, 0);
+        // 4️⃣ Overall total
+        const overallTotal = perProduct.reduce((sum, item) => sum + item.Total, 0);
 
-  res.status(200).json({
-    success: true,
-    message: "Dashboard data fetched!",
-    user: req.user,
-    perProduct,
-    perCategory,
-    overallTotal
-  });
-} catch (error) {
-  console.error("Error fetching dashboard data: ", error.message);
-  res.status(500).json({ success: false, message: error.message });
-}
+        res.status(200).json({
+            success: true,
+            message: "Dashboard data fetched!",
+            user: req.user,
+            perProduct,
+            perCategory,
+            overallTotal
+        });
+        } catch (error) {
+            console.error("Error fetching dashboard data: ", error.message);
+            res.status(500).json({ success: false, message: error.message });
+        }
 }
 
 export const stockController = async (req, res, next) => {
@@ -114,10 +114,6 @@ export const reservationController = (req, res) => {
         console.error("Error fetching user reservations: ", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
-}
-
-export const lostandfoundController = (req, res) => {
-    res.status(200).json({ success: true, message: "welcome to Lost and Found!", user: req.user });
 }
 
 export const stockreserveController = async (req, res) => {
@@ -225,3 +221,4 @@ export const stockreserveController = async (req, res) => {
     //     res.status(500).json({ success: false, message: error.message });
     // }
 }
+

@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
 import {conn} from './product.model.js';
 
 // Stock/Product schema
