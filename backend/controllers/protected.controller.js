@@ -222,3 +222,38 @@ export const stockreserveController = async (req, res) => {
     // }
 }
 
+export const cancelreservationController = async (req, res) => {
+    const { reservationId } = req.params;
+    const userId = req.user._id;
+
+    if (!reservationId) {
+        return res.status(400).json({ success: false, message: "Reservation ID is required" });
+    }
+    try {
+        const reservation = await Reservation.findById(reservationId);
+        if (!reservation) {
+            return res.status(404).json({ success: false, message: "Reservation not found" });
+        }
+        if (reservation.user.toString() !== userId.toString()) {
+            return res.status(403).json({ success: false, message: "You can only cancel your own reservations" });
+        }
+        if (reservation.status !== "Pending") {
+            return res.status(400).json({ success: false, message: "Only pending reservations can be cancelled" });
+        }
+        const product = await Product.findById(reservation.item);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Associated product not found" });
+        }
+        product.currentStock += reservation.quantity;
+        product.reservers = product.reservers.filter(r => r.reservation.toString() !== reservationId);
+        // set reservation status to Cancelled
+        reservation.status = "Cancelled";
+        await reservation.save();
+        await product.save();
+
+        res.status(200).json({ success: true, message: "Reservation cancelled successfully" });
+    } catch (error) {
+        console.error("Error cancelling reservation: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

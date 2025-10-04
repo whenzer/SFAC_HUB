@@ -1,6 +1,6 @@
 import express from 'express';
 import authenticateToken from '../middleware/auth.token.js';
-import {stockreserveController, protectedController, dashboardController, stockController, reservationController } from '../controllers/protected.controller.js';
+import {cancelreservationController,stockreserveController, protectedController, dashboardController, stockController, reservationController } from '../controllers/protected.controller.js';
 import {claimItemController,deleteCommentController, lostandfoundController, createPostController, likePostController, commentPostController, unlikePostController} from '../controllers/post.controller.js';
 
 const router = express.Router();
@@ -15,6 +15,7 @@ router.get('/stock', stockController);
 router.post('/stock/reserve',stockController, stockreserveController);
 
 router.get('/reservations', reservationController);
+router.put('/reservations/:reservationId/cancel', cancelreservationController);
 
 router.get('/lostandfound', lostandfoundController);
 router.post('/lostandfound/post', createPostController);
