@@ -6,7 +6,7 @@ export const lostandfoundController = async (req, res) => {
     try {
         //firstname, middlename, lastname, email, role
         const posts = await Post.find().populate('user', 'firstname middlename lastname email role');
-        res.status(200).json({ success: true, data: posts });
+        res.status(200).json({ success: true, data: posts, user: req.user });
     } catch (error) {
         console.error("Error fetching posts: ", error.message);
         res.status(500).json({ success: false, message: error.message });

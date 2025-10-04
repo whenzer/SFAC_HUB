@@ -43,7 +43,8 @@ const postSchema = new mongoose.Schema({
             default: "Open" 
         },
         likes: { users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], count: { type: Number, default: 0 }},
-        comments: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, comment: String, commentedAt: { type: Date, default: Date.now } }]
+        comments: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, comment: String, commentedAt: { type: Date, default: Date.now } }],
+        claimedby: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     }
 },{ timestamps: true});
 const Post = conn.model('Post', postSchema);
