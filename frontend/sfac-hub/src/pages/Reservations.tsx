@@ -7,6 +7,9 @@ import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
+import fetchWithRefresh from '../utils/apiService';
+
+// Types
 
 type ReservationStatus = 'Pending' | 'Collected' | 'Cancelled' | 'Expired';
 
@@ -316,9 +319,11 @@ const Reservations: React.FC = () => {
   const handleCancelReservation = async (reservationId: string) => {
     try {
       // Make API call to cancel reservation
-      const response = await fetch(`/api/reservations/${reservationId}/cancel`, {
+      const response = await fetchWithRefresh(`/protected/reservations/${reservationId}/cancel`, {
         method: 'PUT',
-        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       if (!response.ok) {

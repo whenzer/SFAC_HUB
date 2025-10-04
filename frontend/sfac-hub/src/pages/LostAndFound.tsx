@@ -182,11 +182,12 @@ const LostAndFound = () => {
               claimedBy: item.content.claimedBy ? (item.content.claimedBy === user?.id ? 'You' : 'Someone') : null,
             } as LostFoundPost));
             console.log('Fetched posts:', posts);
-            setFeed(posts);
-
+            
+            // Initialize likedPosts state
             const initialLikes: Record<string, boolean> = {};
             posts.forEach(p => { initialLikes[p.id] = p.likedByMe });
             setLikedPosts(initialLikes);
+            setFeed(posts);
           }
         }, [extraData]);
 
