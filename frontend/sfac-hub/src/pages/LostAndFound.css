@@ -539,6 +539,27 @@
   width: 100%;
 }
 
+.lf-comments-header {
+  margin-bottom: 1rem;
+}
+
+.lf-comments-sort {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lf-comments-sort:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(246, 59, 84, 0.1);
+}
+
 .lf-comments-list {
   max-height: 300px;
   overflow-y: auto;
@@ -628,7 +649,7 @@
 
 .lf-comment-content {
   flex: 1;
-  background-color: #f3f4f6;
+  background-color: hwb(220 95% 4%);
   border-radius: 12px;
   padding: 8px 12px;
 }
@@ -1240,5 +1261,590 @@
   .lf-post-content,
   .lf-post-footer {
     padding: 1rem;
+  }
+}
+
+/* Post Modal Styles */
+.lf-post-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+  animation: lf-modal-fadeIn 0.3s ease;
+}
+
+.lf-post-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: lf-modal-slideUp 0.3s ease;
+  position: relative;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+}
+
+/* Custom scrollbar styling */
+.lf-post-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lf-post-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lf-post-modal::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  opacity: 0.6;
+}
+
+.lf-post-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.lf-post-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.lf-post-modal-title {
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.lf-post-modal-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.lf-post-modal-close:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.lf-post-modal-content {
+  padding: 0;
+}
+
+.lf-post-modal-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lf-post-modal-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.lf-post-modal-author-info {
+  flex: 1;
+}
+
+.lf-post-modal-author-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.lf-post-modal-author-name strong {
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.lf-post-modal-timestamp {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.lf-post-modal-text {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.lf-post-modal-post-title {
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.lf-post-modal-details {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.lf-post-modal-description {
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  white-space: normal;
+  overflow-x: hidden;
+}
+
+.lf-post-modal-image-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.lf-post-modal-image {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  display: block;
+}
+
+.lf-post-modal-engagement {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lf-post-modal-reactions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lf-post-modal-reaction {
+  font-size: 1.2rem;
+}
+
+.lf-post-modal-stats {
+  display: flex;
+  gap: 1rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.lf-post-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lf-post-modal-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.lf-post-modal-action-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.lf-post-modal-action-btn--active {
+  color: #3b82f6;
+}
+
+.lf-post-modal-action-btn--claim {
+  color: #10b981;
+}
+
+.lf-post-modal-comments {
+  padding: 1rem 1.5rem;
+}
+
+.lf-post-modal-comments-header {
+  margin-bottom: 1rem;
+}
+
+.lf-post-modal-comments-sort {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.lf-post-modal-comments-list {
+  margin-bottom: 1rem;
+}
+
+.lf-post-modal-comment {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.lf-post-modal-comment-avatar {
+  width: 32px;
+  height: 32px;
+  background: #4f46e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.lf-post-modal-comment-content {
+  flex: 1;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.lf-post-modal-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.lf-post-modal-comment-user {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.lf-post-modal-comment-role {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.lf-post-modal-comment-timestamp {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .lf-post-modal-comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .lf-post-modal-comment-timestamp {
+    margin-left: 0;
+    font-size: 0.65rem;
+    margin-top: 0.25rem;
+  }
+}
+
+.lf-post-modal-comment-text {
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.lf-post-modal-comment-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.lf-post-modal-comment-like,
+.lf-post-modal-comment-reply {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.25rem 0;
+  transition: color 0.2s ease;
+}
+
+.lf-post-modal-comment-like:hover,
+.lf-post-modal-comment-reply:hover {
+  color: #334155;
+}
+
+.lf-post-modal-comment-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.lf-post-modal-comment-input-container {
+  flex: 1;
+  position: relative;
+}
+
+.lf-post-modal-comment-input {
+  width: 100%;
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.75rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  resize: none;
+}
+
+.lf-post-modal-comment-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.lf-post-modal-comment-input::placeholder {
+  color: #94a3b8;
+}
+
+.lf-post-modal-comment-icons {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lf-post-modal-comment-icon {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.lf-post-modal-comment-icon:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.lf-post-modal-comment-submit {
+  background: #3b82f6;
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .lf-post-modal-comment-form {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .lf-post-modal-comment-input {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .lf-post-modal-comment-submit {
+    align-self: flex-end;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+.lf-post-modal-comment-submit:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.lf-post-modal-comment-submit:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+/* Clickable image styles */
+.lf-post-image-clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.lf-post-image-clickable:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive Modal Styles */
+@media (max-width: 768px) {
+  .lf-post-modal {
+    max-width: 95vw;
+    max-height: 85vh;
+  }
+  
+  .lf-post-modal-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-author {
+    padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-text {
+    padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-engagement,
+  .lf-post-modal-actions {
+    padding: 0.5rem 1rem;
+  }
+  
+  .lf-post-modal-comments {
+    padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-image {
+    max-height: 60vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-post-modal {
+    max-width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    width: 100%;
+  }
+  
+  .lf-post-modal-overlay {
+    padding: 0;
+  }
+  
+  .lf-post-modal-image {
+    max-height: 40vh;
+    min-height: 250px;
+  }
+  
+  .lf-post-modal-content {
+    padding: 1rem;
+  }
+  
+  .lf-post-modal-text {
+    padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-post-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .lf-post-modal-description {
+    font-size: 0.95rem;
+  }
+  
+  .lf-post-modal-author {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+  
+  .lf-post-modal-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+  
+  .lf-post-modal-comments {
+    padding: 0.75rem 1rem;
+  }
+  
+  
+  .lf-post-modal-comment {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .lf-post-modal-comment-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+  
+  .lf-post-modal-comment-content {
+    padding: 0.6rem;
+  }
+  
+  .lf-post-modal-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-comment-form {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .lf-post-modal-comment-submit {
+    align-self: flex-end;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@keyframes lf-modal-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lf-modal-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

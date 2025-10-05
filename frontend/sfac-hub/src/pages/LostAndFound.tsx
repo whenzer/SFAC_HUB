@@ -7,11 +7,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
 import fetchWithRefresh from '../utils/apiService';
-import io from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 
-const socket = io("https://sfac-hub.onrender.com", {
-  transports: ["websocket"],
-});
 
 type ReportType = 'Lost' | 'Found';
 
@@ -63,6 +60,9 @@ const LostAndFound = () => {
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [commentInput, setCommentInput] = useState<Record<string, string>>({});
   const [showComments, setShowComments] = useState<Record<string, boolean>>({});
+  const [selectedPost, setSelectedPost] = useState<LostFoundPost | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [commentSortOrder, setCommentSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   const [feed, setFeed] = useState<LostFoundPost[]>([]);
 
@@ -192,7 +192,7 @@ const LostAndFound = () => {
         async function submitPost(_user: any) {
           if (!validate()) return;
           setSubmitting(true);
-          try {
+          try {   
             let photoDataUrl: string | undefined;
             if (form.photoFile) {
               photoDataUrl = await handleImageToDataUrl(form.photoFile);
@@ -245,6 +245,19 @@ const LostAndFound = () => {
               }
               return post;
             }));
+            
+            // Update selectedPost if it's the same post
+            if (selectedPost && selectedPost.id === id) {
+              setSelectedPost(prev => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    claimedBy: 'You'
+                  };
+                }
+                return prev;
+              });
+            }
           } catch (e) {
             console.error(e);
           }
@@ -281,34 +294,26 @@ const LostAndFound = () => {
               return post;
             }
             ));
+            
+            // Update selectedPost if it's the same post
+            if (selectedPost && selectedPost.id === id) {
+              setSelectedPost(prev => {
+                if (prev) {
+                  const newLikes = isCurrentlyLiked 
+                    ? Math.max(0, prev.stats.likes - 1) 
+                    : prev.stats.likes + 1;
+                  return {
+                    ...prev,
+                    stats: { ...prev.stats, likes: newLikes }
+                  };
+                }
+                return prev;
+              });
+            }
           } catch (e) {
             console.error(e);
           }
         }
-
-        // Listen for new comments via Socket.io
-        useEffect(() => {
-          socket.on('updateComments', (data) => {
-            setFeed(prev => prev.map(post => {
-              if (post.id === data.postId) {
-                return {
-                  ...post,
-                  comments: [...(post.comments || []), data.comment],
-                  stats: {
-                    ...post.stats,
-                    comments: post.stats.comments + 1
-                  }
-                };
-              }
-              return post;
-            }));
-          });
-
-
-          return () => {
-            socket.off('updateComments');
-          };
-        }, []);
 
         // submit comment function
         async function submitComment(id: string) {
@@ -319,44 +324,51 @@ const LostAndFound = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ comment: commentInput[id].trim() }),
             });
-            // Add comment to post and update UI
-
-            // Emit new comment event via Socket.io
-            socket.emit('newComment', {
-              postId: id,
+            
+            // Create new comment object
+            const newComment = {
               comment: commentInput[id].trim(),
               user: {
                 firstname: user?.firstname || '',
                 middlename: user?.middlename || '',
-                lastname: user?.lastname || '',
+                lastname: user?.lastname || '',  
                 role: user?.role || ''
-              }
-            });
+              },
+              commentedAt: new Date().toISOString()
+            };
+            
+            // Add comment to post and update UI
             setFeed(prev => prev.map(post => {
               if (post.id === id) {
-                // Create new comment object
-                const newComment = {
-                  comment: commentInput[id].trim(), // Using 'comment' instead of 'text' to match UI expectations
-                  user: {
-                    firstname: user?.firstname || '',
-                    middlename: user?.middlename || '',
-                    lastname: user?.lastname || '',
-                    role: user?.role || ''
-                  },
-                  commentedAt: new Date().toISOString() // Add commentedAt for consistency
-                };
-
                 return {
                   ...post,
                   comments: [...(post.comments || []), newComment],
-                  stats: {
-                    ...post.stats,
+                  stats: { 
+                    ...post.stats, 
                     comments: post.stats.comments + 1
                   }
                 };
               }
               return post;
             }));
+            
+            // Update selectedPost if it's the same post
+            if (selectedPost && selectedPost.id === id) {
+              setSelectedPost(prev => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    comments: [...(prev.comments || []), newComment],
+                    stats: { 
+                      ...prev.stats, 
+                      comments: prev.stats.comments + 1
+                    }
+                  };
+                }
+                return prev;
+              });
+            }
+            
             // Clear comment input
             setCommentInput(prev => ({ ...prev, [id]: '' }));
           } catch (e) {
@@ -368,6 +380,30 @@ const LostAndFound = () => {
         function onComment(id: string) {
           // Toggle comment section visibility
           setShowComments(prev => ({ ...prev, [id]: !prev[id] }));
+        }
+
+        // open modal function
+        function openPostModal(post: LostFoundPost) {
+          setSelectedPost(post);
+          setIsModalOpen(true);
+        }
+
+        // close modal function
+        function closePostModal() {
+          setSelectedPost(null);
+          setIsModalOpen(false);
+        }
+
+        // sort comments function
+        function sortComments(comments: any[]) {
+          if (!comments || comments.length === 0) return [];
+          
+          return [...comments].sort((a, b) => {
+            const dateA = new Date(a.commentedAt).getTime();
+            const dateB = new Date(b.commentedAt).getTime();
+            
+            return commentSortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+          });
         }
 
         if (isLoading) {
@@ -494,12 +530,12 @@ const LostAndFound = () => {
                           </div>
                           
                           {post.photoUrl && (
-                            <div className="lf-post-image">
+                            <div className="lf-post-image" onClick={() => openPostModal(post)}>
                               <img 
                                 src={post.photoUrl} 
                                 alt={post.title}
                                 loading="lazy"
-                                className="responsive-image"
+                                className="responsive-image lf-post-image-clickable"
                               />
                             </div>
                           )}
@@ -542,6 +578,16 @@ const LostAndFound = () => {
                             
                             {showComments[post.id] && (
                               <div className="lf-comments-section">
+                                <div className="lf-comments-header">
+                                  <select 
+                                    className="lf-comments-sort"
+                                    value={commentSortOrder}
+                                    onChange={(e) => setCommentSortOrder(e.target.value as 'newest' | 'oldest')}
+                                  >
+                                    <option value="newest">Newest to oldest</option>
+                                    <option value="oldest">Oldest to newest</option>
+                                  </select>
+                                </div>
                                 <div className="lf-comment-form">
                                   <input
                                     type="text"
@@ -559,7 +605,7 @@ const LostAndFound = () => {
                                   </button>
                                 </div>
                                 <div className="lf-comments-list">
-                                  {post.comments?.map((comment, index) => (
+                                  {sortComments(post.comments || []).map((comment, index) => (
                                   <div key={index} className="lf-comment">
                                     <div className="lf-comment-avatar">
                                       {comment.user.firstname.charAt(0)}{comment.user.lastname.charAt(0)}
@@ -775,6 +821,157 @@ const LostAndFound = () => {
                           </div>
                         </div>
                       </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* Post Modal */}
+                {isModalOpen && selectedPost && (
+                  <div className="lf-post-modal-overlay" onClick={closePostModal}>
+                    <div className="lf-post-modal" onClick={(e) => e.stopPropagation()}>
+                      <div className="lf-post-modal-header">
+                        <h2 className="lf-post-modal-title">{selectedPost.author.name}'s Post</h2>
+                        <button 
+                          className="lf-post-modal-close"
+                          onClick={closePostModal}
+                          aria-label="Close modal"
+                        >
+                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="lf-post-modal-content">
+                        <div className="lf-post-modal-author">
+                          <div className="lf-post-modal-avatar">
+                            {selectedPost.author.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="lf-post-modal-author-info">
+                            <div className="lf-post-modal-author-name">
+                              <strong>{selectedPost.author.name}</strong>
+                              <span className={`lf-badge lf-badge--${selectedPost.type.toLowerCase()}`}>
+                                {selectedPost.type}
+                              </span>
+                            </div>
+                            <div className="lf-post-modal-timestamp">
+                              {new Date(selectedPost.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="lf-post-modal-text">
+                          <h3 className="lf-post-modal-post-title">{selectedPost.title}</h3>
+                          <div className="lf-post-modal-details">
+                            {selectedPost.location} • {selectedPost.category}
+                          </div>
+                          <p className="lf-post-modal-description">{selectedPost.description}</p>
+                        </div>
+
+                        {selectedPost.photoUrl && (
+                          <div className="lf-post-modal-image-container">
+                            <img 
+                              src={selectedPost.photoUrl} 
+                              alt={selectedPost.title}
+                              className="lf-post-modal-image"
+                            />
+                          </div>
+                        )}
+
+                        <div className="lf-post-modal-engagement">
+                          <div className="lf-post-modal-reactions">
+                          </div>
+                          <div className="lf-post-modal-stats">
+                            <span>{selectedPost.stats.comments} comments</span>
+                            <span>{selectedPost.stats.likes} likes</span>
+                          </div>
+                        </div>
+
+                        <div className="lf-post-modal-actions">
+                          <button 
+                            className={`lf-post-modal-action-btn ${likedPosts[selectedPost.id] ? 'lf-post-modal-action-btn--active' : ''}`}
+                            onClick={() => onLike(selectedPost.id)}
+                          >
+                            <span>{likedPosts[selectedPost.id] ? '❤️' : '👍'}</span>
+                            {likedPosts[selectedPost.id] ? 'Liked' : 'Like'}
+                          </button>
+                          <button 
+                            className="lf-post-modal-action-btn"
+                            onClick={() => onComment(selectedPost.id)}
+                          >
+                            <span>💬</span>
+                            Comment
+                          </button>
+                          {selectedPost.type === 'Found' && !selectedPost.claimedBy && (
+                            <button 
+                              className="lf-post-modal-action-btn lf-post-modal-action-btn--claim"
+                              onClick={() => onClaim(selectedPost.id)}
+                            >
+                              <span>✅</span>
+                              Claim
+                            </button>
+                          )}
+                          {selectedPost.claimedBy && (
+                            <span className="lf-badge lf-badge--claimed">
+                              Claimed by {selectedPost.claimedBy}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="lf-post-modal-comments">
+                          <div className="lf-post-modal-comments-header">
+                            <select 
+                              className="lf-post-modal-comments-sort"
+                              value={commentSortOrder}
+                              onChange={(e) => setCommentSortOrder(e.target.value as 'newest' | 'oldest')}
+                            >
+                              <option value="newest">Newest to oldest</option>
+                              <option value="oldest">Oldest to newest</option>
+                            </select>
+                          </div>
+
+                          <div className="lf-post-modal-comments-list">
+                            {sortComments(selectedPost.comments || []).map((comment, index) => (
+                              <div key={index} className="lf-post-modal-comment">
+                                <div className="lf-post-modal-comment-avatar">
+                                  {comment.user.firstname.charAt(0)}{comment.user.lastname.charAt(0)}
+                                </div>
+                                <div className="lf-post-modal-comment-content">
+                                  <div className="lf-post-modal-comment-header">
+                                    <span className="lf-post-modal-comment-user">
+                                      {comment.user.firstname} {comment.user.lastname}
+                                    </span>
+                                    <span className="lf-post-modal-comment-role">{comment.user.role}</span>
+                                    <span className="lf-post-modal-comment-timestamp">
+                                      {new Date(comment.commentedAt).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <span className="lf-post-modal-comment-text">{comment.comment}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="lf-post-modal-comment-form">
+                            <div className="lf-post-modal-comment-input-container">
+                              <input
+                                type="text"
+                                placeholder={`Comment as ${user?.firstname || 'User'}...`}
+                                value={commentInput[selectedPost.id] || ''}
+                                onChange={(e) => setCommentInput(prev => ({ ...prev, [selectedPost.id]: e.target.value }))}
+                                className="lf-post-modal-comment-input"
+                              />                 
+                            </div>
+                            <button 
+                              className="lf-post-modal-comment-submit"
+                              onClick={() => submitComment(selectedPost.id)}
+                              disabled={!commentInput[selectedPost.id]?.trim()}
+                            >
+                              Post
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
