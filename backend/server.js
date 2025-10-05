@@ -28,7 +28,7 @@ const io = new Server(server, {
     credentials: true
   }
 });
-
+setInterval(() => io.emit('ping', { time: Date.now() }), 25000);
 // ✅ middleware
 app.use(cors({
   origin: [
