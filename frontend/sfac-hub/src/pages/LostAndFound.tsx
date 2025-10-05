@@ -331,6 +331,9 @@ const LostAndFound = () => {
               return post;
             }));
           });
+          return () => {
+            socket.off('updateComment');
+          };
         }, [socket]);
 
         // submit comment function
