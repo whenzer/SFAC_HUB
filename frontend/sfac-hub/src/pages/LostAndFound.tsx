@@ -441,9 +441,7 @@ const LostAndFound = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="lf-post-views">
-                              {post.stats.views} views
-                            </div>
+
                             
                             {showComments[post.id] && (
                               <div className="lf-comments-section">
