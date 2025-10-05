@@ -24,7 +24,7 @@ type LostFoundPost = {
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
   likedByMe: boolean;
-  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string }[];
+  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt?: string; createdAt?: string }[];
 };
 
 const CATEGORIES = [
@@ -302,7 +302,8 @@ const LostAndFound = () => {
                      lastname: user?.lastname || '',
                      role: user?.role || ''
                    },
-                   createdAt: new Date().toISOString()
+                   createdAt: new Date().toISOString(),
+                   commentedAt: new Date().toISOString() // Add commentedAt for consistency
                  };
                 
                 return {
@@ -531,7 +532,7 @@ const LostAndFound = () => {
                                         </span>
                                         <span className="lf-comment-role">{comment.user.role}</span>
                                         <span className="lf-comment-timestamp">
-                                          {new Date(comment.commentedAt).toLocaleString()}
+                                          {new Date(comment.commentedAt || comment.createdAt).toLocaleString()}
                                         </span>
                                       </div>
                                       <span className="lf-comment-text">{comment.comment}</span>
