@@ -20,7 +20,7 @@ const postSchema = new mongoose.Schema({
         },
         category: {
             type: String,
-            enum: ["Electronics", "Clothing", "Accessories", "Books & Materials", "Documents", "Others"],
+            enum: ["Electronics", "Clothing", "Accessories", "Books & Materials", "Documents", "Other"],
             required: true
         },
         location: {
