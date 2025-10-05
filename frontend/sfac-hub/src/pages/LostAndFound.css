@@ -1283,7 +1283,7 @@
 .lf-post-modal {
   background: white;
   border-radius: 12px;
-  max-width: 600px;
+  max-width: 750px;
   width: 90%;
   max-height: 90vh;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -1823,13 +1823,25 @@
   }
   
   .lf-post-modal-comment-form {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: 0.5rem;
   }
   
+  .lf-post-modal-comment-input-container {
+    flex: 1;
+  }
+  
+  .lf-post-modal-comment-input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
   .lf-post-modal-comment-submit {
-    align-self: flex-end;
     padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+    min-width: 60px;
   }
 }
 
