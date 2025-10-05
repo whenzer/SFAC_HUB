@@ -649,6 +649,13 @@
   color: #6b7280;
 }
 
+.lf-comment-timestamp {
+  font-size: 0.7rem;
+  color: #888;
+  margin-left: 8px;
+  font-style: italic;
+}
+
 .lf-comment-text {
   word-break: break-word;
 }
