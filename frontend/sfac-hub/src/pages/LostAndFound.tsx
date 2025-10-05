@@ -9,7 +9,9 @@ import { Atom } from 'react-loading-indicators';
 import fetchWithRefresh from '../utils/apiService';
 import io from 'socket.io-client';
 
-const socket = io('https://sfac-hub.onrender.com'); // Adjust URL as needed
+const socket = io("https://sfac-hub.onrender.com", {
+  transports: ["websocket"],
+});
 
 type ReportType = 'Lost' | 'Found';
 
