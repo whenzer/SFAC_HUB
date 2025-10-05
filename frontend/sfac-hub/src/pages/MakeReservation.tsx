@@ -286,7 +286,7 @@ const MakeReservation = () => {
 
     try {
       // Make actual API call to reserve stock
-      const response = await fetch("https://sfac-hub.onrender.com/protected/stock/reserve", {
+      const response = await fetch("https://sfac-hub.fly.dev/protected/stock/reserve", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

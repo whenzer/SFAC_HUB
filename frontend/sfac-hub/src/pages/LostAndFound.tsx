@@ -121,7 +121,7 @@ const LostAndFound = () => {
   return (
     <ProtectedLayout endpoint="/protected/lostandfound">
       {({ user, isLoading, logout, extraData }) => {
-
+        
         // Function to fetch and process feed data
         const fetchFeedData = useCallback(async () => {
           try {
@@ -246,29 +246,6 @@ const LostAndFound = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
             });
-            // Update claimedBy in feed
-            setFeed(prev => prev.map(post => {
-              if (post.id === id) {
-                return {
-                  ...post,
-                  claimedBy: 'You'
-                };
-              }
-              return post;
-            }));
-            
-            // Update selectedPost if it's the same post
-            if (selectedPost && selectedPost.id === id) {
-              setSelectedPost(prev => {
-                if (prev) {
-                  return {
-                    ...prev,
-                    claimedBy: 'You'
-                  };
-                }
-                return prev;
-              });
-            }
           } catch (e) {
             console.error(e);
           }
@@ -281,29 +258,6 @@ const LostAndFound = () => {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
             });
-            // Update status in feed
-            setFeed(prev => prev.map(post => {
-              if (post.id === id) {
-                return {
-                  ...post,
-                  status: 'Resolved'
-                };
-              }
-              return post;
-            }));
-            
-            // Update selectedPost if it's the same post
-            if (selectedPost && selectedPost.id === id) {
-              setSelectedPost(prev => {
-                if (prev) {
-                  return {
-                    ...prev,
-                    status: 'Resolved'
-                  };
-                }
-                return prev;
-              });
-            }
           } catch (e) {
             console.error(e);
           }
@@ -313,7 +267,7 @@ const LostAndFound = () => {
         async function onLike(id: string) {
           // Toggle like status
           const isCurrentlyLiked = likedPosts[id] || false;
-          setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
+          // setLikedPosts(prev => ({ ...prev, [id]: !isCurrentlyLiked }));
           try {
             if (isCurrentlyLiked) {
               await fetchWithRefresh(`/protected/lostandfound/${id}/unlike`, {
@@ -333,7 +287,6 @@ const LostAndFound = () => {
 
         useEffect(() => {
           socket.on('updateComment', (data: { postId: string; comment: any; commentedAt: string; }) => {
-            console.log('Received new comment via socket:', data);
             const { postId, comment } = data;
             // Update comments in feed
             setFeed(prev => prev.map(post => {
@@ -344,13 +297,23 @@ const LostAndFound = () => {
                   stats: { ...post.stats, comments: (post.stats.comments || 0) + 1 },
                 };
               }
+
               return post;
             }));
+            // Update selectedPost if it's the same post
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return {
+                  ...prev,
+                  comments: [...(prev.comments || []), { ...comment, commentedAt: data.commentedAt }],
+                  stats: { ...prev.stats, comments: (prev.stats.comments || 0) + 1 },
+                };
+              }
+              return prev;
+            });
           });
-
           // listen to newPost event
           socket.on('newPost', (data: { post: any }) => {
-            console.log('Received new post via socket:', data);
             const post: LostFoundPost = {
               id: data.post._id,
               type: data.post.content.postType,
@@ -379,21 +342,49 @@ const LostAndFound = () => {
           // listen to claimPost event
           
           socket.on('claimPost', (data: { postId: string; claimedBy: string }) => {
-            console.log('Received claimPost via socket:', data);
             const { postId, claimedBy } = data;
+            const claimedByDisplay = claimedBy === user?._id ? "You" : "Someone";
             // Update claimedBy in feed
             setFeed(prev => prev.map(post => {
               if (post.id === postId) {
                 return {
                   ...post,
-                  claimedBy
+                  claimedBy: claimedByDisplay
+                };
+              }
+              return post;
+            }));
+            // Update selectedPost if it's the same post
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return {
+                  ...prev,
+                  claimedBy: claimedByDisplay
+                };
+              }
+              return prev;
+            });
+          });
+
+          // listen to resolvePost event
+          socket.on('resolvePost', (data: { postId: string; status: string }) => {
+            console.log('Received resolvePost via socket:', data);
+            const { postId, status } = data;
+            // Update status in feed
+            
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                // Only allow valid status values
+                return {
+                  ...post,
+                  status: status === 'Resolved' ? 'Resolved' : 'Open'
                 };
               }
               setSelectedPost(prev => {
                 if (prev && prev.id === postId) {
                   return {
                     ...prev,
-                    claimedBy
+                    status: status === 'Resolved' ? 'Resolved' : 'Open'
                   };
                 }
                 return prev;
@@ -402,27 +393,10 @@ const LostAndFound = () => {
             }));
           });
 
-          // listen to resolvePost event
-          socket.on('resolvePost', (data: { postId: string; status: string }) => {
-            console.log('Received resolvePost via socket:', data);
-            const { postId, status } = data;
-            // Update status in feed
-            setFeed(prev => prev.map(post => {
-              if (post.id === postId) {
-                // Only allow valid status values
-                const validStatus = status === 'Resolved' || status === 'Open' ? status as 'Resolved' | 'Open' : post.status;
-                return {
-                  ...post,
-                  status: validStatus
-                };
-              }
-              return post;
-            }));
-          });
-
           // listen to likePost event
           socket.on('likePost', (data: { postId: string; likes: any }) => {
             console.log('Received likePost via socket:', data);
+            setLikedPosts(prev => ({ ...prev, [data.postId]: true }));
             const { postId, likes } = data;
             // Update like count in feed
             setFeed(prev => prev.map(post => {
@@ -439,6 +413,7 @@ const LostAndFound = () => {
           // listen to unlikePost event
           socket.on('unlikePost', (data: { postId: string; likes: any }) => {
             console.log('Received unlikePost via socket:', data);
+            setLikedPosts(prev => ({ ...prev, [data.postId]: false }));
             const { postId, likes } = data;
             // Update like count in feed
             setFeed(prev => prev.map(post => {
@@ -462,7 +437,7 @@ const LostAndFound = () => {
             socket.off('likePost');
             socket.off('unlikePost');
           };
-        }, [socket]);
+        }, [socket, user]);
 
         // submit comment function
         async function submitComment(id: string) {

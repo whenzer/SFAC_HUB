@@ -12,8 +12,8 @@ type FetchOptions = RequestInit & {
 };
 
 // --- API Constants ---
-const REFRESH_URL = "https://sfac-hub.onrender.com/api/user/token";
-export const API_BASE_URL = "https://sfac-hub.onrender.com";
+const REFRESH_URL = "https://sfac-hub.fly.dev/api/user/token";
+export const API_BASE_URL = "https://sfac-hub.fly.dev";
 
 /**
  * Fetch wrapper with automatic token refresh (localStorage version)

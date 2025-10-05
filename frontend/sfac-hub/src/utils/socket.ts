@@ -1,7 +1,7 @@
 // utils/socket.ts
 import { io } from "socket.io-client";
 
-const URL = "https://sfac-hub.onrender.com"; // your backend URL
+const URL = "https://sfac-hub.fly.dev"; // your backend URL
 export const socket = io(URL, {
   withCredentials: true,
   transports: ["websocket"],

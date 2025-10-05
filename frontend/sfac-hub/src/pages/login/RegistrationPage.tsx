@@ -277,7 +277,7 @@ function RegistrationPage() {
 
 
       try {
-        const response = await fetch('https://sfac-hub.onrender.com/api/user/register', {
+        const response = await fetch('https://sfac-hub.fly.dev/api/user/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

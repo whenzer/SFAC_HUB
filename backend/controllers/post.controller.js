@@ -47,7 +47,8 @@ export const createPostController = async (req, res) => {
         const newPost = new Post({ user: userId, content });
         await newPost.save();
         const io = req.app.get('io');
-        newPost.user = req.user; // Attach user info to the newPost object
+        // populate user field of newPost
+        await newPost.populate('user', 'firstname middlename lastname email role');
         io.emit('newPost', { post: newPost });
         res.status(201).json({ success: true, message: "Post created successfully", data: newPost });
     } catch (error) {

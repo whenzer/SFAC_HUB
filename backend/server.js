@@ -12,7 +12,11 @@ dotenv.config();
 configureCloudinary();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
+if (!PORT) {
+  console.error("Error: PORT is not defined in environment variables.");
+  process.exit(1);
+}
 
 // ✅ create HTTP server
 const server = http.createServer(app);
@@ -45,4 +49,4 @@ app.use('/api/staff', protectedRoutes);
 app.use('/protected', protectedRoutes);
 
 // ✅ IMPORTANT: use server.listen instead of app.listen
-server.listen(PORT, () => console.log(`🚀 Server live on port ${PORT}`));
+server.listen(PORT,"0.0.0.0", () => console.log(`🚀 Server live on port ${PORT}`));

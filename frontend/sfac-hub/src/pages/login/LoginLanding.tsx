@@ -45,7 +45,7 @@ function LoginLanding() {
 		setIsLoading(true) // Disable button when login starts
 
 		try {
-			const response = await fetch('https://sfac-hub.onrender.com/api/user/login', {
+			const response = await fetch('https://sfac-hub.fly.dev/api/user/login', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password })
