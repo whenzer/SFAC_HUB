@@ -32,14 +32,6 @@ const io = new Server(server, {
 // ✅ socket.io logic
 io.on('connection', (socket) => {
   console.log('🟢 Connected:', socket.id);
-
-  // Listen for new comments
-  socket.on('newComment', (data) => {
-    console.log('💬 New comment:', data);
-    // Broadcast the new comment to all connected clients
-    io.emit('updateComments', data);
-  });
-
   socket.on('disconnect', () => {
     console.log('🔴 Disconnected:', socket.id);
   });

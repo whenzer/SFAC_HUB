@@ -7,11 +7,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
 import fetchWithRefresh from '../utils/apiService';
-import io from 'socket.io-client';
-
-const socket = io('https://sfac-hub.onrender.com', {
-  transports: ['websocket'], // ensures WS connection
-});
+import {socket} from '../utils/socket';
 
 type ReportType = 'Lost' | 'Found';
 
@@ -320,7 +316,7 @@ const LostAndFound = () => {
 
         // Listen for real-time comment updates
         useEffect(() => {
-          socket.on('updateComments', (data: { postId: string; comment: any }) => {
+          socket.on('updateComment', (data: { postId: string; comment: any }) => {
             console.log('Received new comment via socket:', data);
             const { postId, comment } = data;
             // Update comments in feed

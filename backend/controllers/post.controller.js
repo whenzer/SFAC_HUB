@@ -113,7 +113,7 @@ export const commentPostController = async (req, res) => {
         
         // Emit new comment via socket
         
-        io.emit('newComment', { postId, comment: { user: req.user, comment } });
+        io.emit('updateComment', { postId, comment: { user: req.user, comment } });
 
         res.status(200).json({ success: true, message: "Comment added successfully", data: post });
     }
