@@ -410,6 +410,21 @@
   color: #475569;
   line-height: 1.6;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .lf-post-description {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-post-description {
+    font-size: 13px;
+  }
 }
 
 .lf-post-image {
@@ -524,6 +539,13 @@
   width: 100%;
 }
 
+.lf-comments-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding-right: 5px;
+}
+
 .lf-comment-form {
   display: flex;
   gap: 0.5rem;
@@ -548,6 +570,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
+  white-space: nowrap;
 }
 
 .lf-comment-submit:hover {
@@ -559,10 +582,91 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 480px) {
+  .lf-comment-form {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .lf-comment-input {
+    width: 100%;
+  }
+  
+  .lf-comment-submit {
+    align-self: flex-end;
+    padding: 6px 12px;
+  }
+}
+
 .lf-comments-count {
   font-size: 0.875rem;
   color: #64748b;
   margin-top: 0.5rem;
+}
+
+.lf-comment {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.lf-comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #4f46e5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.lf-comment-content {
+  flex: 1;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.lf-comment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lf-comment-user {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.lf-comment-role {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.lf-comment-text {
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .lf-comment {
+    margin-bottom: 10px;
+  }
+  
+  .lf-comment-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+  
+  .lf-comment-content {
+    padding: 6px 10px;
+  }
 }
 
 .lf-post-views {

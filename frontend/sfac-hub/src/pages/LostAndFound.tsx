@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './LostAndFound.css';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
@@ -107,6 +107,47 @@ const LostAndFound = () => {
     <ProtectedLayout endpoint="/protected/lostandfound">
       {({ user, isLoading, logout, extraData }) => {
 
+        // Function to fetch and process feed data
+        const fetchFeedData = useCallback(async () => {
+          try {
+            const response = await fetchWithRefresh('/protected/lostandfound');
+            const data = await response.json();
+            
+            if (data) {
+              const posts: LostFoundPost[] = data.map((item: any) => ({
+                id: item._id,
+                type: item.content.postType,
+                title: item.content.briefTitle,
+                status: item.content.status,
+                category: item.content.category,
+                location: item.content.location,
+                description: item.content.description,
+                photoUrl: item.content.photo?.image,
+                author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown' },
+                createdAt: item.createdAt,
+                likedByMe: item.content.likedbyme || false,
+                comments: item.content.comments || [],
+                stats: {
+                  likes: item.content.likes?.count || 0,
+                  comments: item.content.comments?.length || 0,
+                  views: 0,
+                },
+                claimedBy: item.content.claimedby 
+                ? (item.content.claimedby._id === user?._id ? "You" : "Someone")
+                : null,
+              } as LostFoundPost));
+              
+              // Initialize likedPosts state
+              const initialLikes: Record<string, boolean> = {};
+              posts.forEach(p => { initialLikes[p.id] = p.likedByMe });
+              setLikedPosts(initialLikes);
+              setFeed(posts);
+            }
+          } catch (error) {
+            console.error('Error fetching feed data:', error);
+          }
+        }, [user, fetchWithRefresh]);
+
         useEffect(() => {
           if (extraData?.data) {
             console.log('Raw fetched data:', extraData.data);
@@ -163,12 +204,15 @@ const LostAndFound = () => {
               },
             };
             try {
-              await fetchWithRefresh('/protected/lostandfound/post', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: payload }),
-              });
-            } catch (_) {}
+                await fetchWithRefresh('/protected/lostandfound/post', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ content: payload }),
+                });
+                
+                // Perform a full page refresh to show the new post
+                window.location.reload();
+              } catch (_) {}
             setIsCreateOpen(false);
             setActiveTab('Active');
             resetForm();
@@ -463,13 +507,21 @@ const LostAndFound = () => {
                                 </div>
                                 <div className="lf-comments-list">
                                   {post.comments?.map((comment, index) => (
-                                    <div key={index} className="lf-comment">
-                                      <span className="lf-comment-user">
-                                        {comment.user.firstname} {comment.user.middlename} {comment.user.lastname} {comment.user.role}:
-                                      </span>
+                                  <div key={index} className="lf-comment">
+                                    <div className="lf-comment-avatar">
+                                      {comment.user.firstname.charAt(0)}{comment.user.lastname.charAt(0)}
+                                    </div>
+                                    <div className="lf-comment-content">
+                                      <div className="lf-comment-header">
+                                        <span className="lf-comment-user">
+                                          {comment.user.firstname} {comment.user.lastname}
+                                        </span>
+                                        <span className="lf-comment-role">{comment.user.role}</span>
+                                      </div>
                                       <span className="lf-comment-text">{comment.comment}</span>
                                     </div>
-                                  ))}
+                                  </div>
+                                ))}
                                 </div>
                                 {post.stats.comments > 0 && (
                                   <div className="lf-comments-count">
