@@ -531,7 +531,7 @@ const LostAndFound = () => {
                                         </span>
                                         <span className="lf-comment-role">{comment.user.role}</span>
                                         <span className="lf-comment-timestamp">
-                                          {new Date(comment.createdAt).toLocaleString()}
+                                          {new Date(comment.commentedAt).toLocaleString()}
                                         </span>
                                       </div>
                                       <span className="lf-comment-text">{comment.comment}</span>
