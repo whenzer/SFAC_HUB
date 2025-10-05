@@ -368,7 +368,6 @@ const LostAndFound = () => {
 
           // listen to resolvePost event
           socket.on('resolvePost', (data: { postId: string; status: string }) => {
-            console.log('Received resolvePost via socket:', data);
             const { postId, status } = data;
             // Update status in feed
             
