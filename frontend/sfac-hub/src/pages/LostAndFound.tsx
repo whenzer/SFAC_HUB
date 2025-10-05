@@ -295,10 +295,10 @@ const LostAndFound = () => {
               if (post.id === id) {
                 // Create new comment object
                  const newComment = {
-                   id: Date.now().toString(), // Temporary ID
                    comment: commentInput[id].trim(), // Using 'comment' instead of 'text' to match UI expectations
                    user: {
                      firstname: user?.firstname || '',
+                     middlename: user?.middlename || '',
                      lastname: user?.lastname || '',  
                      role: user?.role || ''
                    },
@@ -307,7 +307,7 @@ const LostAndFound = () => {
                 
                 return {
                   ...post,
-                  comments: [...post.comments, newComment], 
+                  comments: [...(post.comments || []), newComment],
                   stats: { 
                     ...post.stats, 
                     comments: post.stats.comments + 1
