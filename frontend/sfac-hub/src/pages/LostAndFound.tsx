@@ -361,7 +361,6 @@ const LostAndFound = () => {
           }
         }
 
-        // Listen for real-time comment updates
         useEffect(() => {
           socket.on('updateComment', (data: { postId: string; comment: any; commentedAt: string; }) => {
             console.log('Received new comment via socket:', data);
@@ -378,8 +377,91 @@ const LostAndFound = () => {
               return post;
             }));
           });
+
+          // listen to newPost event
+          socket.on('newPost', (data: { post: LostFoundPost }) => {
+            console.log('Received new post via socket:', data);
+            const { post } = data;
+            // Add new post to feed
+            setFeed(prev => [...prev, post]);
+          });
+
+          // listen to claimPost event
+          
+          socket.on('claimPost', (data: { postId: string; claimedBy: string }) => {
+            console.log('Received claimPost via socket:', data);
+            const { postId, claimedBy } = data;
+            // Update claimedBy in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  claimedBy
+                };
+              }
+              return post;
+            }));
+          });
+
+          // listen to resolvePost event
+          socket.on('resolvePost', (data: { postId: string; status: string }) => {
+            console.log('Received resolvePost via socket:', data);
+            const { postId, status } = data;
+            // Update status in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                // Only allow valid status values
+                const validStatus = status === 'Resolved' || status === 'Open' ? status as 'Resolved' | 'Open' : post.status;
+                return {
+                  ...post,
+                  status: validStatus
+                };
+              }
+              return post;
+            }));
+          });
+
+          // listen to likePost event
+          socket.on('likePost', (data: { postId: string; likes: number }) => {
+            console.log('Received likePost via socket:', data);
+            const { postId, likes } = data;
+            // Update like count in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  stats: { ...post.stats, likes }
+                };
+              }
+              return post;
+            }));
+          });
+
+          // listen to unlikePost event
+          socket.on('unlikePost', (data: { postId: string; likes: number }) => {
+            console.log('Received unlikePost via socket:', data);
+            const { postId, likes } = data;
+            // Update like count in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  stats: { ...post.stats, likes }
+                };
+              }
+              return post;
+            }));
+          });
+
+          
+
           return () => {
             socket.off('updateComment');
+            socket.off('claimPost');
+            socket.off('newPost');
+            socket.off('resolvePost');
+            socket.off('likePost');
+            socket.off('unlikePost');
           };
         }, [socket]);
 
