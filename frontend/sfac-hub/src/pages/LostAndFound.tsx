@@ -316,7 +316,7 @@ const LostAndFound = () => {
 
         // Listen for real-time comment updates
         useEffect(() => {
-          socket.on('updateComment', (data: { postId: string; comment: any }) => {
+          socket.on('updateComment', (data: { postId: string; comment: any; commentedAt: string; }) => {
             console.log('Received new comment via socket:', data);
             const { postId, comment } = data;
             // Update comments in feed
@@ -324,8 +324,8 @@ const LostAndFound = () => {
               if (post.id === postId) {
                 return {
                   ...post,
-                  comments: post.comments ? [...post.comments, comment] : [comment],
-                  stats: { ...post.stats, comments: (post.stats.comments || 0) + 1 }
+                  comments: post.comments ? [...post.comments, { ...comment, commentedAt: data.commentedAt }] : [{ ...comment, commentedAt: data.commentedAt }],
+                  stats: { ...post.stats, comments: (post.stats.comments || 0) + 1 },
                 };
               }
               return post;
