@@ -29,14 +29,6 @@ const io = new Server(server, {
   }
 });
 
-// ✅ socket.io logic
-io.on('connection', (socket) => {
-  console.log('🟢 Connected:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('🔴 Disconnected:', socket.id);
-  });
-});
-
 // ✅ middleware
 app.use(cors({
   origin: [
