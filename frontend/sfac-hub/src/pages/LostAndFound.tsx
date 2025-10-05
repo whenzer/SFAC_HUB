@@ -226,8 +226,8 @@ const LostAndFound = () => {
                   body: JSON.stringify({ content: payload }),
                 });
                 
-                // Perform a full page refresh to show the new post
-                window.location.reload();
+                // // Perform a full page refresh to show the new post
+                // window.location.reload();
               } catch (_) {}
             setIsCreateOpen(false);
             setActiveTab('Active');
@@ -326,36 +326,6 @@ const LostAndFound = () => {
                 headers: { 'Content-Type': 'application/json' },
               });
             }   
-            // Update like count in feed
-            setFeed(prev => prev.map(post => {
-              if (post.id === id) {
-                const newLikes = isCurrentlyLiked 
-                  ? Math.max(0, post.stats.likes - 1) 
-                  : post.stats.likes + 1;
-                return {
-                  ...post,
-                  stats: { ...post.stats, likes: newLikes }
-                };
-              }
-              return post;
-            }
-            ));
-            
-            // Update selectedPost if it's the same post
-            if (selectedPost && selectedPost.id === id) {
-              setSelectedPost(prev => {
-                if (prev) {
-                  const newLikes = isCurrentlyLiked 
-                    ? Math.max(0, prev.stats.likes - 1) 
-                    : prev.stats.likes + 1;
-                  return {
-                    ...prev,
-                    stats: { ...prev.stats, likes: newLikes }
-                  };
-                }
-                return prev;
-              });
-            }
           } catch (e) {
             console.error(e);
           }
@@ -379,11 +349,31 @@ const LostAndFound = () => {
           });
 
           // listen to newPost event
-          socket.on('newPost', (data: { post: LostFoundPost }) => {
+          socket.on('newPost', (data: { post: any }) => {
             console.log('Received new post via socket:', data);
-            const { post } = data;
-            // Add new post to feed
-            setFeed(prev => [...prev, post]);
+            const post: LostFoundPost = {
+              id: data.post._id,
+              type: data.post.content.postType,
+              title: data.post.content.briefTitle,
+              status: data.post.content.status || 'Open',
+              category: data.post.content.category,
+              location: data.post.content.location,
+              description: data.post.content.description,
+              photoUrl: data.post.content.photo?.image,
+              author: { name: `${data.post.user?.firstname ?? ''} ${data.post.user?.lastname ?? ''}`.trim() || 'Unknown' },
+              createdAt: data.post.createdAt,
+              likedByMe: false,
+              comments: data.post.content.comments || [],
+              stats: {
+                likes: data.post.content.likes?.count || 0,
+                comments: data.post.content.comments?.length || 0,
+                views: 0,
+              },
+              claimedBy: null, 
+              userId: data.post.user?._id, // Added for ownership check
+              // Initialize other fields as needed
+            };
+            setFeed(prev => [post, ...prev]);
           });
 
           // listen to claimPost event
@@ -422,7 +412,7 @@ const LostAndFound = () => {
           });
 
           // listen to likePost event
-          socket.on('likePost', (data: { postId: string; likes: number }) => {
+          socket.on('likePost', (data: { postId: string; likes: any }) => {
             console.log('Received likePost via socket:', data);
             const { postId, likes } = data;
             // Update like count in feed
@@ -430,7 +420,7 @@ const LostAndFound = () => {
               if (post.id === postId) {
                 return {
                   ...post,
-                  stats: { ...post.stats, likes }
+                  stats: { ...post.stats, likes: likes.count }
                 };
               }
               return post;
@@ -438,7 +428,7 @@ const LostAndFound = () => {
           });
 
           // listen to unlikePost event
-          socket.on('unlikePost', (data: { postId: string; likes: number }) => {
+          socket.on('unlikePost', (data: { postId: string; likes: any }) => {
             console.log('Received unlikePost via socket:', data);
             const { postId, likes } = data;
             // Update like count in feed
@@ -446,7 +436,7 @@ const LostAndFound = () => {
               if (post.id === postId) {
                 return {
                   ...post,
-                  stats: { ...post.stats, likes }
+                  stats: { ...post.stats, likes: likes.count }
                 };
               }
               return post;
