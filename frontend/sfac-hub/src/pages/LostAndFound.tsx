@@ -7,6 +7,9 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
 import fetchWithRefresh from '../utils/apiService';
+import io from 'socket.io-client';
+
+const socket = io('https://sfac-hub.onrender.com'); // Adjust URL as needed
 
 type ReportType = 'Lost' | 'Found';
 
@@ -281,6 +284,29 @@ const LostAndFound = () => {
           }
         }
 
+        // Listen for new comments via Socket.io
+        useEffect(() => {
+          socket.on('updateComments', (data) => {
+            setFeed(prev => prev.map(post => {
+              if (post.id === data.postId) {
+                return {
+                  ...post,
+                  comments: [...(post.comments || []), data.comment],
+                  stats: {
+                    ...post.stats,
+                    comments: post.stats.comments + 1
+                  }
+                };
+              }
+              return post;
+            }));
+          });
+
+          return () => {
+            socket.off('updateComments');
+          };
+        }, []);
+
         // submit comment function
         async function submitComment(id: string) {
           if (!commentInput[id]?.trim()) return;
@@ -291,32 +317,43 @@ const LostAndFound = () => {
               body: JSON.stringify({ comment: commentInput[id].trim() }),
             });
             // Add comment to post and update UI
+
+            // Emit new comment event via Socket.io
+            socket.emit('newComment', {
+              postId: id,
+              comment: commentInput[id].trim(),
+              user: {
+                firstname: user?.firstname || '',
+                middlename: user?.middlename || '',
+                lastname: user?.lastname || '',
+                role: user?.role || ''
+              }
+            });
             setFeed(prev => prev.map(post => {
               if (post.id === id) {
                 // Create new comment object
-                 const newComment = {
-                   comment: commentInput[id].trim(), // Using 'comment' instead of 'text' to match UI expectations
-                   user: {
-                     firstname: user?.firstname || '',
-                     middlename: user?.middlename || '',
-                     lastname: user?.lastname || '',  
-                     role: user?.role || ''
-                   },
-                   commentedAt: new Date().toISOString() // Add commentedAt for consistency
-                 };
-                
+                const newComment = {
+                  comment: commentInput[id].trim(), // Using 'comment' instead of 'text' to match UI expectations
+                  user: {
+                    firstname: user?.firstname || '',
+                    middlename: user?.middlename || '',
+                    lastname: user?.lastname || '',
+                    role: user?.role || ''
+                  },
+                  commentedAt: new Date().toISOString() // Add commentedAt for consistency
+                };
+
                 return {
                   ...post,
                   comments: [...(post.comments || []), newComment],
-                  stats: { 
-                    ...post.stats, 
+                  stats: {
+                    ...post.stats,
                     comments: post.stats.comments + 1
                   }
                 };
               }
               return post;
             }));
-            
             // Clear comment input
             setCommentInput(prev => ({ ...prev, [id]: '' }));
           } catch (e) {
