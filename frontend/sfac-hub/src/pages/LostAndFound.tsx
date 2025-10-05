@@ -321,23 +321,19 @@ const LostAndFound = () => {
         // Listen for real-time comment updates
         useEffect(() => {
           socket.on('updateComments', (data: { postId: string; comment: any }) => {
+            console.log('Received new comment via socket:', data);
             const { postId, comment } = data;
             // Update comments in feed
             setFeed(prev => prev.map(post => {
               if (post.id === postId) {
                 return {
                   ...post,
-                  comments: [...(post.comments || []), comment],
-                  stats: {
-                    ...post.stats,
-                    comments: post.stats.comments + 1
-                  }
+                  comments: post.comments ? [...post.comments, comment] : [comment],
+                  stats: { ...post.stats, comments: (post.stats.comments || 0) + 1 }
                 };
               }
               return post;
             }));
-            // Update selectedPost if it's the same post
-            
           });
         }, [socket]);
 
@@ -351,53 +347,6 @@ const LostAndFound = () => {
               body: JSON.stringify({ comment: commentInput[id].trim() }),
             });
             
-            // Create new comment object
-            const newComment = {
-              comment: commentInput[id].trim(),
-              user: {
-                firstname: user?.firstname || '',
-                middlename: user?.middlename || '',
-                lastname: user?.lastname || '',  
-                role: user?.role || ''
-              },
-              commentedAt: new Date().toISOString()
-            };
-            
-            // Add comment to post and update UI
-            setFeed(prev => prev.map(post => {
-              if (post.id === id) {
-                return {
-                  ...post,
-                  comments: [...(post.comments || []), newComment],
-                  stats: { 
-                    ...post.stats, 
-                    comments: post.stats.comments + 1
-                  }
-                };
-              }
-              return post;
-            }));
-            
-            // Emit new comment via socket
-            socket.emit('newComment', { postId: id, comment: newComment });
-            // Update selectedPost if it's the same post
-            if (selectedPost && selectedPost.id === id) {
-              setSelectedPost(prev => {
-                if (prev) {
-                  return {
-                    ...prev,
-                    comments: [...(prev.comments || []), newComment],
-                    stats: { 
-                      ...prev.stats, 
-                      comments: prev.stats.comments + 1
-                    }
-                  };
-                }
-                return prev;
-              });
-            }
-            
-            // Clear comment input
             setCommentInput(prev => ({ ...prev, [id]: '' }));
           } catch (e) {
             console.error(e);

@@ -99,6 +99,7 @@ export const commentPostController = async (req, res) => {
     try {
         const postId = req.params.id;
         const userId = req.user._id;
+        const io = req.app.get('io'); // Get io instance from app
         const { comment } = req.body;
         if (!comment) {
             return res.status(400).json({ success: false, message: "Comment cannot be empty" });
@@ -109,6 +110,11 @@ export const commentPostController = async (req, res) => {
         }
         post.content.comments.push({ user: userId, comment });
         await post.save();
+        
+        // Emit new comment via socket
+        
+        io.emit('newComment', { postId, comment: { user: req.user, comment } });
+
         res.status(200).json({ success: true, message: "Comment added successfully", data: post });
     }
     catch (error) {

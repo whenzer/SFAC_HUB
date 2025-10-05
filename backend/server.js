@@ -54,7 +54,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '5mb' }));
-
+app.set('io', io); // Make io accessible in routes if needed
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/staff', protectedRoutes);
