@@ -24,7 +24,7 @@ type LostFoundPost = {
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
   likedByMe: boolean;
-  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string }[];
+  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt: string }[];
 };
 
 const CATEGORIES = [
