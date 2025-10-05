@@ -636,7 +636,9 @@
 .lf-comment-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   margin-bottom: 4px;
+  gap: 4px;
 }
 
 .lf-comment-user {
@@ -652,7 +654,7 @@
 .lf-comment-timestamp {
   font-size: 0.7rem;
   color: #888;
-  margin-left: 8px;
+  margin-left: auto;
   font-style: italic;
 }
 
@@ -673,6 +675,22 @@
   
   .lf-comment-content {
     padding: 6px 10px;
+  }
+  
+  .lf-comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .lf-comment-timestamp {
+    margin-left: 0;
+    margin-top: 2px;
+    font-size: 0.65rem;
+    width: 100%;
+  }
+  
+  .lf-comment-user {
+    margin-right: 4px;
   }
 }
 
