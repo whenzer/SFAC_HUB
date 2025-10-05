@@ -290,11 +290,24 @@ const LostAndFound = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ comment: commentInput[id].trim() }),
             });
-            // Add comment to post
+            // Add comment to post and update UI
             setFeed(prev => prev.map(post => {
               if (post.id === id) {
+                // Create new comment object
+                 const newComment = {
+                   id: Date.now().toString(), // Temporary ID
+                   comment: commentInput[id].trim(), // Using 'comment' instead of 'text' to match UI expectations
+                   user: {
+                     firstname: user?.firstname || '',
+                     lastname: user?.lastname || '',
+                     role: user?.role || ''
+                   },
+                   createdAt: new Date().toISOString()
+                 };
+                
                 return {
                   ...post,
+                  comments: [...post.comments, newComment],
                   stats: { 
                     ...post.stats, 
                     comments: post.stats.comments + 1
