@@ -1,9 +1,23 @@
-import io from 'socket.io-client';
+// utils/socket.ts
+import { io } from "socket.io-client";
 
-// Connect to the Socket.IO server
-
-const socket = io('https://sfac-hub.onrender.com', {
-  transports: ['websocket'], // ensures WS connection
+const URL = "https://sfac-hub.onrender.com"; // your backend URL
+export const socket = io(URL, {
+  withCredentials: true,
+  transports: ["websocket"],
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
 });
 
-export { socket };
+socket.on("connect", () => {
+  console.log("✅ Socket connected:", socket.id);
+});
+
+socket.on("disconnect", (reason) => {
+  console.log("❌ Socket disconnected:", reason);
+});
+
+socket.on("reconnect", (attemptNumber) => {
+  console.log("🔄 Socket reconnected after", attemptNumber, "attempts");
+});
