@@ -24,7 +24,7 @@ type LostFoundPost = {
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
   likedByMe: boolean;
-  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt?: string; createdAt?: string }[];
+  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt: string;}[];
 };
 
 const CATEGORIES = [
@@ -299,16 +299,15 @@ const LostAndFound = () => {
                    comment: commentInput[id].trim(), // Using 'comment' instead of 'text' to match UI expectations
                    user: {
                      firstname: user?.firstname || '',
-                     lastname: user?.lastname || '',
+                     lastname: user?.lastname || '',  
                      role: user?.role || ''
                    },
-                   createdAt: new Date().toISOString(),
                    commentedAt: new Date().toISOString() // Add commentedAt for consistency
                  };
                 
                 return {
                   ...post,
-                  comments: [...post.comments, newComment],
+                  comments: [...post.comments, newComment], 
                   stats: { 
                     ...post.stats, 
                     comments: post.stats.comments + 1
@@ -532,7 +531,7 @@ const LostAndFound = () => {
                                         </span>
                                         <span className="lf-comment-role">{comment.user.role}</span>
                                         <span className="lf-comment-timestamp">
-                                          {new Date(comment.commentedAt || comment.createdAt).toLocaleString()}
+                                          {new Date(comment.commentedAt).toLocaleString()}
                                         </span>
                                       </div>
                                       <span className="lf-comment-text">{comment.comment}</span>
