@@ -324,7 +324,7 @@ const LostAndFound = () => {
               if (post.id === postId) {
                 return {
                   ...post,
-                  comments: post.comments ? [...post.comments, { ...comment, commentedAt: data.commentedAt }] : [{ ...comment, commentedAt: data.commentedAt }],
+                  comments: [...(post.comments || []), { ...comment, commentedAt: data.commentedAt }],
                   stats: { ...post.stats, comments: (post.stats.comments || 0) + 1 },
                 };
               }
