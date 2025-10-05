@@ -21,7 +21,7 @@ export interface StockItem {
   currentStock: number;
   totalStock: number;
   status: 'Available' | 'Low' | 'Out';
-  lastUpdated: string;
+  updatedAt: string;
   image: string;
 }
 
@@ -289,7 +289,7 @@ const StockAvailability = () => {
                   </div>
                   
                   <div className="item-footer">
-                    <span className="last-updated">Updated {formatDate(item.lastUpdated)}</span>
+                    <span className="last-updated">Updated {formatDate(item.updatedAt)}</span>
                     <button
                       className={`reserve-btn ${item.status === 'Out' ? 'disabled' : ''}`}
                       disabled={item.status === 'Out'}
@@ -361,7 +361,7 @@ const StockAvailability = () => {
                 
                 <div className="detail-row">
                   <span className="detail-label">Last Updated:</span>
-                  <span className="detail-value">{formatDate(selectedItem.lastUpdated)}</span>
+                  <span className="detail-value">{formatDate(selectedItem.updatedAt)}</span>
                 </div>
                 
                 <div className="stock-level-detail">
