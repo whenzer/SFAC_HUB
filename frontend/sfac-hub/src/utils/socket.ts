@@ -21,3 +21,5 @@ socket.on("disconnect", (reason) => {
 socket.on("reconnect", (attemptNumber) => {
   console.log("🔄 Socket reconnected after", attemptNumber, "attempts");
 });
+
+socket.on('ping', () => {});
