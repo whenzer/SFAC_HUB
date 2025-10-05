@@ -33,8 +33,10 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('🟢 Connected:', socket.id);
 
+  // Listen for new comments
   socket.on('newComment', (data) => {
     console.log('💬 New comment:', data);
+    // Broadcast the new comment to all connected clients
     io.emit('updateComments', data);
   });
 

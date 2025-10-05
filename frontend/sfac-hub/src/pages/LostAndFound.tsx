@@ -304,6 +304,7 @@ const LostAndFound = () => {
             }));
           });
 
+
           return () => {
             socket.off('updateComments');
           };
