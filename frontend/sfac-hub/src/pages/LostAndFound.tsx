@@ -25,6 +25,7 @@ type LostFoundPost = {
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
   likedByMe: boolean;
+  userId?: string; // Added for ownership check
   comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt: string;}[];
 };
 
@@ -52,7 +53,7 @@ const LostAndFound = () => {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'Active' | 'Claimed' | 'Create'>('Active');
+  const [activeTab, setActiveTab] = useState<'Active' | 'Claimed' | 'Resolved' | 'Create'>('Active');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -69,7 +70,17 @@ const LostAndFound = () => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !categoryFilter || post.category === categoryFilter;
-    const matchesTab = activeTab === 'Claimed' ? !!post.claimedBy : !post.claimedBy;
+    
+    // Handle different tab filters
+    let matchesTab = false;
+    if (activeTab === 'Claimed') {
+      matchesTab = !!post.claimedBy;
+    } else if (activeTab === 'Resolved') {
+      matchesTab = post.status === 'Resolved';
+    } else {
+      // Active tab - show posts that are not claimed and not resolved
+      matchesTab = !post.claimedBy && post.status !== 'Resolved';
+    }
     
     return matchesSearch && matchesCategory && matchesTab;
   });
@@ -159,7 +170,7 @@ const LostAndFound = () => {
               id: item._id,
               type: item.content.postType,
               title: item.content.briefTitle,
-              status: item.content.status,
+              status: item.content.status || 'Open',
               category: item.content.category,
               location: item.content.location,
               description: item.content.description,
@@ -168,6 +179,7 @@ const LostAndFound = () => {
               createdAt: item.createdAt,
               likedByMe: item.content.likedbyme || false,
               comments: item.content.comments || [],
+              userId: item.user?._id, // Added for ownership check
               stats: {
                 likes: item.content.likes?.count || 0,
                 comments: item.content.comments?.length || 0,
@@ -252,6 +264,41 @@ const LostAndFound = () => {
                   return {
                     ...prev,
                     claimedBy: 'You'
+                  };
+                }
+                return prev;
+              });
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        // on resolve function
+        async function onResolve(id: string) {
+          try {
+            await fetchWithRefresh(`/protected/lostandfound/${id}/resolve`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            // Update status in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === id) {
+                return {
+                  ...post,
+                  status: 'Resolved'
+                };
+              }
+              return post;
+            }));
+            
+            // Update selectedPost if it's the same post
+            if (selectedPost && selectedPost.id === id) {
+              setSelectedPost(prev => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    status: 'Resolved'
                   };
                 }
                 return prev;
@@ -432,6 +479,12 @@ const LostAndFound = () => {
                     Claimed Items
                   </button>
                   <button 
+                    className={`lf-tab ${activeTab === 'Resolved' ? 'lf-tab--active' : ''}`}
+                    onClick={() => setActiveTab('Resolved')}
+                  >
+                    Resolved
+                  </button>
+                  <button 
                     className="lf-create-btn"
                     onClick={() => { setActiveTab('Create'); setIsCreateOpen(true); }}
                   >
@@ -479,7 +532,7 @@ const LostAndFound = () => {
                       </div>
                     ) : (
                       filteredFeed.map((post) => (
-                        <article key={post.id} className="lf-post" data-type={post.type}>
+                        <article key={post.id} className={`lf-post ${post.status === 'Resolved' ? 'lf-post--resolved' : ''}`} data-type={post.type}>
                           <header className="lf-post-header">
                             <div className="lf-post-avatar" aria-hidden>
                               {post.author.name.substring(0, 2).toUpperCase()}
@@ -490,6 +543,11 @@ const LostAndFound = () => {
                                 <span className={`lf-badge lf-badge--${post.type.toLowerCase()}`}>
                                   {post.type}
                                 </span>
+                                {post.status === 'Resolved' && (
+                                  <span className="lf-badge lf-badge--resolved">
+                                    Resolved
+                                  </span>
+                                )}
                               </div>
                               <time className="lf-post-time">
                                 {new Date(post.createdAt).toLocaleString()}
@@ -506,12 +564,12 @@ const LostAndFound = () => {
                           </div>
                           
                           {post.photoUrl && (
-                            <div className="lf-post-image" onClick={() => openPostModal(post)}>
+                            <div className="lf-post-image" onClick={() => post.status !== 'Resolved' && openPostModal(post)}>
                               <img 
                                 src={post.photoUrl} 
                                 alt={post.title}
                                 loading="lazy"
-                                className="responsive-image lf-post-image-clickable"
+                                className={`responsive-image ${post.status !== 'Resolved' ? 'lf-post-image-clickable' : ''}`}
                               />
                             </div>
                           )}
@@ -890,6 +948,20 @@ const LostAndFound = () => {
                           {selectedPost.claimedBy && (
                             <span className="lf-badge lf-badge--claimed">
                               Claimed by {selectedPost.claimedBy}
+                            </span>
+                          )}
+                          {selectedPost.userId === user?._id && selectedPost.status !== "Resolved" && (
+                            <button 
+                              className="lf-post-modal-action-btn lf-post-modal-action-btn--resolve"
+                              onClick={() => onResolve(selectedPost.id)}
+                            >
+                              <span>✓</span>
+                              Mark as Resolved
+                            </button>
+                          )}
+                          {selectedPost.status === "Resolved" && (
+                            <span className="lf-badge lf-badge--resolved">
+                              Resolved
                             </span>
                           )}
                         </div>
