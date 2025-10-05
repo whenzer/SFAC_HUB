@@ -46,6 +46,8 @@ export const createPostController = async (req, res) => {
         // Create new post
         const newPost = new Post({ user: userId, content });
         await newPost.save();
+        const io = req.app.get('io');
+        io.emit('newPost', { post: newPost });
         res.status(201).json({ success: true, message: "Post created successfully", data: newPost });
     } catch (error) {
         console.error("Error creating post: ", error.message);
@@ -67,6 +69,8 @@ export const likePostController = async (req, res) => {
         post.content.likes.users.push(userId);
         post.content.likes.count += 1;
         await post.save();
+        const io = req.app.get('io');
+        io.emit('likePost', { postId, likes: post.content.likes });
         res.status(200).json({ success: true, message: "Post liked successfully", data: post });
     } catch (error) {
         console.error("Error liking post: ", error.message);
@@ -88,6 +92,9 @@ export const unlikePostController = async (req, res) => {
         post.content.likes.users = post.content.likes.users.filter(id => id.toString() !== userId.toString());
         post.content.likes.count -= 1;
         await post.save();
+        const io = req.app.get('io');
+        io.emit('unlikePost', { postId, likes: post.content.likes });
+
         res.status(200).json({ success: true, message: "Post unliked successfully", data: post });
     } catch (error) {
         console.error("Error unliking post: ", error.message);
@@ -165,6 +172,10 @@ export const claimItemController = async (req, res) => {
         }
         post.content.claimedby = userId;
         await post.save();
+        
+        const io = req.app.get('io');
+        io.emit('claimPost', { postId, claimedBy: userId });
+
         res.status(200).json({ success: true, message: "Item claimed successfully", data: post });
     } catch (error) {
         console.error("Error claiming item: ", error.message);
@@ -185,6 +196,10 @@ export const resolvedController = async (req, res) => {
         }
         post.content.status = "Resolved";
         await post.save();
+        
+        const io = req.app.get('io');
+        io.emit('resolvePost', { postId, status: "Resolved" });
+
         res.status(200).json({ success: true, message: "Post marked as resolved", data: post });
     } catch (error) {
         console.error("Error marking post as resolved: ", error.message);
