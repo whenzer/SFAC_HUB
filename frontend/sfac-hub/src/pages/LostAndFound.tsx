@@ -281,29 +281,29 @@ const LostAndFound = () => {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
             });
-            // // Update status in feed
-            // setFeed(prev => prev.map(post => {
-            //   if (post.id === id) {
-            //     return {
-            //       ...post,
-            //       status: 'Resolved'
-            //     };
-            //   }
-            //   return post;
-            // }));
+            // Update status in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === id) {
+                return {
+                  ...post,
+                  status: 'Resolved'
+                };
+              }
+              return post;
+            }));
             
-            // // Update selectedPost if it's the same post
-            // if (selectedPost && selectedPost.id === id) {
-            //   setSelectedPost(prev => {
-            //     if (prev) {
-            //       return {
-            //         ...prev,
-            //         status: 'Resolved'
-            //       };
-            //     }
-            //     return prev;
-            //   });
-            // }
+            // Update selectedPost if it's the same post
+            if (selectedPost && selectedPost.id === id) {
+              setSelectedPost(prev => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    status: 'Resolved'
+                  };
+                }
+                return prev;
+              });
+            }
           } catch (e) {
             console.error(e);
           }
