@@ -5,7 +5,8 @@ import cloudinary from "../config/cloudinary.js";
 export const lostandfoundController = async (req, res) => {
     try {
         //firstname, middlename, lastname, email, role
-        const posts = await Post.find().populate('user', 'firstname middlename lastname email role')
+        const posts = await Post.find()
+        .populate('user', 'firstname middlename lastname email role')
         .populate("content.claimedby", "firstname lastname email role")
         .populate("content.comments.user", "firstname lastname email role").lean();
         posts.forEach(post => {
@@ -119,9 +120,7 @@ export const commentPostController = async (req, res) => {
         }
         post.content.comments.push({ user: userId, comment });
         await post.save();
-        
-        // Emit new comment via socket
-        
+
 
         io.emit('updateComment', { postId, comment: { user: req.user, comment }, commentedAt: new Date() });
 
@@ -157,6 +156,36 @@ export const deleteCommentController = async (req, res) => {
     }
     catch (error) {
         console.error("Error deleting comment: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const editCommentController = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const commentId = req.params.commentId;
+        const userId = req.user._id;
+        const { comment } = req.body;
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ success: false, message: "Post not found" });
+        }
+        const commentToEdit = post.content.comments.id(commentId);
+        if (!commentToEdit) {
+            return res.status(404).json({ success: false, message: "Comment not found" });
+        }
+        if (commentToEdit.user.toString() !== userId.toString()) {
+            return res.status(403).json({ success: false, message: "You can only edit your own comments" });
+        }
+
+        commentToEdit.comment = comment;
+        await post.save();
+        io.emit('editComment', { postId, commentId, newComment: comment });
+        res.status(200).json({ success: true, message: "Comment edited successfully"});
+    }
+    catch (error) {
+        console.error("Error editing comment: ", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 }

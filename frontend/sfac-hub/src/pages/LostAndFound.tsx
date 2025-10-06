@@ -426,7 +426,32 @@ const LostAndFound = () => {
             }));
           });
 
-          
+          // listen to editComment event
+          socket.on('editComment', (data: { postId: string; commentId: string; newComment: string; }) => {
+            const { postId, commentId, newComment } = data; 
+            // Update comments in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  comments: post.comments?.map((c, index) => index.toString() === commentId ? { ...c, comment: newComment } : c) || [],
+                  // stats remain unchanged
+                };
+              }
+              return post;
+            }));
+            // Update selectedPost if it's the same post
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return {
+                  ...prev,
+                  comments: prev.comments?.map((c, index) => index.toString() === commentId ? { ...c, comment: newComment } : c) || [],
+                  // stats remain unchanged
+                };
+              }
+              return prev;
+            });
+          });
 
           return () => {
             socket.off('updateComment');
