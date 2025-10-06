@@ -22,7 +22,7 @@ type LostFoundPost = {
   location: string;
   description: string;
   photoUrl?: string;
-  author: { name: string, id?: string };
+  author: { name: string, _id?: string };
   createdAt: string;
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
@@ -307,7 +307,7 @@ const LostAndFound = () => {
               location: data.post.content.location,
               description: data.post.content.description,
               photoUrl: data.post.content.photo?.image,
-              author: { name: `${data.post.user?.firstname ?? ''} ${data.post.user?.lastname ?? ''}`.trim() || 'Unknown' },
+              author: { name: `${data.post.user?.firstname ?? ''} ${data.post.user?.lastname ?? ''}`.trim() || 'Unknown', _id: data.post.user?._id },
               createdAt: data.post.createdAt,
               likedByMe: false,
               comments: data.post.content.comments || [],
