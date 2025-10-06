@@ -359,6 +359,67 @@
   border-bottom: 1px solid #f1f5f9;
 }
 
+/* Post-level actions menu */
+.lf-post-menu-container {
+  margin-left: auto;
+  position: relative;
+}
+
+.lf-post-menu-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  color: #64748b;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.lf-post-menu-btn:hover {
+  background: #e2e8f0;
+}
+
+.lf-post-menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  border-radius: 10px;
+  min-width: 140px;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.lf-post-menu-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: #334155;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.lf-post-menu-dropdown button:hover {
+  background: #f1f5f9;
+}
+
+.lf-post-menu-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lf-post-menu-delete {
+  color: #dc2626;
+}
+
 .lf-post-avatar {
   width: 40px;
   height: 40px;
@@ -1413,6 +1474,19 @@
   border: 1px solid #e2e8f0;
 }
 
+/* Smaller confirmation modal */
+.lf-confirm-modal {
+  max-width: 520px;
+  width: 90%;
+}
+
+@media (max-width: 640px) {
+  .lf-confirm-modal {
+    width: 90%;
+    max-width: 420px;
+  }
+}
+
 /* Custom scrollbar styling */
 .lf-post-modal::-webkit-scrollbar {
   width: 6px;
@@ -1618,6 +1692,17 @@
 .lf-post-modal-action-btn--resolve {
   background-color: #2196F3;
   color: white;
+}
+
+/* Delete variant for confirmation actions */
+.lf-post-modal-action-btn--delete {
+  background-color: #dc2626;
+  color: #fff;
+}
+
+.lf-post-modal-action-btn--delete:hover {
+  background-color: #b91c1c;
+  color: #fff;
 }
 
 .lf-badge--resolved {
@@ -2052,4 +2137,16 @@
   .lf-comment-edit-input { width: 100%; }
   .lf-comment-edit-actions { width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
   .lf-comment-edit-save, .lf-comment-edit-cancel { white-space: nowrap; flex: 0 0 auto; }
+}
+
+/* Confirmation modal mobile overrides: keep compact and centered */
+@media (max-width: 480px) {
+  .lf-post-modal.lf-confirm-modal {
+    width: 92vw;
+    max-width: 420px;
+    height: auto;
+    max-height: 80vh;
+    border-radius: 12px;
+  }
+  .lf-post-modal-overlay.lf-confirm-overlay { padding: 0.75rem; }
 }

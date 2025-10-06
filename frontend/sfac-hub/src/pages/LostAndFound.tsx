@@ -68,6 +68,9 @@ const LostAndFound = () => {
   const [commentSortOrder, setCommentSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [openCommentMenu, setOpenCommentMenu] = useState<Record<string, string | null>>({});
   const [editingComment, setEditingComment] = useState<{ postId: string | null; commentId: string | null; value: string }>({ postId: null, commentId: null, value: '' });
+  const [openPostMenu, setOpenPostMenu] = useState<Record<string, boolean>>({});
+  const [confirmDeletePostId, setConfirmDeletePostId] = useState<string | null>(null);
+  const [confirmDeleteComment, setConfirmDeleteComment] = useState<{ postId: string; commentId: string } | null>(null);
 
   const [feed, setFeed] = useState<LostFoundPost[]>([]);
 
@@ -522,14 +525,25 @@ const LostAndFound = () => {
             console.error(e);
           }
         }
-        async function onDeleteComment(postId: string, commentId: string) {
+        function onDeleteComment(postId: string, commentId: string) {
+          // Open confirmation modal for comment deletion and close menu
+          setOpenCommentMenu(prev => ({ ...prev, [postId]: null }));
+          setConfirmDeleteComment({ postId, commentId });
+        }
+
+        async function confirmDeleteCommentNow() {
+          const target = confirmDeleteComment;
+          if (!target) return;
+          const { postId, commentId } = target;
           try {
             await fetchWithRefresh(`/protected/lostandfound/${postId}/comment/${commentId}`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
             });
+            setConfirmDeleteComment(null);
           } catch (e) {
             console.error(e);
+            setConfirmDeleteComment(null);
           }
         }
 
@@ -543,6 +557,58 @@ const LostAndFound = () => {
         function openPostModal(post: LostFoundPost) {
           setSelectedPost(post);
           setIsModalOpen(true);
+        }
+
+        // Post-level menu handlers
+        function togglePostMenu(postId: string) {
+          setOpenPostMenu(prev => ({ ...prev, [postId]: !prev[postId] }));
+        }
+
+        function closePostMenu(postId: string) {
+          setOpenPostMenu(prev => ({ ...prev, [postId]: false }));
+        }
+
+        async function handleDeletePost(post: LostFoundPost) {
+          // Authorization check: only creator can delete
+          if (!currentUserId || post.userId !== currentUserId) {
+            console.warn('You are not authorized to delete this post.');
+            return;
+          }
+          // Close menu and open confirmation modal
+          setOpenPostMenu(prev => ({ ...prev, [post.id]: false }));
+          setConfirmDeletePostId(post.id);
+        }
+
+        async function confirmDeletePostNow(postId: string) {
+          const post = feed.find(p => p.id === postId);
+          if (!post) { setConfirmDeletePostId(null); return; }
+          if (!currentUserId || post.userId !== currentUserId) {
+            console.warn('You are not authorized to delete this post.');
+            setConfirmDeletePostId(null);
+            return;
+          }
+          try {
+            const res = await fetchWithRefresh(`/protected/lostandfound/${postId}`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(text || 'Failed to delete the post');
+            }
+            // Update local state: remove the post
+            setFeed(prev => prev.filter(p => p.id !== postId));
+            closePostMenu(postId);
+            setConfirmDeletePostId(null);
+          } catch (err: any) {
+            console.error('Delete post failed:', err);
+            setConfirmDeletePostId(null);
+          }
+        }
+
+        function handleEditPost(post: LostFoundPost) {
+          // Placeholder edit; owner-only UI already enforced
+          alert('Edit feature coming soon.');
         }
 
         // close modal function
@@ -688,6 +754,29 @@ const LostAndFound = () => {
                                 {new Date(post.createdAt).toLocaleString()}
                               </time>
                             </div>
+                            {currentUserId && post.userId === currentUserId && (
+                              <div className="lf-post-menu-container">
+                                <button
+                                  className="lf-post-menu-btn"
+                                  aria-label="Post actions"
+                                  onClick={() => togglePostMenu(post.id)}
+                                >
+                                  ⋮
+                                </button>
+                                {openPostMenu[post.id] && (
+                                  <div className="lf-post-menu-dropdown" role="menu">
+                                    <button onClick={() => { handleEditPost(post); }} role="menuitem">
+                                      <span className="lf-post-menu-icon"><MdOutlineEdit /></span>
+                                      Edit
+                                    </button>
+                                    <button onClick={() => { handleDeletePost(post); }} role="menuitem" className="lf-post-menu-delete">
+                                      <span className="lf-post-menu-icon"><MdDeleteForever /></span>
+                                      Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </header>
                           
                           <div className="lf-post-content">
@@ -1226,6 +1315,48 @@ const LostAndFound = () => {
             </main>
 
             <Footer />
+
+            {/* Post delete confirmation modal */}
+            {confirmDeletePostId && (
+              <div className="lf-post-modal-overlay lf-confirm-overlay" role="dialog" aria-modal="true">
+                <div className="lf-post-modal lf-confirm-modal">
+                  <div className="lf-post-modal-header">
+                    <h3 className="lf-post-modal-title">Delete Post</h3>
+                    <button className="lf-post-modal-close" onClick={() => setConfirmDeletePostId(null)}>✕</button>
+                  </div>
+                  <div className="lf-post-modal-content" style={{ padding: '1rem 1.5rem' }}>
+                    <p style={{ color: '#64748b', marginBottom: '1rem' }}>
+                      Are you sure you want to delete this post? This action cannot be undone.
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button className="lf-post-modal-action-btn" onClick={() => setConfirmDeletePostId(null)}>Cancel</button>
+                      <button className="lf-post-modal-action-btn lf-post-modal-action-btn--delete" onClick={() => confirmDeletePostNow(confirmDeletePostId!)}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Comment delete confirmation modal */}
+            {confirmDeleteComment && (
+              <div className="lf-post-modal-overlay lf-confirm-overlay" role="dialog" aria-modal="true">
+                <div className="lf-post-modal lf-confirm-modal">
+                  <div className="lf-post-modal-header">
+                    <h3 className="lf-post-modal-title">Delete Comment</h3>
+                    <button className="lf-post-modal-close" onClick={() => setConfirmDeleteComment(null)}>✕</button>
+                  </div>
+                  <div className="lf-post-modal-content" style={{ padding: '1rem 1.5rem' }}>
+                    <p style={{ color: '#64748b', marginBottom: '1rem' }}>
+                      Are you sure you want to delete this comment? This action cannot be undone.
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button className="lf-post-modal-action-btn" onClick={() => setConfirmDeleteComment(null)}>Cancel</button>
+                      <button className="lf-post-modal-action-btn lf-post-modal-action-btn--delete" onClick={() => confirmDeleteCommentNow()}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       }}
