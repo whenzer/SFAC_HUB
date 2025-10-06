@@ -156,6 +156,7 @@ export const deleteCommentController = async (req, res) => {
         }
 
         post.content.comments.pull(commentId);
+        
 
         await post.save();
         res.status(200).json({ success: true, message: "Comment deleted successfully", data: post });
