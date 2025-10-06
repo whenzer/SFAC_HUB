@@ -26,7 +26,7 @@ type LostFoundPost = {
   claimedBy?: string | null;
   likedByMe: boolean;
   userId?: string; // Added for ownership check
-  comments?: { user: { firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt: string;}[];
+  comments?: { _id: string; user: { _id?: string; firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt: string;}[];
 };
 
 const CATEGORIES = [
@@ -63,6 +63,8 @@ const LostAndFound = () => {
   const [selectedPost, setSelectedPost] = useState<LostFoundPost | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentSortOrder, setCommentSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [openCommentMenu, setOpenCommentMenu] = useState<Record<string, string | null>>({});
+  const [editingComment, setEditingComment] = useState<{ postId: string | null; commentId: string | null; value: string }>({ postId: null, commentId: null, value: '' });
 
   const [feed, setFeed] = useState<LostFoundPost[]>([]);
 
@@ -312,6 +314,23 @@ const LostAndFound = () => {
               return prev;
             });
           });
+          socket.on('editComment', (data: { postId: string; comment: any; commentedAt: string }) => {
+            const { postId, comment, commentedAt } = data;
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                const updated = (post.comments || []).map(c => c._id === comment._id ? { ...c, comment: comment.comment, commentedAt } : c);
+                return { ...post, comments: updated };
+              }
+              return post;
+            }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                const updated = (prev.comments || []).map(c => c._id === comment._id ? { ...c, comment: comment.comment, commentedAt } : c);
+                return { ...prev, comments: updated };
+              }
+              return prev;
+            });
+          });
           // listen to newPost event
           socket.on('newPost', (data: { post: any }) => {
             const post: LostFoundPost = {
@@ -430,6 +449,7 @@ const LostAndFound = () => {
 
           return () => {
             socket.off('updateComment');
+            socket.off('editComment');
             socket.off('claimPost');
             socket.off('newPost');
             socket.off('resolvePost');
@@ -449,6 +469,71 @@ const LostAndFound = () => {
             });
             
             setCommentInput(prev => ({ ...prev, [id]: '' }));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        function toggleCommentMenu(postId: string, commentId: string) {
+          setOpenCommentMenu(prev => ({ ...prev, [postId]: prev[postId] === commentId ? null : commentId }));
+        }
+
+        function startEditComment(postId: string, commentId: string, currentText: string) {
+          setEditingComment({ postId, commentId, value: currentText });
+          setOpenCommentMenu(prev => ({ ...prev, [postId]: null }));
+        }
+
+        async function submitEditComment(postId: string) {
+          const { commentId, value } = editingComment;
+          if (!commentId || !value.trim()) return;
+          try {
+            await fetchWithRefresh(`/protected/lostandfound/${postId}/comment/${commentId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ comment: value.trim() }),
+            });
+            // Optimistically update UI
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                const updatedComments = (post.comments || []).map(c => c._id === commentId ? { ...c, comment: value.trim(), commentedAt: new Date().toISOString() } : c);
+                return { ...post, comments: updatedComments };
+              }
+              return post;
+            }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                const updatedComments = (prev.comments || []).map(c => c._id === commentId ? { ...c, comment: value.trim(), commentedAt: new Date().toISOString() } : c);
+                return { ...prev, comments: updatedComments };
+              }
+              return prev;
+            });
+            setEditingComment({ postId: null, commentId: null, value: '' });
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
+        async function onDeleteComment(postId: string, commentId: string) {
+          try {
+            await fetchWithRefresh(`/protected/lostandfound/${postId}/comment/${commentId}`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                const updatedComments = (post.comments || []).filter(c => c._id !== commentId);
+                return { ...post, comments: updatedComments, stats: { ...post.stats, comments: updatedComments.length } };
+              }
+              return post;
+            }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                const updatedComments = (prev.comments || []).filter(c => c._id !== commentId);
+                return { ...prev, comments: updatedComments, stats: { ...prev.stats, comments: updatedComments.length } };
+              }
+              return prev;
+            });
+            setOpenCommentMenu(prev => ({ ...prev, [postId]: null }));
           } catch (e) {
             console.error(e);
           }
@@ -695,7 +780,7 @@ const LostAndFound = () => {
                                 </div>
                                 <div className="lf-comments-list">
                                   {sortComments(post.comments || []).map((comment, index) => (
-                                  <div key={index} className="lf-comment">
+                                  <div key={(comment as any)._id || index} className="lf-comment">
                                     <div className="lf-comment-avatar">
                                       {comment.user.firstname.charAt(0)}{comment.user.lastname.charAt(0)}
                                     </div>
@@ -705,11 +790,39 @@ const LostAndFound = () => {
                                           {comment.user.firstname} {comment.user.lastname}
                                         </span>
                                         <span className="lf-comment-role">{comment.user.role}</span>
-                                        <span className="lf-comment-timestamp">
-                                          {new Date(comment.commentedAt).toLocaleString()}
-                                        </span>
+                                        <div className="lf-comment-meta">
+                                          <span className="lf-comment-timestamp">
+                                            {new Date(comment.commentedAt).toLocaleString()}
+                                          </span>
+                                          {(comment.user as any)?._id === (user as any)?._id && (
+                                            <div className="lf-comment-menu-container">
+                                              <button className="lf-comment-menu-btn" onClick={() => toggleCommentMenu(post.id, (comment as any)._id)}>⋯</button>
+                                              {openCommentMenu[post.id] === (comment as any)._id && (
+                                                <div className="lf-comment-menu-dropdown">
+                                                  <button onClick={() => startEditComment(post.id, (comment as any)._id, comment.comment)}>Edit</button>
+                                                  <button onClick={() => onDeleteComment(post.id, (comment as any)._id)}>Delete</button>
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                      <span className="lf-comment-text">{comment.comment}</span>
+                                      {(editingComment.postId === post.id && editingComment.commentId === (comment as any)._id) ? (
+                                        <div className="lf-comment-edit-container">
+                                          <input
+                                            type="text"
+                                            className="lf-comment-edit-input"
+                                            value={editingComment.value}
+                                            onChange={(e) => setEditingComment(prev => ({ ...prev, value: e.target.value }))}
+                                          />
+                                          <div className="lf-comment-edit-actions">
+                                            <button className="lf-comment-edit-save" onClick={() => submitEditComment(post.id)}>Save</button>
+                                            <button className="lf-comment-edit-cancel" onClick={() => setEditingComment({ postId: null, commentId: null, value: '' })}>Cancel</button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <span className="lf-comment-text">{comment.comment}</span>
+                                      )}
                                     </div>
                                   </div>
                                 ))}
@@ -1035,7 +1148,7 @@ const LostAndFound = () => {
 
                           <div className="lf-post-modal-comments-list">
                             {sortComments(selectedPost.comments || []).map((comment, index) => (
-                              <div key={index} className="lf-post-modal-comment">
+                              <div key={(comment as any)._id || index} className="lf-post-modal-comment">
                                 <div className="lf-post-modal-comment-avatar">
                                   {comment.user.firstname.charAt(0)}{comment.user.lastname.charAt(0)}
                                 </div>
@@ -1045,11 +1158,39 @@ const LostAndFound = () => {
                                       {comment.user.firstname} {comment.user.lastname}
                                     </span>
                                     <span className="lf-post-modal-comment-role">{comment.user.role}</span>
-                                    <span className="lf-post-modal-comment-timestamp">
-                                      {new Date(comment.commentedAt).toLocaleString()}
-                                    </span>
+                                    <div className="lf-post-modal-comment-meta">
+                                      <span className="lf-post-modal-comment-timestamp">
+                                        {new Date(comment.commentedAt).toLocaleString()}
+                                      </span>
+                                      {(comment.user as any)?._id === (user as any)?._id && (
+                                        <div className="lf-comment-menu-container">
+                                          <button className="lf-comment-menu-btn" onClick={() => toggleCommentMenu(selectedPost.id, (comment as any)._id)}>⋯</button>
+                                          {openCommentMenu[selectedPost.id] === (comment as any)._id && (
+                                            <div className="lf-comment-menu-dropdown">
+                                              <button onClick={() => startEditComment(selectedPost.id, (comment as any)._id, comment.comment)}>Edit</button>
+                                              <button onClick={() => onDeleteComment(selectedPost.id, (comment as any)._id)}>Delete</button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <span className="lf-post-modal-comment-text">{comment.comment}</span>
+                                  {(editingComment.postId === selectedPost.id && editingComment.commentId === (comment as any)._id) ? (
+                                    <div className="lf-comment-edit-container">
+                                      <input
+                                        type="text"
+                                        className="lf-comment-edit-input"
+                                        value={editingComment.value}
+                                        onChange={(e) => setEditingComment(prev => ({ ...prev, value: e.target.value }))}
+                                      />
+                                      <div className="lf-comment-edit-actions">
+                                        <button className="lf-comment-edit-save" onClick={() => submitEditComment(selectedPost.id)}>Save</button>
+                                        <button className="lf-comment-edit-cancel" onClick={() => setEditingComment({ postId: null, commentId: null, value: '' })}>Cancel</button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span className="lf-post-modal-comment-text">{comment.comment}</span>
+                                  )}
                                 </div>
                               </div>
                             ))}

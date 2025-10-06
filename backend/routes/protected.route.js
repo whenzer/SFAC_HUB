@@ -1,7 +1,7 @@
 import express from 'express';
 import authenticateToken from '../middleware/auth.token.js';
 import {cancelreservationController,stockreserveController, protectedController, dashboardController, stockController, reservationController } from '../controllers/protected.controller.js';
-import {resolvedController, claimItemController,deleteCommentController, lostandfoundController, createPostController, likePostController, commentPostController, unlikePostController} from '../controllers/post.controller.js';
+import {resolvedController, claimItemController,deleteCommentController, updateCommentController, lostandfoundController, createPostController, likePostController, commentPostController, unlikePostController} from '../controllers/post.controller.js';
 
 const router = express.Router();
 //middleware
@@ -24,6 +24,7 @@ router.post('/lostandfound/:id/unlike', unlikePostController);
 router.post('/lostandfound/:id/comment', commentPostController);
 router.post('/lostandfound/:id/claim', claimItemController);
 router.delete('/lostandfound/:postId/comment/:commentId', deleteCommentController);
+router.put('/lostandfound/:postId/comment/:commentId', updateCommentController);
 router.put('/lostandfound/:id/resolve', resolvedController);
 
 

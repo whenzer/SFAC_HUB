@@ -679,6 +679,110 @@
   font-style: italic;
 }
 
+.lf-comment-meta,
+.lf-post-modal-comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.lf-comment-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.lf-comment-menu-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #64748b;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.lf-comment-menu-btn:hover {
+  background: #e2e8f0;
+}
+
+.lf-comment-menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 22px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  border-radius: 8px;
+  min-width: 120px;
+  z-index: 10;
+}
+
+.lf-comment-menu-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  color: #334155;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.lf-comment-menu-dropdown button:hover {
+  background: #f1f5f9;
+}
+
+.lf-comment-edit-container {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.lf-comment-edit-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.lf-comment-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.lf-comment-edit-save,
+.lf-comment-edit-cancel {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.lf-comment-edit-save {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.lf-comment-edit-save:hover {
+  background: #2563eb;
+}
+
+.lf-comment-edit-cancel {
+  background: white;
+  color: #334155;
+}
+
+.lf-comment-edit-cancel:hover {
+  background: #f1f5f9;
+}
+
 .lf-comment-text {
   word-break: break-word;
 }

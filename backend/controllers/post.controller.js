@@ -119,11 +119,16 @@ export const commentPostController = async (req, res) => {
         }
         post.content.comments.push({ user: userId, comment });
         await post.save();
-        
-        // Emit new comment via socket
-        
 
-        io.emit('updateComment', { postId, comment: { user: req.user, comment }, commentedAt: new Date() });
+        // Get the newly created comment (last in array)
+        const newComment = post.content.comments[post.content.comments.length - 1];
+
+        // Emit new comment via socket including its _id and timestamp
+        io.emit('updateComment', {
+            postId,
+            comment: { _id: newComment._id, user: req.user, comment: newComment.comment },
+            commentedAt: newComment.commentedAt || new Date()
+        });
 
         res.status(200).json({ success: true, message: "Comment added successfully", data: post });
     }
@@ -205,6 +210,50 @@ export const resolvedController = async (req, res) => {
         res.status(200).json({ success: true, message: "Post marked as resolved", data: post });
     } catch (error) {
         console.error("Error marking post as resolved: ", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const updateCommentController = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const commentId = req.params.commentId;
+        const { comment } = req.body;
+        const userId = req.user._id;
+
+        if (!comment || !comment.trim()) {
+            return res.status(400).json({ success: false, message: "Comment cannot be empty" });
+        }
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ success: false, message: "Post not found" });
+        }
+
+        const target = post.content.comments.id(commentId);
+        if (!target) {
+            return res.status(404).json({ success: false, message: "Comment not found" });
+        }
+
+        if (target.user.toString() !== userId.toString()) {
+            return res.status(403).json({ success: false, message: "You can only edit your own comments" });
+        }
+
+        target.comment = comment.trim();
+        target.commentedAt = new Date();
+        await post.save();
+
+        // Optionally emit an event for edited comment
+        const io = req.app.get('io');
+        io.emit('editComment', {
+            postId,
+            comment: { _id: target._id, user: req.user, comment: target.comment },
+            commentedAt: target.commentedAt
+        });
+
+        res.status(200).json({ success: true, message: "Comment updated successfully", data: post });
+    } catch (error) {
+        console.error("Error updating comment: ", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 }
