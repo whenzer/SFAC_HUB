@@ -26,6 +26,7 @@ router.post('/lostandfound/:id/claim', claimItemController);
 router.delete('/lostandfound/:postId/comment/:commentId', deleteCommentController);
 router.put('/lostandfound/:postId/comment/:commentId', updateCommentController);
 router.put('/lostandfound/:id/resolve', resolvedController);
+router.put('/lostandfound/:postId/comment/:commentId', editCommentController);
 
 
 
