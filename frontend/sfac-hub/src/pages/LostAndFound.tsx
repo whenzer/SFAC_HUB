@@ -262,7 +262,7 @@ const LostAndFound = () => {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
             });
-            setIsModalOpen(false);
+
             setSelectedPost(null);
           } catch (e) {
             console.error(e);
@@ -426,17 +426,15 @@ const LostAndFound = () => {
                   status: status === 'Resolved' ? 'Resolved' : 'Open'
                 };
               }
-              setSelectedPost(prev => {
-                if (prev && prev.id === postId) {
-                  return {
-                    ...prev,
-                    status: status === 'Resolved' ? 'Resolved' : 'Open'
-                  };
-                }
-                return prev;
-              })
               return post;
             }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return { ...prev, status: status === 'Resolved' ? 'Resolved' : 'Open' };
+              }
+              return prev;
+            });
+            setIsModalOpen(false);
           });
 
           // listen to likePost event
