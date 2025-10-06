@@ -406,7 +406,10 @@ const LostAndFound = () => {
               }
               return prev;
             });
-            setIsModalOpen(false);
+            if (selectedPost && selectedPost.id === postId){
+              setSelectedPost(null);
+              setIsModalOpen(false);
+            }
           });
 
           // listen to likePost event
