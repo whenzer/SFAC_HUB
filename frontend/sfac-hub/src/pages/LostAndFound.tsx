@@ -456,6 +456,18 @@ const LostAndFound = () => {
             });
           });
 
+          // listen to deletePost event
+          socket.on('deletePost', (data: { postId: string }) => {
+            const { postId } = data;
+            // Remove post from feed
+            setFeed(prev => prev.filter(post => post.id !== postId));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return null;
+              }
+              return prev;
+            });
+          });
 
           return () => {
             socket.off('updateComment');
