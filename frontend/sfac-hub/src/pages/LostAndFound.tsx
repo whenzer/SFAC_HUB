@@ -262,6 +262,8 @@ const LostAndFound = () => {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
             });
+            setIsModalOpen(false);
+            setSelectedPost(null);
           } catch (e) {
             console.error(e);
           }
@@ -454,6 +456,12 @@ const LostAndFound = () => {
               }
               return post;
             }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return { ...prev, stats: { ...prev.stats, likes: likes.count } };
+              }
+              return prev;
+            });
           });
 
           // listen to unlikePost event
@@ -473,6 +481,12 @@ const LostAndFound = () => {
               }
               return post;
             }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                return { ...prev, stats: { ...prev.stats, likes: likes.count } };
+              }
+              return prev;
+            });
           });
 
 
