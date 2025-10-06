@@ -8,6 +8,8 @@ import Footer from '../components/Footer';
 import { Atom } from 'react-loading-indicators';
 import fetchWithRefresh from '../utils/apiService';
 import {socket} from '../utils/socket';
+import { IoIosSend } from 'react-icons/io';
+import { MdOutlineEdit, MdDeleteForever } from 'react-icons/md';
 
 type ReportType = 'Lost' | 'Found';
 
@@ -774,7 +776,7 @@ const LostAndFound = () => {
                                     onClick={() => submitComment(post.id)}
                                     disabled={!commentInput[post.id]?.trim()}
                                   >
-                                    Post
+                                    <IoIosSend size={18} />
                                   </button>
                                 </div>
                                 <div className="lf-comments-list">
@@ -798,8 +800,12 @@ const LostAndFound = () => {
                                               <button className="lf-comment-menu-btn" onClick={() => toggleCommentMenu(post.id, (comment as any)._id)}>⋯</button>
                                               {openCommentMenu[post.id] === (comment as any)._id && (
                                                 <div className="lf-comment-menu-dropdown">
-                                                  <button onClick={() => startEditComment(post.id, (comment as any)._id, comment.comment)}>Edit</button>
-                                                  <button onClick={() => onDeleteComment(post.id, (comment as any)._id)}>Delete</button>
+                                                  <button onClick={() => startEditComment(post.id, (comment as any)._id, comment.comment)}>
+                                                    <MdOutlineEdit size={16} style={{ marginRight: 6 }} /> Edit
+                                                  </button>
+                                                  <button onClick={() => onDeleteComment(post.id, (comment as any)._id)}>
+                                                    <MdDeleteForever size={16} color="#dc2626" style={{ marginRight: 6 }} /> Delete
+                                                  </button>
                                                 </div>
                                               )}
                                             </div>
@@ -1166,8 +1172,12 @@ const LostAndFound = () => {
                                           <button className="lf-comment-menu-btn" onClick={() => toggleCommentMenu(selectedPost.id, (comment as any)._id)}>⋯</button>
                                           {openCommentMenu[selectedPost.id] === (comment as any)._id && (
                                             <div className="lf-comment-menu-dropdown">
-                                              <button onClick={() => startEditComment(selectedPost.id, (comment as any)._id, comment.comment)}>Edit</button>
-                                              <button onClick={() => onDeleteComment(selectedPost.id, (comment as any)._id)}>Delete</button>
+                                              <button onClick={() => startEditComment(selectedPost.id, (comment as any)._id, comment.comment)}>
+                                                <MdOutlineEdit size={16} style={{ marginRight: 6 }} /> Edit
+                                              </button>
+                                              <button onClick={() => onDeleteComment(selectedPost.id, (comment as any)._id)}>
+                                                <MdDeleteForever size={16} color="#dc2626" style={{ marginRight: 6 }} /> Delete
+                                              </button>
                                             </div>
                                           )}
                                         </div>
@@ -1210,7 +1220,7 @@ const LostAndFound = () => {
                               onClick={() => submitComment(selectedPost.id)}
                               disabled={!commentInput[selectedPost.id]?.trim()}
                             >
-                              Post
+                              <IoIosSend size={18} />
                             </button>
                           </div>
                         </div>
