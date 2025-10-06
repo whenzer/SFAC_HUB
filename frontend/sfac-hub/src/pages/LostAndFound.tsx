@@ -234,8 +234,6 @@ const LostAndFound = () => {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
             });
-
-            setSelectedPost(null);
           } catch (e) {
             console.error(e);
           }
@@ -402,14 +400,11 @@ const LostAndFound = () => {
             }));
             setSelectedPost(prev => {
               if (prev && prev.id === postId) {
+                setIsModalOpen(false);
                 return { ...prev, status: status === 'Resolved' ? 'Resolved' : 'Open' };
               }
               return prev;
             });
-            if (selectedPost && selectedPost.id === postId){
-              setSelectedPost(null);
-              setIsModalOpen(false);
-            }
           });
 
           // listen to likePost event
@@ -599,8 +594,6 @@ const LostAndFound = () => {
               const text = await res.text();
               throw new Error(text || 'Failed to delete the post');
             }
-            // Update local state: remove the post
-            setFeed(prev => prev.filter(p => p.id !== postId));
             closePostMenu(postId);
             setConfirmDeletePostId(null);
           } catch (err: any) {
@@ -616,7 +609,6 @@ const LostAndFound = () => {
 
         // close modal function
         function closePostModal() {
-          setSelectedPost(null);
           setIsModalOpen(false);
         }
 
