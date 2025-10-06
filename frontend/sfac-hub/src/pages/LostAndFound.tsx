@@ -58,6 +58,7 @@ const LostAndFound = () => {
   const [activeTab, setActiveTab] = useState<'Active' | 'Claimed' | 'Resolved' | 'Create'>('Active');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [commentInput, setCommentInput] = useState<Record<string, string>>({});
@@ -73,7 +74,11 @@ const LostAndFound = () => {
   const filteredFeed = feed.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !categoryFilter || post.category === categoryFilter;
+    const matchesCategory = !categoryFilter
+      ? true
+      : (categoryFilter === '__mine__'
+        ? (currentUserId ? post.userId === currentUserId : false)
+        : post.category === categoryFilter);
     
     // Handle different tab filters
     let matchesTab = false;
@@ -125,6 +130,10 @@ const LostAndFound = () => {
   return (
     <ProtectedLayout endpoint="/protected/lostandfound">
       {({ user, isLoading, logout, extraData }) => {
+        // Sync current user id for "My Posts" filter
+        useEffect(() => {
+          setCurrentUserId(user?._id ?? null);
+        }, [user]);
         
         // Function to fetch and process feed data
         useEffect(() => {
@@ -629,6 +638,7 @@ const LostAndFound = () => {
                     className="lf-category-filter"
                   >
                     <option value="">All Categories</option>
+                    <option value="__mine__">My Posts</option>
                     {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
