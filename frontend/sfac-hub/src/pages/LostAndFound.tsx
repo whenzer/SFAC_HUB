@@ -290,6 +290,7 @@ const LostAndFound = () => {
         useEffect(() => {
           socket.on('updateComment', (data: { postId: string; comment: any; commentedAt: string; }) => {
             const { postId, comment } = data;
+            console.log('Received updateComment via socket:', data);
             // Update comments in feed
             setFeed(prev => prev.map(post => {
               if (post.id === postId) {
@@ -358,6 +359,29 @@ const LostAndFound = () => {
             setFeed(prev => [post, ...prev]);
           });
 
+          //listen to deleteComment event
+          socket.on('deleteComment', (data: { postId: string; commentId: string }) => {
+            const { postId, commentId } = data;
+            console.log('Received deleteComment via socket:', data);
+            // Update comments in feed
+            setFeed(prev => prev.map(post => {
+              if (post.id === postId) {
+                const updatedComments = (post.comments || []).filter(c => c._id !== commentId);
+                return { ...post, comments: updatedComments, stats: { ...post.stats, comments: updatedComments.length } };
+              }
+              return post;
+            }));
+            setSelectedPost(prev => {
+              if (prev && prev.id === postId) {
+                const updatedComments = (prev.comments || []).filter(c => c._id !== commentId);
+                return { ...prev, comments: updatedComments, stats: { ...prev.stats, comments: updatedComments.length } };
+              }
+              return prev;
+            });
+            setOpenCommentMenu(prev => ({ ...prev, [postId]: null }));
+          });
+
+
           // listen to claimPost event
           
           socket.on('claimPost', (data: { postId: string; claimedBy: string }) => {
@@ -414,7 +438,9 @@ const LostAndFound = () => {
           // listen to likePost event
           socket.on('likePost', (data: { postId: string; likes: any }) => {
             console.log('Received likePost via socket:', data);
-            setLikedPosts(prev => ({ ...prev, [data.postId]: true }));
+            if(data.likes.users.includes(user?._id)) {
+              setLikedPosts(prev => ({ ...prev, [data.postId]: true }));
+            }
             const { postId, likes } = data;
             // Update like count in feed
             setFeed(prev => prev.map(post => {
@@ -431,7 +457,9 @@ const LostAndFound = () => {
           // listen to unlikePost event
           socket.on('unlikePost', (data: { postId: string; likes: any }) => {
             console.log('Received unlikePost via socket:', data);
-            setLikedPosts(prev => ({ ...prev, [data.postId]: false }));
+            if(!data.likes.users.includes(user?._id)) {
+              setLikedPosts(prev => ({ ...prev, [data.postId]: false }));
+            }
             const { postId, likes } = data;
             // Update like count in feed
             setFeed(prev => prev.map(post => {
@@ -445,32 +473,6 @@ const LostAndFound = () => {
             }));
           });
 
-          // listen to editComment event
-          socket.on('editComment', (data: { postId: string; commentId: string; newComment: string; }) => {
-            const { postId, commentId, newComment } = data; 
-            // Update comments in feed
-            setFeed(prev => prev.map(post => {
-              if (post.id === postId) {
-                return {
-                  ...post,
-                  comments: post.comments?.map((c, index) => index.toString() === commentId ? { ...c, comment: newComment } : c) || [],
-                  // stats remain unchanged
-                };
-              }
-              return post;
-            }));
-            // Update selectedPost if it's the same post
-            setSelectedPost(prev => {
-              if (prev && prev.id === postId) {
-                return {
-                  ...prev,
-                  comments: prev.comments?.map((c, index) => index.toString() === commentId ? { ...c, comment: newComment } : c) || [],
-                  // stats remain unchanged
-                };
-              }
-              return prev;
-            });
-          });
 
           return () => {
             socket.off('updateComment');
@@ -480,6 +482,8 @@ const LostAndFound = () => {
             socket.off('resolvePost');
             socket.off('likePost');
             socket.off('unlikePost');
+            socket.off('deleteComment');
+            socket.off('editComment');
           };
         }, [socket, user]);
 
@@ -517,48 +521,18 @@ const LostAndFound = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ comment: value.trim() }),
             });
-            // Optimistically update UI
-            setFeed(prev => prev.map(post => {
-              if (post.id === postId) {
-                const updatedComments = (post.comments || []).map(c => c._id === commentId ? { ...c, comment: value.trim(), commentedAt: new Date().toISOString() } : c);
-                return { ...post, comments: updatedComments };
-              }
-              return post;
-            }));
-            setSelectedPost(prev => {
-              if (prev && prev.id === postId) {
-                const updatedComments = (prev.comments || []).map(c => c._id === commentId ? { ...c, comment: value.trim(), commentedAt: new Date().toISOString() } : c);
-                return { ...prev, comments: updatedComments };
-              }
-              return prev;
-            });
+
             setEditingComment({ postId: null, commentId: null, value: '' });
           } catch (e) {
             console.error(e);
           }
         }
-
         async function onDeleteComment(postId: string, commentId: string) {
           try {
             await fetchWithRefresh(`/protected/lostandfound/${postId}/comment/${commentId}`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
             });
-            setFeed(prev => prev.map(post => {
-              if (post.id === postId) {
-                const updatedComments = (post.comments || []).filter(c => c._id !== commentId);
-                return { ...post, comments: updatedComments, stats: { ...post.stats, comments: updatedComments.length } };
-              }
-              return post;
-            }));
-            setSelectedPost(prev => {
-              if (prev && prev.id === postId) {
-                const updatedComments = (prev.comments || []).filter(c => c._id !== commentId);
-                return { ...prev, comments: updatedComments, stats: { ...prev.stats, comments: updatedComments.length } };
-              }
-              return prev;
-            });
-            setOpenCommentMenu(prev => ({ ...prev, [postId]: null }));
           } catch (e) {
             console.error(e);
           }

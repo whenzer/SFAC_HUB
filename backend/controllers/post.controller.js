@@ -119,7 +119,6 @@ export const commentPostController = async (req, res) => {
         }
         post.content.comments.push({ user: userId, comment });
         await post.save();
-
         // Get the newly created comment (last in array)
         const newComment = post.content.comments[post.content.comments.length - 1];
 
@@ -156,7 +155,9 @@ export const deleteCommentController = async (req, res) => {
         }
 
         post.content.comments.pull(commentId);
-        
+
+        const io = req.app.get('io');
+        io.emit('deleteComment', { postId, commentId });
 
         await post.save();
         res.status(200).json({ success: true, message: "Comment deleted successfully", data: post });
