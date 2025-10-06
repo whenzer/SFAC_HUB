@@ -22,7 +22,7 @@ type LostFoundPost = {
   location: string;
   description: string;
   photoUrl?: string;
-  author: { name: string };
+  author: { name: string, id?: string };
   createdAt: string;
   stats: { likes: number; comments: number; views: number };
   claimedBy?: string | null;
@@ -127,46 +127,6 @@ const LostAndFound = () => {
       {({ user, isLoading, logout, extraData }) => {
         
         // Function to fetch and process feed data
-        const fetchFeedData = useCallback(async () => {
-          try {
-            const response = await fetchWithRefresh('/protected/lostandfound');
-            const data = await response.json();
-            
-            if (data) {
-              const posts: LostFoundPost[] = data.map((item: any) => ({
-                id: item._id,
-                type: item.content.postType,
-                title: item.content.briefTitle,
-                status: item.content.status,
-                category: item.content.category,
-                location: item.content.location,
-                description: item.content.description,
-                photoUrl: item.content.photo?.image,
-                author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown' },
-                createdAt: item.createdAt,
-                likedByMe: item.content.likedbyme || false,
-                comments: item.content.comments || [],
-                stats: {
-                  likes: item.content.likes?.count || 0,
-                  comments: item.content.comments?.length || 0,
-                  views: 0,
-                },
-                claimedBy: item.content.claimedby 
-                ? (item.content.claimedby._id === user?._id ? "You" : "Someone")
-                : null,
-              } as LostFoundPost));
-              
-              // Initialize likedPosts state
-              const initialLikes: Record<string, boolean> = {};
-              posts.forEach(p => { initialLikes[p.id] = p.likedByMe });
-              setLikedPosts(initialLikes);
-              setFeed(posts);
-            }
-          } catch (error) {
-            console.error('Error fetching feed data:', error);
-          }
-        }, [user, fetchWithRefresh]);
-
         useEffect(() => {
           if (extraData?.data) {
             console.log('Raw fetched data:', extraData.data);
@@ -179,7 +139,7 @@ const LostAndFound = () => {
               location: item.content.location,
               description: item.content.description,
               photoUrl: item.content.photo?.image,
-              author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown' },
+              author: { name: `${item.user?.firstname ?? ''} ${item.user?.lastname ?? ''}`.trim() || 'Unknown', _id: item.user?._id },
               createdAt: item.createdAt,
               likedByMe: item.content.likedbyme || false,
               comments: item.content.comments || [],
