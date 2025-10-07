@@ -666,7 +666,7 @@ const LostAndFound = () => {
 
         function handleEditPost(post: LostFoundPost) {
           // Placeholder edit; owner-only UI already enforced
-          alert('Edit feature coming soon.');
+          alert('Edit feature coming soon.' + post);
         }
 
         // close modal function
