@@ -25,7 +25,8 @@ type LostFoundPost = {
   author: { name: string, _id?: string };
   createdAt: string;
   stats: { likes: number; comments: number; views: number };
-  claimedBy?: string | null;
+  claimedBy?: string | null; // full name of claimer
+  claimedById?: string | null; // user id of claimer
   likedByMe: boolean;
   userId?: string; // Added for ownership check
   comments?: { _id: string; user: { _id?: string; firstname: string; middlename: string; lastname: string; role: string }; comment: string; commentedAt: string;}[];
@@ -71,6 +72,9 @@ const LostAndFound = () => {
   const [openPostMenu, setOpenPostMenu] = useState<Record<string, boolean>>({});
   const [confirmDeletePostId, setConfirmDeletePostId] = useState<string | null>(null);
   const [confirmDeleteComment, setConfirmDeleteComment] = useState<{ postId: string; commentId: string } | null>(null);
+
+  // Map of userId -> full name for consistent name resolution
+  const [userDirectory, setUserDirectory] = useState<Record<string, string>>({});
 
   const [feed, setFeed] = useState<LostFoundPost[]>([]);
 
@@ -162,8 +166,9 @@ const LostAndFound = () => {
                 views: 0,
               },
               claimedBy: item.content.claimedby 
-              ? (item.content.claimedby._id === user?._id ? "You" : "Someone")
+              ? `${item.content.claimedby.firstname ?? ''} ${item.content.claimedby.lastname ?? ''}`.trim()
               : null,
+              claimedById: item.content.claimedby ? item.content.claimedby._id : null,
             } as LostFoundPost));
             console.log('Fetched posts:', posts, user);
             
@@ -171,6 +176,32 @@ const LostAndFound = () => {
             const initialLikes: Record<string, boolean> = {};
             posts.forEach(p => { initialLikes[p.id] = p.likedByMe });
             setLikedPosts(initialLikes);
+            // Build a user directory from authors, claimers, and commenters
+            try {
+              const dir: Record<string, string> = {};
+              (extraData.data || []).forEach((item: any) => {
+                const author = item.user;
+                if (author?._id) {
+                  const name = `${author.firstname ?? ''} ${author.lastname ?? ''}`.trim() || 'Unknown';
+                  dir[author._id] = name;
+                }
+                const claimer = item.content?.claimedby;
+                if (claimer?._id) {
+                  const name = `${claimer.firstname ?? ''} ${claimer.lastname ?? ''}`.trim() || 'Unknown';
+                  dir[claimer._id] = name;
+                }
+                (item.content?.comments || []).forEach((c: any) => {
+                  const u = c.user;
+                  if (u?._id) {
+                    const name = `${u.firstname ?? ''} ${u.lastname ?? ''}`.trim() || 'Unknown';
+                    if (!dir[u._id]) dir[u._id] = name;
+                  }
+                });
+              });
+              if (Object.keys(dir).length) {
+                setUserDirectory(prev => ({ ...prev, ...dir }));
+              }
+            } catch (_) {}
             setFeed(posts);
           }
         }, [extraData]);
@@ -216,26 +247,47 @@ const LostAndFound = () => {
           }
         }
         // on claim function
+        const [confirmClaimPostId, setConfirmClaimPostId] = useState<string | null>(null);
+        const [confirmResolvePostId, setConfirmResolvePostId] = useState<string | null>(null);
+
         async function onClaim(id: string) {
+          // open confirmation modal instead of immediate call
+          setConfirmClaimPostId(id);
+        }
+
+        // on resolve function
+        async function onResolve(id: string) {
+          // open confirmation modal instead of immediate call
+          setConfirmResolvePostId(id);
+        }
+
+        async function confirmClaimNow() {
+          const postId = confirmClaimPostId;
+          if (!postId) return;
           try {
-            await fetchWithRefresh(`/protected/lostandfound/${id}/claim`, {
+            await fetchWithRefresh(`/protected/lostandfound/${postId}/claim`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
             });
           } catch (e) {
             console.error(e);
+          } finally {
+            setConfirmClaimPostId(null);
           }
         }
 
-        // on resolve function
-        async function onResolve(id: string) {
+        async function confirmResolveNow() {
+          const postId = confirmResolvePostId;
+          if (!postId) return;
           try {
-            await fetchWithRefresh(`/protected/lostandfound/${id}/resolve`, {
+            await fetchWithRefresh(`/protected/lostandfound/${postId}/resolve`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
             });
           } catch (e) {
             console.error(e);
+          } finally {
+            setConfirmResolvePostId(null);
           }
         }
 
@@ -265,6 +317,14 @@ const LostAndFound = () => {
           socket.on('updateComment', (data: { postId: string; comment: any; commentedAt: string; }) => {
             const { postId, comment } = data;
             console.log('Received updateComment via socket:', data);
+            // Learn commenter name
+            try {
+              const u = comment?.user;
+              if (u?._id) {
+                const name = `${u.firstname ?? ''} ${u.lastname ?? ''}`.trim() || 'Unknown';
+                setUserDirectory(prev => prev[u._id] ? prev : { ...prev, [u._id]: name });
+              }
+            } catch (_) {}
             // Update comments in feed
             setFeed(prev => prev.map(post => {
               if (post.id === postId) {
@@ -291,6 +351,14 @@ const LostAndFound = () => {
           });
           socket.on('editComment', (data: { postId: string; comment: any; commentedAt: string }) => {
             const { postId, comment, commentedAt } = data;
+            // Learn commenter name on edit as well
+            try {
+              const u = comment?.user;
+              if (u?._id) {
+                const name = `${u.firstname ?? ''} ${u.lastname ?? ''}`.trim() || 'Unknown';
+                setUserDirectory(prev => prev[u._id] ? prev : { ...prev, [u._id]: name });
+              }
+            } catch (_) {}
             setFeed(prev => prev.map(post => {
               if (post.id === postId) {
                 const updated = (post.comments || []).map(c => c._id === comment._id ? { ...c, comment: comment.comment, commentedAt } : c);
@@ -360,27 +428,21 @@ const LostAndFound = () => {
           
           socket.on('claimPost', (data: { postId: string; claimedBy: string }) => {
             const { postId, claimedBy } = data;
-            const claimedByDisplay = claimedBy === user?._id ? "You" : "Someone";
+            // Resolve claimer name from directory; show "You" when current user
+            const nameFromDir = userDirectory[claimedBy];
+            const claimedName = claimedBy === user?._id ? 'You' : (nameFromDir || null);
             // Update claimedBy in feed
-            setFeed(prev => prev.map(post => {
-              if (post.id === postId) {
-                return {
-                  ...post,
-                  claimedBy: claimedByDisplay
-                };
-              }
-              return post;
-            }));
+            setFeed(prev => prev.map(post => (
+              post.id === postId
+                ? { ...post, claimedBy: claimedName, claimedById: claimedBy }
+                : post
+            )));
             // Update selectedPost if it's the same post
-            setSelectedPost(prev => {
-              if (prev && prev.id === postId) {
-                return {
-                  ...prev,
-                  claimedBy: claimedByDisplay
-                };
-              }
-              return prev;
-            });
+            setSelectedPost(prev => (
+              prev && prev.id === postId
+                ? { ...prev, claimedBy: claimedName, claimedById: claimedBy }
+                : prev
+            ));
           });
 
           // listen to resolvePost event
@@ -481,7 +543,7 @@ const LostAndFound = () => {
             socket.off('deleteComment');
             socket.off('editComment');
           };
-        }, [socket, user]);
+        }, [socket, user, userDirectory]);
 
         // submit comment function
         async function submitComment(id: string) {
@@ -823,7 +885,7 @@ const LostAndFound = () => {
                               )}
                               {post.claimedBy && (
                                 <span className="lf-badge lf-badge--claimed">
-                                  Claimed by {post.claimedBy}
+                                  {post.claimedBy === 'You' ? 'CLAIMED BY YOU' : `Claimed by ${post.claimedBy}`}
                                 </span>
                               )}
                             </div>
@@ -1197,8 +1259,8 @@ const LostAndFound = () => {
                             </button>
                           )}
                           {selectedPost.claimedBy && (
-                            <span className="lf-badge lf-badge--claimed">
-                              Claimed by {selectedPost.claimedBy}
+                            <span className="lf-badge lf-badge--claimed lf-badge--align-middle">
+                              {selectedPost.claimedBy === 'You' ? 'CLAIMED BY YOU' : `Claimed by ${selectedPost.claimedBy}`}
                             </span>
                           )}
                           {selectedPost.userId === user?._id && selectedPost.status !== "Resolved" && (
@@ -1326,6 +1388,48 @@ const LostAndFound = () => {
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                       <button className="lf-post-modal-action-btn" onClick={() => setConfirmDeletePostId(null)}>Cancel</button>
                       <button className="lf-post-modal-action-btn lf-post-modal-action-btn--delete" onClick={() => confirmDeletePostNow(confirmDeletePostId!)}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Claim confirmation modal */}
+            {confirmClaimPostId && (
+              <div className="lf-post-modal-overlay lf-confirm-overlay" role="dialog" aria-modal="true">
+                <div className="lf-post-modal lf-confirm-modal">
+                  <div className="lf-post-modal-header">
+                    <h3 className="lf-post-modal-title">Confirm Claim</h3>
+                    <button className="lf-post-modal-close" onClick={() => setConfirmClaimPostId(null)}>✕</button>
+                  </div>
+                  <div className="lf-post-modal-content" style={{ padding: '1rem 1.5rem' }}>
+                    <p style={{ color: '#64748b', marginBottom: '1rem' }}>
+                      Are you sure you want to claim this item?
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button className="lf-post-modal-action-btn" onClick={() => setConfirmClaimPostId(null)}>Cancel</button>
+                      <button className="lf-post-modal-action-btn lf-post-modal-action-btn--claim" onClick={confirmClaimNow}>Claim</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Resolve confirmation modal */}
+            {confirmResolvePostId && (
+              <div className="lf-post-modal-overlay lf-confirm-overlay" role="dialog" aria-modal="true">
+                <div className="lf-post-modal lf-confirm-modal">
+                  <div className="lf-post-modal-header">
+                    <h3 className="lf-post-modal-title">Mark as Resolved</h3>
+                    <button className="lf-post-modal-close" onClick={() => setConfirmResolvePostId(null)}>✕</button>
+                  </div>
+                  <div className="lf-post-modal-content" style={{ padding: '1rem 1.5rem' }}>
+                    <p style={{ color: '#64748b', marginBottom: '1rem' }}>
+                      Are you sure you want to mark this post as resolved?
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button className="lf-post-modal-action-btn" onClick={() => setConfirmResolvePostId(null)}>Cancel</button>
+                      <button className="lf-post-modal-action-btn lf-post-modal-action-btn--resolve" onClick={confirmResolveNow}>Mark Resolved</button>
                     </div>
                   </div>
                 </div>
