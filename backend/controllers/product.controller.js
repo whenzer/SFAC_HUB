@@ -35,8 +35,15 @@ export const restockProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
-        product.stock += additionalStock;
-        product.totalStock += additionalStock;
+        const add = Number(additionalStock) || 0;
+        // Increase currentStock by additionalStock
+        product.currentStock += add;
+        // Also increase totalStock capacity accordingly
+        product.totalStock += add;
+        // Ensure current does not exceed total
+        if (product.currentStock > product.totalStock) {
+            product.currentStock = product.totalStock;
+        }
         await product.save();
         res.json({ success: true, product });
     } catch (err) {

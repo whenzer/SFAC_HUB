@@ -17,6 +17,7 @@ interface ProtectedLayoutProps {
     isLoading: boolean;
     logout: () => Promise<void>;
     extraData?: Record<string, any>; // 👈 optional values
+    refetch: () => Promise<void>; // 👈 allow pages to refresh data without closing modals
   }) => React.ReactNode;
 }
 
@@ -45,6 +46,34 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ endpoint, children })
     navigate("/login");
   }, [navigate]);
 
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await fetchWithRefresh(endpoint, { method: "GET" });
+      if (!response.ok) {
+        console.error(`${endpoint} fetch failed: ${response.status}`);
+        logout();
+        return;
+      }
+
+      const data = await response.json();
+      const { user, ...rest } = data; // 👈 separate user + extra values
+
+      if (user) {
+        localStorage.setItem("userData", JSON.stringify(user));
+        setUser(user);
+        setExtraData(rest); // 👈 keep optional values like products
+      } else {
+        console.error("No user data returned");
+        logout();
+      }
+    } catch (err) {
+      console.error("Fetch error/session expired:", err);
+      if (!navigator.onLine) {
+        alert("Network error. Please check your connection.");
+      }
+    }
+  }, [endpoint, logout]);
+
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
@@ -52,41 +81,18 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ endpoint, children })
       navigate("/login");
       return;
     }
+    (async () => {
+      setIsLoading(true);
+      await fetchUser();
+      setIsLoading(false);
+    })();
+  }, [endpoint, logout, navigate, fetchUser]);
 
-    const fetchUser = async () => {
-      try {
-        const response = await fetchWithRefresh(endpoint, { method: "GET" });
-        if (!response.ok) {
-          console.error(`${endpoint} fetch failed: ${response.status}`);
-          logout();
-          return;
-        }
+  const refetch = useCallback(async () => {
+    await fetchUser();
+  }, [fetchUser]);
 
-        const data = await response.json();
-        const { user, ...rest } = data; // 👈 separate user + extra values
-
-        if (user) {
-          localStorage.setItem("userData", JSON.stringify(user));
-          setUser(user);
-          setExtraData(rest); // 👈 keep optional values like products
-        } else {
-          console.error("No user data returned");
-          logout();
-        }
-      } catch (err) {
-        console.error("Fetch error/session expired:", err);
-        if (!navigator.onLine) {
-          alert("Network error. Please check your connection.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [endpoint, logout, navigate]);
-
-  return <>{children({ user, isLoading, logout, extraData })}</>;
+  return <>{children({ user, isLoading, logout, extraData, refetch })}</>; 
 };
 
 export default ProtectedLayout;

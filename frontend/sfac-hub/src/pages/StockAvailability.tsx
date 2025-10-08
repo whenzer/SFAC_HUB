@@ -10,6 +10,8 @@ import Footer from '../components/Footer';
 import { getOptimizedImageUrl, preloadImages } from '../utils/imageOptimization';
 import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
 import { Atom } from 'react-loading-indicators';
+import { TbBrandStocktwits } from 'react-icons/tb';
+import fetchWithRefresh from '../utils/apiService';
 
 // Define type for stock items
 export interface StockItem {
@@ -112,14 +114,23 @@ const StockAvailability = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
+  const [showRestockModal, setShowRestockModal] = useState(false);
+  const [restockItem, setRestockItem] = useState<StockItem | null>(null);
+  const [additionalStock, setAdditionalStock] = useState<string>('');
+  const [newTotalStock, setNewTotalStock] = useState<string>('');
+  const [isSubmittingRestock, setIsSubmittingRestock] = useState(false);
+  const [capacityError, setCapacityError] = useState<boolean>(false);
+  const [items, setItems] = useState<StockItem[]>([]);
 
   // Preload product images when products change
 
 
   return (
     <ProtectedLayout endpoint="/protected/stock">
-      {({ user, isLoading, logout, extraData}) => {
+      {({ user, isLoading, logout, extraData, refetch}) => {
         const products: StockItem[] = extraData?.products ?? []; 
+        useEffect(() => { setItems(products); }, [products]);
           useEffect(() => {
             if (products.length > 0) {
               const imageUrls = products.map((item) => item.image);
@@ -181,7 +192,78 @@ const StockAvailability = () => {
 
   // Get stock level width percentage
   const getStockLevelWidth = (current: number, total: number) => {
+    if (total <= 0) return 0;
     return Math.max((current / total) * 100, 0);
+  };
+
+  const isPrivileged = (role?: string) => ['admin', 'staff'].includes((role || '').toLowerCase());
+
+  const openRestockForItem = (item: StockItem) => {
+    setRestockItem(item);
+    setAdditionalStock('');
+    setNewTotalStock('');
+    setCapacityError(false);
+    setShowRestockModal(true);
+    setActiveMenuItem(null);
+  };
+
+  const exceedsCapacity = (addStr: string, totalStr: string, item: StockItem): boolean => {
+    const addQty = parseInt(addStr, 10);
+    const totalQty = parseInt(totalStr, 10);
+    if (Number.isNaN(addQty) || addQty <= 0) return false;
+    const effectiveTotal = !Number.isNaN(totalQty) && totalQty >= 0 ? totalQty : item.totalStock;
+    return item.currentStock + addQty > effectiveTotal;
+  };
+
+  const handleRestockSubmit = async () => {
+    if (!restockItem) return;
+    const addQty = parseInt(additionalStock, 10);
+    const totalQty = parseInt(newTotalStock, 10);
+    if (Number.isNaN(addQty) && Number.isNaN(totalQty)) {
+      alert('Please enter at least one valid number.');
+      return;
+    }
+    // Inline validation: do not exceed total stock when adding to current
+    if (exceedsCapacity(additionalStock, newTotalStock, restockItem)) {
+      setCapacityError(true);
+      return;
+    }
+    try {
+      setIsSubmittingRestock(true);
+      // Perform calls based on provided fields
+      if (!Number.isNaN(addQty) && addQty > 0) {
+        await fetchWithRefresh('/api/staff/products/restock', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: restockItem._id, additionalStock: addQty })
+        });
+      }
+      if (!Number.isNaN(totalQty) && totalQty >= 0) {
+        await fetchWithRefresh('/api/staff/products/set-total-stock', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: restockItem._id, newTotalStock: totalQty })
+        });
+      }
+      // Optimistically update local UI
+      setItems(prev => prev.map(it => {
+        if (it._id !== restockItem._id) return it;
+        const updatedTotal = !Number.isNaN(totalQty) && totalQty >= 0 ? totalQty : it.totalStock;
+        const updatedCurrent = !Number.isNaN(addQty) && addQty > 0 ? Math.min(it.currentStock + addQty, updatedTotal) : it.currentStock;
+        return { ...it, totalStock: updatedTotal, currentStock: updatedCurrent };
+      }));
+      setRestockItem(prev => prev ? { ...prev,
+        totalStock: (!Number.isNaN(totalQty) && totalQty >= 0) ? totalQty : prev.totalStock,
+        currentStock: (!Number.isNaN(addQty) && addQty > 0) ? Math.min(prev.currentStock + addQty, (!Number.isNaN(totalQty) && totalQty >= 0 ? totalQty : prev.totalStock)) : prev.currentStock
+      } : prev);
+      // Refresh products from server but keep modal open
+      await refetch();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to update stock. Please try again.');
+    } finally {
+      setIsSubmittingRestock(false);
+    }
   };
 
 
@@ -260,7 +342,32 @@ const StockAvailability = () => {
                 className={`item-card ${item.status.toLowerCase()}`}
                 onClick={() => handleItemClick(item)}
               >
-                <StockItemImage src={item.image} alt={item.name} />
+                <div className="item-image">
+                  <StockItemImage src={item.image} alt={item.name} />
+                  {isPrivileged(user?.role) && (
+                    <div className="item-menu-overlay" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="three-dot-menu vertical"
+                        aria-label="More actions"
+                        onClick={() => setActiveMenuItem(activeMenuItem === item._id ? null : item._id)}
+                      >
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                      </button>
+                      {activeMenuItem === item._id && (
+                        <div className="item-menu-dropdown item-menu-dropdown--overlay">
+                          <button className="item-menu-option" onClick={() => openRestockForItem(item)}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                              <TbBrandStocktwits size={18} />
+                              <span>Restock</span>
+                            </span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 
                 <div className="item-content">
                   <h3 className="item-name">{item.name}</h3>
@@ -300,6 +407,7 @@ const StockAvailability = () => {
                     >
                       {item.status === 'Out' ? 'Out of stock' : 'Reserve Item'}
                     </button>
+                    {/* Menu moved to image overlay */}
                   </div>
                 </div>
               </div>
@@ -432,6 +540,120 @@ const StockAvailability = () => {
                 }}
               >
                 {isNavigating ? 'Redirecting...' : 'Confirm Reservation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restock Modal */}
+      {showRestockModal && restockItem && (
+        <div className="modal-overlay" onClick={() => setShowRestockModal(false)}>
+          <div className="modal-content restock-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Restock: {restockItem.name}</h2>
+              <button className="close-btn" onClick={() => setShowRestockModal(false)}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="item-detail-image">
+                <StockItemImage 
+                  src={restockItem.image} 
+                  alt={restockItem.name} 
+                  className="modal-image" 
+                />
+              </div>
+              
+              <div className="item-details">
+                <div className="detail-row">
+                  <span className="detail-label">Category:</span>
+                  <span className="detail-value">{restockItem.category}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Location:</span>
+                  <span className="detail-value">{restockItem.location}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Status:</span>
+                  <span className={`status-badge ${restockItem.status.toLowerCase()}`}>
+                    {restockItem.status === 'Out' ? 'Out of stock' : restockItem.status}
+                  </span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Last Updated:</span>
+                  <span className="detail-value">{formatDate(restockItem.updatedAt)}</span>
+                </div>
+                
+                <div className="stock-level-detail">
+                  <div className="detail-row">
+                  <span className="detail-label">Stock Level:</span>
+                  <span className="detail-value">{restockItem.currentStock} / {restockItem.totalStock}</span>
+                </div>
+                  <div className="stock-level-bar">
+                    <div
+                      className="stock-level-fill"
+                      style={{
+                        width: `${getStockLevelWidth(restockItem.currentStock, restockItem.totalStock)}%`,
+                        backgroundColor: getStockLevelColor(restockItem.status)
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="restock-inputs">
+                  <div className="input-group">
+                    <label htmlFor="additionalStock">Add to current stock</label>
+                    <input
+                      id="additionalStock"
+                      type="number"
+                      min="0"
+                      placeholder={`e.g., ${Math.max(0, restockItem.totalStock - restockItem.currentStock)}`}
+                      value={additionalStock}
+                      className={capacityError ? 'input-error' : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setAdditionalStock(val);
+                        if (restockItem) {
+                          setCapacityError(exceedsCapacity(val, newTotalStock, restockItem));
+                        }
+                      }}
+                    />
+                    {capacityError && (
+                      <div className="input-error-text">Additional stock exceeds the total stock capacity.</div>
+                    )}
+                  </div>
+                  <div className="input-group">
+                    <label htmlFor="newTotalStock">Set new total stock</label>
+                    <input
+                      id="newTotalStock"
+                      type="number"
+                      min="0"
+                      placeholder={`e.g., ${restockItem.totalStock}`}
+                      value={newTotalStock}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewTotalStock(val);
+                        if (restockItem) {
+                          setCapacityError(exceedsCapacity(additionalStock, val, restockItem));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="cancel-btn" onClick={() => setShowRestockModal(false)}>
+                Cancel
+              </button>
+              <button
+                className={`confirm-btn ${isSubmittingRestock ? 'loading' : ''}`}
+                disabled={isSubmittingRestock || capacityError}
+                onClick={handleRestockSubmit}
+              >
+                {isSubmittingRestock ? 'Updating...' : 'Save Changes'}
               </button>
             </div>
           </div>
