@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/user.route.js';
 import adminRoutes from './routes/admin.route.js';
+import staffRoutes from './routes/staff.route.js';
 import protectedRoutes from './routes/protected.route.js';
 import { configureCloudinary } from './config/cloudinary.js';
 
@@ -45,7 +46,7 @@ app.use(express.json({ limit: '5mb' }));
 app.set('io', io); // Make io accessible in routes if needed
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/staff', protectedRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/protected', protectedRoutes);
 
 // ✅ IMPORTANT: use server.listen instead of app.listen

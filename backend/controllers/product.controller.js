@@ -27,3 +27,37 @@ export const createProduct = async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 }
+
+export const restockProduct = async (req, res) => {
+    const { productId, additionalStock } = req.body;
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        product.stock += additionalStock;
+        product.totalStock += additionalStock;
+        await product.save();
+        res.json({ success: true, product });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+
+export const setTotalStock = async (req, res) => {
+    const { productId, newTotalStock } = req.body;
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+        product.totalStock = newTotalStock;
+        if (product.currentStock > newTotalStock) {
+            product.currentStock = newTotalStock;
+        }
+        await product.save();
+        res.json({ success: true, product });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
