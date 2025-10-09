@@ -210,9 +210,10 @@
 
 /* Item Footer */
 .item-footer {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
+  gap: 8px;
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #f3f4f6;
@@ -221,6 +222,73 @@
 .last-updated {
   font-size: 12px;
   color: #9ca3af;
+  white-space: nowrap;
+}
+
+/* Item menu (three dots) */
+.item-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.three-dot-menu {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.three-dot-menu:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.three-dot-menu .dot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: #374151;
+  border-radius: 50%;
+  margin: 2px 0;
+}
+
+.three-dot-menu.vertical {
+  flex-direction: column;
+}
+
+.item-menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 38px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  min-width: 150px;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.item-menu-option {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.item-menu-option:hover {
+  background: #f9fafb;
 }
 
 /* Reserve Buttons */
@@ -443,6 +511,17 @@
 /* Reservation Modal */
 .reservation-modal {
   max-width: 500px;
+}
+
+/* Restock Modal mirrors ShowItemModal layout */
+.restock-modal {
+  max-width: 720px;
+}
+
+.restock-modal .modal-body {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .reservation-item-info h3 {
@@ -683,4 +762,98 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* --- Added: Image overlay menu & Restock inputs styling --- */
+/* Overlay for three-dot menu on image */
+.item-menu-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.item-menu-dropdown--overlay {
+  top: 40px;
+  right: 0;
+}
+
+/* Restock Modal layout */
+.restock-modal .modal-body {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+/* Restock Inputs Styling */
+.restock-inputs {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.restock-inputs .input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.restock-inputs .input-group label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.restock-inputs .input-group input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.restock-inputs .input-group input[type="number"]:focus {
+  outline: none;
+  border-color: #dc2626;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.restock-inputs .input-group .input-error {
+  border-color: #ef4444;
+}
+
+.input-error-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+/* Responsive tweaks for Restock modal */
+@media (max-width: 768px) {
+  .restock-modal .modal-body {
+    flex-direction: column;
+  }
+  .modal-image {
+    height: 220px;
+  }
+  .restock-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Additional mobile overrides to ensure full responsiveness */
+@media (max-width: 768px) {
+  .restock-modal {
+    max-width: calc(100vw - 20px);
+    width: 100%;
+  }
+  .restock-modal .item-detail-image,
+  .restock-modal .item-details {
+    width: 100%;
+    min-width: 0;
+  }
 }
