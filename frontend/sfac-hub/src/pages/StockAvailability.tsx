@@ -173,15 +173,7 @@ const StockAvailability = () => {
           }, [products]);
 
 
-          if (isLoading) {
-            return (
-              <div className="loading-screen">
-                <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
-                <div className="loading-text">Loading Stock Availability</div>
-                <Atom color="#ffffff" size="medium"/>
-              </div>
-            );
-          }
+
           
         // DITO NA YUNG CODE MO
 
@@ -249,6 +241,70 @@ const StockAvailability = () => {
     return item.currentStock + addQty > effectiveTotal;
   };
 
+  const handleCreateSubmit = async () => {
+    // Validate form
+    const errors: Record<string, string> = {};
+    if (!createForm.name.trim()) errors.name = 'Name is required';
+    if (!createForm.category.trim()) errors.category = 'Category is required';
+    if (!createForm.location.trim()) errors.location = 'Location is required';
+    const currNum = parseInt(createForm.currentStock, 10);
+    if (createForm.currentStock.trim() === '') errors.currentStock = 'Current stock is required';
+    else if (Number.isNaN(currNum) || currNum < 0) errors.currentStock = 'Current stock must be a non-negative integer';
+    const totalNum = parseInt(createForm.totalStock, 10);
+    if (createForm.totalStock.trim() === '') errors.totalStock = 'Total stock is required';
+    else if (Number.isNaN(totalNum) || totalNum < 0) errors.totalStock = 'Total stock must be a non-negative integer';
+    else if (!Number.isNaN(currNum) && currNum > totalNum) errors.totalStock = 'Total stock cannot be less than current stock';
+    const priceNum = parseFloat(createForm.price);
+    if (createForm.price.trim() === '') errors.price = 'Price is required';
+    else if (Number.isNaN(priceNum) || priceNum < 0) errors.price = 'Price must be a non-negative number';
+    setCreateErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    
+    // Submit to server
+    try {
+      setIsSubmittingCreate(true);
+
+      const response = await fetchWithRefresh('/api/staff/products/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: createForm.name.trim(),
+          category: createForm.category.trim(),
+          location: createForm.location.trim(),
+          currentStock: currNum,
+          totalStock: totalNum,
+          description: createForm.description.trim(),
+          price: priceNum,
+          imageData: createForm.imageBase64 || undefined
+        })
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create product');
+      }
+      // Success
+      setShowCreateModal(false);
+      setCreateForm({
+        location: '',
+        name: '',
+        totalStock: '',
+        currentStock: '',
+        description: '',
+        price: '',
+        category: '',
+        imageBase64: ''
+      });
+      setCreateErrors({});
+      await refetch();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create product. Please try again.');
+    } finally {
+      setIsSubmittingCreate(false);
+    }
+  };
+
+
   const handleRestockSubmit = async () => {
     if (!restockItem) return;
     const addQty = parseInt(additionalStock, 10);
@@ -300,7 +356,15 @@ const StockAvailability = () => {
     }
   };
 
-
+          if (isLoading) {
+            return (
+              <div className="loading-screen">
+                <img src={SFACLogo} alt="SFAC Logo" className="loading-logo" />
+                <div className="loading-text">Loading Stock Availability</div>
+                <Atom color="#ffffff" size="medium"/>
+              </div>
+            );
+          }
 
   return (
           <div className="dashboard">
@@ -935,70 +999,7 @@ const StockAvailability = () => {
               <button
                 className={`confirm-btn ${isSubmittingCreate ? 'loading' : ''}`}
                 disabled={isSubmittingCreate}
-                onClick={async () => {
-                  try {
-                    setIsSubmittingCreate(true);
-                    // Comprehensive validation
-                    const required = ['name','category','location','description','totalStock','currentStock'];
-                    const newErrors: Record<string, string> = {};
-                    required.forEach((key) => {
-                      const val = (createForm as any)[key];
-                      if (!val || String(val).trim() === '') {
-                        newErrors[key] = `${key[0].toUpperCase()}${key.slice(1)} is required`;
-                      }
-                    });
-                    if (!createForm.imageBase64 || !createForm.imageBase64.trim()) {
-                      newErrors.imageBase64 = 'Image is required';
-                    }
-                    const totalNum = parseInt(createForm.totalStock || '0', 10);
-                    const currentNum = parseInt(createForm.currentStock || '0', 10);
-                    if (!Number.isNaN(totalNum) && totalNum < 0) newErrors.totalStock = 'Total stock must be non-negative';
-                    if (!Number.isNaN(currentNum) && currentNum < 0) newErrors.currentStock = 'Current stock must be non-negative';
-                    if (!Number.isNaN(totalNum) && !Number.isNaN(currentNum) && currentNum > totalNum) newErrors.currentStock = 'Current stock cannot exceed total stock';
-                    const priceNum = createForm.price ? parseFloat(createForm.price) : 0;
-                    if (createForm.price && (Number.isNaN(priceNum) || priceNum < 0)) newErrors.price = 'Price must be a non-negative number';
-                    setCreateErrors(prev => ({ ...prev, ...newErrors }));
-                    if (Object.values(newErrors).some(Boolean)) {
-                      setIsSubmittingCreate(false);
-                      return;
-                    }
-                    // Ensure backend receives raw base64 without data URL prefix
-                    const imageRawBase64 = createForm.imageBase64
-                      ? createForm.imageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '')
-                      : '';
-                    const payload = {
-                      location: createForm.location,
-                      name: createForm.name,
-                      totalStock: parseInt(createForm.totalStock, 10),
-                      currentStock: parseInt(createForm.currentStock, 10),
-                      description: createForm.description,
-                      price: createForm.price ? parseFloat(createForm.price) : 0,
-                      stock: parseInt(createForm.currentStock || '0', 10),
-                      category: createForm.category,
-                      image: imageRawBase64
-                    };
-                    const resp = await fetchWithRefresh('/api/staff/products/create', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(payload)
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok || (data && data.success === false)) {
-                      const serverMsg = (data && (data.message || data.error)) || '';
-                      throw new Error(serverMsg || 'Failed to create product');
-                    }
-                    await refetch();
-                    setShowCreateModal(false);
-                    setCreateForm({ location: '', name: '', totalStock: '', currentStock: '', description: '', price: '', category: '', imageBase64: '' });
-                    setCreateErrors({});
-                  } catch (err) {
-                    console.error(err);
-                    const msg = err instanceof Error ? err.message : 'Failed to create product. Please try again.';
-                    alert(msg || 'Failed to create product. Please try again.');
-                  } finally {
-                    setIsSubmittingCreate(false);
-                  }
-                }}
+                onClick={handleCreateSubmit}
               >
                 {isSubmittingCreate ? 'Creating...' : 'Create Product'}
               </button>
