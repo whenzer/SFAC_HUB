@@ -11,6 +11,7 @@ import { getOptimizedImageUrl, preloadImages } from '../utils/imageOptimization'
 import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
 import { Atom } from 'react-loading-indicators';
 import { TbBrandStocktwits } from 'react-icons/tb';
+import { CiCirclePlus } from 'react-icons/ci';
 import fetchWithRefresh from '../utils/apiService';
 
 // Define type for stock items
@@ -122,6 +123,39 @@ const StockAvailability = () => {
   const [isSubmittingRestock, setIsSubmittingRestock] = useState(false);
   const [capacityError, setCapacityError] = useState<boolean>(false);
   const [items, setItems] = useState<StockItem[]>([]);
+  // Create Product modal state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    location: '',
+    name: '',
+    totalStock: '',
+    currentStock: '',
+    description: '',
+    price: '',
+    category: '',
+    imageBase64: ''
+  });
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
+  const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
+  const [useCustomCategory, setUseCustomCategory] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const readFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string) || '');
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageFiles = async (filesOrFile: FileList | File | null) => {
+    const file = (filesOrFile instanceof File) ? filesOrFile : filesOrFile?.[0] || null;
+    if (!file) return;
+    const base64 = await readFileToBase64(file);
+    setCreateForm(prev => ({ ...prev, imageBase64: base64 }));
+    setCreateErrors(prev => ({ ...prev, imageBase64: '' }));
+  };
 
   // Preload product images when products change
 
@@ -331,6 +365,16 @@ const StockAvailability = () => {
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
+              {isPrivileged(user?.role) && (
+                <button
+                  className="confirm-btn btn-with-icon"
+                  style={{ marginLeft: 12 }}
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  <CiCirclePlus size={18} />
+                  <span>Create New Product</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -654,6 +698,309 @@ const StockAvailability = () => {
                 onClick={handleRestockSubmit}
               >
                 {isSubmittingRestock ? 'Updating...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Product Modal */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-content create-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header create-modal__header">
+              <div className="modal-header-title">
+                <span className="modal-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.185 2.136a1 1 0 00-.37 0l-6 1.2A1 1 0 003 4.31V15a1 1 0 00.789.977l6 1.2a1 1 0 00.422 0l6-1.2A1 1 0 0017 15V4.31a1 1 0 00-.815-.974l-6-1.2zM5 6.382l4-1.2v9.436l-4 1.2V6.382zm6 8.236V5.182l4 1.2v9.436l-4-1.2z"/>
+                  </svg>
+                </span>
+                <div>
+                  <h2>Create New Product</h2>
+                  <p className="modal-subtitle">Add inventory with clear details and an optional image.</p>
+                </div>
+              </div>
+              <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="create-form-grid">
+                {/* Section: Basic Info */}
+                <div className="form-section-card grid-span-2">
+                  <div className="section-title">Basic Information</div>
+                  <div className="create-form-grid">
+                    <div className="input-group">
+                      <label htmlFor="create-name">Name</label>
+                      <input id="create-name" type="text" value={createForm.name}
+                        className={createErrors.name ? 'input-error' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCreateForm({ ...createForm, name: val });
+                          setCreateErrors(prev => ({ ...prev, name: !val.trim() ? 'Name is required' : '' }));
+                        }} />
+                      <small className="field-hint">Product name visible to users.</small>
+                      {createErrors.name && <div className="input-error-text">{createErrors.name}</div>}
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="create-category">Category</label>
+                      {(() => {
+                        const availableCategories = categories.filter(c => c !== 'All Categories');
+                        const showSelect = availableCategories.length > 0 && !useCustomCategory;
+                        return (
+                          <>
+                            {showSelect && (
+                              <select
+                                id="create-category"
+                                value={createForm.category}
+                                className={createErrors.category ? 'input-error' : ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val === '__custom__') {
+                                    setUseCustomCategory(true);
+                                    setCreateForm({ ...createForm, category: '' });
+                                    setCreateErrors(prev => ({ ...prev, category: 'Category is required' }));
+                                  } else {
+                                    setUseCustomCategory(false);
+                                    setCreateForm({ ...createForm, category: val });
+                                    setCreateErrors(prev => ({ ...prev, category: !val.trim() ? 'Category is required' : '' }));
+                                  }
+                                }}
+                              >
+                                <option value="">Select category</option>
+                                {availableCategories.map(c => (
+                                  <option key={c} value={c}>{c}</option>
+                                ))}
+                                <option value="__custom__">Custom category…</option>
+                              </select>
+                            )}
+                            {!showSelect && (
+                              <input
+                                id="create-category"
+                                type="text"
+                                placeholder="Enter category"
+                                value={createForm.category}
+                                className={createErrors.category ? 'input-error' : ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setCreateForm({ ...createForm, category: val });
+                                  setCreateErrors(prev => ({ ...prev, category: !val.trim() ? 'Category is required' : '' }));
+                                }}
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
+                      {createErrors.category && <div className="input-error-text">{createErrors.category}</div>}
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="create-location">Location</label>
+                      <input id="create-location" type="text" value={createForm.location}
+                        className={createErrors.location ? 'input-error' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCreateForm({ ...createForm, location: val });
+                          setCreateErrors(prev => ({ ...prev, location: !val.trim() ? 'Location is required' : '' }));
+                        }} />
+                      {createErrors.location && <div className="input-error-text">{createErrors.location}</div>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Inventory */}
+                <div className="form-section-card grid-span-2">
+                  <div className="section-title">Inventory</div>
+                  <div className="create-form-grid">
+                    <div className="input-group">
+                      <label htmlFor="create-currentStock">Current Stock</label>
+                      <input id="create-currentStock" type="number" min="0" value={createForm.currentStock}
+                        className={createErrors.currentStock ? 'input-error' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCreateForm({ ...createForm, currentStock: val });
+                          const num = parseInt(val, 10);
+                          const total = parseInt(createForm.totalStock || '0', 10);
+                          let msg = '';
+                          if (val.trim() === '') msg = 'Current stock is required';
+                          else if (Number.isNaN(num) || num < 0) msg = 'Current stock must be a non-negative integer';
+                          else if (!Number.isNaN(total) && num > total) msg = 'Current stock cannot exceed total stock';
+                          setCreateErrors(prev => ({ ...prev, currentStock: msg }));
+                        }} />
+                      {createErrors.currentStock && <div className="input-error-text">{createErrors.currentStock}</div>}
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="create-totalStock">Total Stock</label>
+                      <input id="create-totalStock" type="number" min="0" value={createForm.totalStock}
+                        className={createErrors.totalStock ? 'input-error' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCreateForm({ ...createForm, totalStock: val });
+                          const num = parseInt(val, 10);
+                          let msg = '';
+                          if (val.trim() === '') msg = 'Total stock is required';
+                          else if (Number.isNaN(num) || num < 0) msg = 'Total stock must be a non-negative integer';
+                          else if (createForm.currentStock && parseInt(createForm.currentStock, 10) > num) msg = 'Total stock must be ≥ current stock';
+                          setCreateErrors(prev => ({ ...prev, totalStock: msg }));
+                          const c = parseInt(createForm.currentStock || '0', 10);
+                          setCreateErrors(prev => ({ ...prev, currentStock: c > num ? 'Current stock cannot exceed total stock' : prev.currentStock || '' }));
+                        }} />
+                      {createErrors.totalStock && <div className="input-error-text">{createErrors.totalStock}</div>}
+                    </div>
+                    <div className="input-group">
+                      <label htmlFor="create-price">Price</label>
+                      <input id="create-price" type="number" min="0" value={createForm.price}
+                        className={createErrors.price ? 'input-error' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCreateForm({ ...createForm, price: val });
+                          const num = parseFloat(val);
+                          setCreateErrors(prev => ({ ...prev, price: val && (Number.isNaN(num) || num < 0) ? 'Price must be a non-negative number' : '' }));
+                        }} />
+                      <small className="field-hint">Optional. Leave blank if not applicable.</small>
+                      {createErrors.price && <div className="input-error-text">{createErrors.price}</div>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Description & Media */}
+                <div className="form-section-card grid-span-2">
+                  <div className="section-title">Description & Media</div>
+                  <div className="create-form-grid">
+                    <div className="input-group grid-span-2">
+                      <label htmlFor="create-description">Description</label>
+                      <textarea id="create-description" value={createForm.description}
+                        className={createErrors.description ? 'input-error' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCreateForm({ ...createForm, description: val });
+                          setCreateErrors(prev => ({ ...prev, description: !val.trim() ? 'Description is required' : '' }));
+                        }} />
+                      {createErrors.description && <div className="input-error-text">{createErrors.description}</div>}
+                    </div>
+                    <div className="input-group grid-span-2"
+                      onPaste={async (e) => {
+                        const items = e.clipboardData?.items;
+                        if (!items) return;
+                        for (let i = 0; i < items.length; i++) {
+                          const item = items[i];
+                          if (item.kind === 'file' && item.type.startsWith('image/')) {
+                            const file = item.getAsFile();
+                            if (file) { await handleImageFiles(file); break; }
+                          }
+                        }
+                      }}
+                    >
+                      <label htmlFor="create-image">Image</label>
+                      <label htmlFor="create-image" className="file-dropzone" role="button" tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') (document.getElementById('create-image') as HTMLInputElement)?.click(); }}
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          await handleImageFiles(e.dataTransfer?.files || null);
+                        }}
+                      >
+                        <div className="file-dropzone__icon" aria-hidden="true">📷</div>
+                        <div>
+                          <div className="file-dropzone__title">Click to upload</div>
+                          <div className="file-dropzone__hint">PNG, JPG up to 5MB</div>
+                        </div>
+                      </label>
+                      <input id="create-image" ref={fileInputRef} type="file" accept="image/*" className="file-input visually-hidden"
+                        onChange={async (e) => {
+                          await handleImageFiles(e.target.files);
+                        }} />
+                      {createErrors.imageBase64 && <div className="input-error-text">{createErrors.imageBase64}</div>}
+                      {createForm.imageBase64 && (
+                        <div className="image-preview-container">
+                          <div className="image-preview-wrapper">
+                            <img src={createForm.imageBase64} alt="Selected preview" className="image-preview" />
+                            <button
+                              type="button"
+                              className="image-remove-btn"
+                              aria-label="Remove selected image"
+                              title="Remove image"
+                              onClick={() => setCreateForm({ ...createForm, imageBase64: '' })}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer sticky-modal-footer">
+              <button className="cancel-btn" onClick={() => setShowCreateModal(false)}>Cancel</button>
+              <button
+                className={`confirm-btn ${isSubmittingCreate ? 'loading' : ''}`}
+                disabled={isSubmittingCreate}
+                onClick={async () => {
+                  try {
+                    setIsSubmittingCreate(true);
+                    // Comprehensive validation
+                    const required = ['name','category','location','description','totalStock','currentStock'];
+                    const newErrors: Record<string, string> = {};
+                    required.forEach((key) => {
+                      const val = (createForm as any)[key];
+                      if (!val || String(val).trim() === '') {
+                        newErrors[key] = `${key[0].toUpperCase()}${key.slice(1)} is required`;
+                      }
+                    });
+                    if (!createForm.imageBase64 || !createForm.imageBase64.trim()) {
+                      newErrors.imageBase64 = 'Image is required';
+                    }
+                    const totalNum = parseInt(createForm.totalStock || '0', 10);
+                    const currentNum = parseInt(createForm.currentStock || '0', 10);
+                    if (!Number.isNaN(totalNum) && totalNum < 0) newErrors.totalStock = 'Total stock must be non-negative';
+                    if (!Number.isNaN(currentNum) && currentNum < 0) newErrors.currentStock = 'Current stock must be non-negative';
+                    if (!Number.isNaN(totalNum) && !Number.isNaN(currentNum) && currentNum > totalNum) newErrors.currentStock = 'Current stock cannot exceed total stock';
+                    const priceNum = createForm.price ? parseFloat(createForm.price) : 0;
+                    if (createForm.price && (Number.isNaN(priceNum) || priceNum < 0)) newErrors.price = 'Price must be a non-negative number';
+                    setCreateErrors(prev => ({ ...prev, ...newErrors }));
+                    if (Object.values(newErrors).some(Boolean)) {
+                      setIsSubmittingCreate(false);
+                      return;
+                    }
+                    // Ensure backend receives raw base64 without data URL prefix
+                    const imageRawBase64 = createForm.imageBase64
+                      ? createForm.imageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '')
+                      : '';
+                    const payload = {
+                      location: createForm.location,
+                      name: createForm.name,
+                      totalStock: parseInt(createForm.totalStock, 10),
+                      currentStock: parseInt(createForm.currentStock, 10),
+                      description: createForm.description,
+                      price: createForm.price ? parseFloat(createForm.price) : 0,
+                      stock: parseInt(createForm.currentStock || '0', 10),
+                      category: createForm.category,
+                      image: imageRawBase64
+                    };
+                    const resp = await fetchWithRefresh('/api/staff/products/create', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload)
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok || (data && data.success === false)) {
+                      const serverMsg = (data && (data.message || data.error)) || '';
+                      throw new Error(serverMsg || 'Failed to create product');
+                    }
+                    await refetch();
+                    setShowCreateModal(false);
+                    setCreateForm({ location: '', name: '', totalStock: '', currentStock: '', description: '', price: '', category: '', imageBase64: '' });
+                    setCreateErrors({});
+                  } catch (err) {
+                    console.error(err);
+                    const msg = err instanceof Error ? err.message : 'Failed to create product. Please try again.';
+                    alert(msg || 'Failed to create product. Please try again.');
+                  } finally {
+                    setIsSubmittingCreate(false);
+                  }
+                }}
+              >
+                {isSubmittingCreate ? 'Creating...' : 'Create Product'}
               </button>
             </div>
           </div>

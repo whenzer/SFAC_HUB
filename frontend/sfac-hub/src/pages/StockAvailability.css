@@ -47,6 +47,13 @@
   flex-wrap: wrap;
 }
 
+/* Button with leading icon */
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .filter-select {
   padding: 10px 16px;
   border: 2px solid #e5e7eb;
@@ -361,6 +368,170 @@
   animation: slideUp 0.3s ease;
 }
 
+/* Create Product Modal specific layout */
+.create-modal {
+  max-width: 720px;
+}
+
+.create-form-grid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Create Modal - visual redesign */
+.create-modal__header {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #b91c1c;
+}
+
+.modal-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.form-section-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.section-title {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+.file-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.file-dropzone:hover {
+  border-color: #dc2626;
+  background: #fff;
+}
+
+.file-dropzone__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+}
+
+.file-dropzone__title {
+  font-weight: 600;
+}
+
+.file-dropzone__hint {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.sticky-modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.create-form-grid .input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.create-form-grid .input-group label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.create-form-grid .input-group input,
+.create-form-grid .input-group textarea,
+.create-form-grid .input-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.create-form-grid .input-group input:focus,
+.create-form-grid .input-group textarea:focus,
+.create-form-grid .input-group select:focus {
+  outline: none;
+  border-color: #dc2626;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Native select polish */
+.create-form-grid .input-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' viewBox='0 0 24 24'%3E%3Cpath fill='%236b7280' d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.grid-span-2 {
+  grid-column: 1 / -1;
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -653,6 +824,16 @@
   .modal-footer button {
     width: 100%;
   }
+
+  /* Create modal responsive grid */
+  .create-modal {
+    max-width: calc(100vw - 20px);
+    width: 100%;
+  }
+  .create-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 /* Animation for item cards */
@@ -855,5 +1036,79 @@
   .restock-modal .item-details {
     width: 100%;
     min-width: 0;
+  }
+}
+
+/* Create Modal: Validation and Preview Enhancements */
+.create-form-grid .input-error {
+  border-color: #ef4444;
+}
+.create-form-grid .input-error-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+.file-input:hover {
+  border-color: #a3a3a3;
+}
+
+.image-preview-container {
+  margin-top: 8px;
+}
+.image-preview-wrapper {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.image-preview {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.image-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+.image-remove-btn:hover {
+  background: rgba(0,0,0,0.75);
+  transform: scale(1.02);
+}
+
+/* Modal footer interactive states */
+.modal-footer .cancel-btn,
+.modal-footer .confirm-btn {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.05s ease;
+}
+.modal-footer .cancel-btn:hover,
+.modal-footer .confirm-btn:hover {
+  filter: brightness(0.98);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.modal-footer .confirm-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Responsive: create modal grid already defined above; ensure grid collapses */
+@media (max-width: 768px) {
+  .create-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }

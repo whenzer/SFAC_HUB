@@ -2,12 +2,34 @@ import Product from "../models/product.model.js";
 import cloudinary from "../config/cloudinary.js";
 
 export const createProduct = async (req, res) => {
-    const {location, name, totalStock, currentStock, description, price, stock, category, image } = req.body;
+    let {location, name, totalStock, currentStock, description, price, stock, category, image } = req.body;
     
 
     try {
+        // Validate required fields
+        if (!location || !name || !description || !category) {
+            return res.status(400).json({ success: false, message: 'location, name, description, and category are required' });
+        }
+        if (totalStock === undefined || currentStock === undefined) {
+            return res.status(400).json({ success: false, message: 'totalStock and currentStock are required' });
+        }
+        const ts = Number(totalStock);
+        const cs = Number(currentStock);
+        if (Number.isNaN(ts) || Number.isNaN(cs)) {
+            return res.status(400).json({ success: false, message: 'totalStock and currentStock must be numbers' });
+        }
+        if (ts < 0 || cs < 0) {
+            return res.status(400).json({ success: false, message: 'Stock values must be non-negative' });
+        }
+        if (cs > ts) {
+            return res.status(400).json({ success: false, message: 'currentStock cannot exceed totalStock' });
+        }
+
         if(cloudinary.config().cloud_name === undefined) {
             return res.status(500).json({ success: false, message: "Cloudinary is not configured properly" });
+        }
+        if (!image || String(image).trim() === '') {
+            return res.status(400).json({ success: false, message: 'image is required (base64)'});
         }
         let imageData = image;
         if (!imageData.startsWith('data:')) {
@@ -18,9 +40,9 @@ export const createProduct = async (req, res) => {
             folder: 'sfac_products',
             public_id: name.split(' ').join('_'), // optional
         });
-        // Store only the Cloudinary URL in image
-        image = uploadResult.secure_url;
-        const newProduct = new Product({ name, description, price, stock, category, image, location, totalStock, currentStock });
+        // Store only the Cloudinary URL
+        const imageUrl = uploadResult.secure_url;
+        const newProduct = new Product({ name, description, price, stock, category, image: imageUrl, location, totalStock: ts, currentStock: cs });
         await newProduct.save();
         res.json({ success: true, product: newProduct });
     } catch (err) {
