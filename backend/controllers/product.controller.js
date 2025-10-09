@@ -35,8 +35,7 @@ export const restockProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
-        product.stock += additionalStock;
-        product.totalStock += additionalStock;
+        product.currentStock += additionalStock;
         await product.save();
         res.json({ success: true, product });
     } catch (err) {
