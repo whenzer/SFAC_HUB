@@ -10,8 +10,8 @@ export const dashboardController = async (req, res) => {
     
     try {
         // 1️⃣ Get all pending reservations and populate the product info
-        const reservations = await Reservation.find({ status: "Pending" }).populate('item', 'name category');
-
+        let reservations = await Reservation.find({ status: "Pending" }).populate('item', 'name category').lean();
+        reservations = reservations.filter(r => r.item !== null);
         // 2️⃣ Per-product totals
         const perProductMap = {};
         reservations.forEach(res => {
@@ -89,27 +89,18 @@ export const stockController = async (req, res, next) => {
     }
 }
 
-export const reservationController = (req, res) => {
+export const reservationController = async (req, res) => {
     //get user reserved items
     try {
-        User.findById(req.user._id).then(async(user) => {
-            if (!user) {
-                return res.status(404).json({ success: false, message: "User not found" });
+        let reservedItems = await Reservation.find({ user: req.user._id }).populate('item', '-reservers -__v -currentStock -totalStock -status').lean();
+        reservedItems.forEach(r => {
+            if (!r.item) {
+                r.item = { name: "Product not found or Deleted", category: "N/A", price: 0};
+                r.status = "Expired";
             }
-
-            const reservedItems = await Promise.all(
-            user.reservedItems.map(async (i) => {
-                // Fetch the product, excluding reservers
-                const product = await Product.findById(i.item, '-reservers -__v -currentStock -totalStock -status');
-                const reservation = await Reservation.findById(i.reservation, '-__v');
-                
-                i = reservation;
-                i.item = product;
-                return i;
-            })
-            );
-            res.status(200).json({ success: true, message: "User reservations fetched successfully",user: req.user, reservations: reservedItems });
         });
+        res.status(200).json({ success: true, message: "User reservations fetched successfully",user: req.user, reservations: reservedItems });
+        
     } catch (error) {
         console.error("Error fetching user reservations: ", error.message);
         res.status(500).json({ success: false, message: error.message });

@@ -1,5 +1,7 @@
 import Product from "../models/product.model.js";
 import cloudinary from "../config/cloudinary.js";
+import Reservation from "../models/product.reservation.model.js";
+import User from "../models/user.model.js";
 
 export const createProduct = async (req, res) => {
     const {location, name, totalStock, currentStock, description, price, category, imageData } = req.body;
@@ -73,3 +75,30 @@ export const deleteProduct = async (req, res) => {
     }
 }
 
+export const getAllReservations = async (req, res) => {
+    try {
+        const reservationsDB = await Reservation.find().populate('item', 'name category price').lean();
+
+        let reservations = await Promise.all(
+
+            reservationsDB.map(async reservation => {
+
+                const user = await User.findById(reservation.user).select('_id firstname middlename lastname email').lean();
+                reservation.user = user;
+                
+                return reservation;
+                
+            })
+        );
+        reservations.forEach(r => {
+            if (!r.item) {
+                r.item = { name: "Product not found or Deleted", category: "N/A", price: 0};
+                r.status = "Expired";
+            }
+        });
+
+        res.json({ success: true, reservations });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+}

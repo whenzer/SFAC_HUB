@@ -45,6 +45,10 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  price: {
+    type: Number,
+    min: 0
+  },
   reservers: [{ 
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     reservation: { type: mongoose.Schema.Types.ObjectId, ref: 'Reservation' }
