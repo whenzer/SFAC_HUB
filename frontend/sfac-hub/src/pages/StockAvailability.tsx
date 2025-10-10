@@ -12,6 +12,7 @@ import { trackImageLoad, trackImageError } from '../utils/performanceMonitor';
 import { Atom } from 'react-loading-indicators';
 import { TbBrandStocktwits } from 'react-icons/tb';
 import { CiCirclePlus } from 'react-icons/ci';
+import { MdDeleteForever } from 'react-icons/md';
 import fetchWithRefresh from '../utils/apiService';
 
 // Define type for stock items
@@ -123,6 +124,10 @@ const StockAvailability = () => {
   const [isSubmittingRestock, setIsSubmittingRestock] = useState(false);
   const [capacityError, setCapacityError] = useState<boolean>(false);
   const [items, setItems] = useState<StockItem[]>([]);
+  // Delete Product modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<StockItem | null>(null);
+  const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
   // Create Product modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({
@@ -230,6 +235,12 @@ const StockAvailability = () => {
     setNewTotalStock('');
     setCapacityError(false);
     setShowRestockModal(true);
+    setActiveMenuItem(null);
+  };
+
+  const openDeleteForItem = (item: StockItem) => {
+    setDeleteItem(item);
+    setShowDeleteModal(true);
     setActiveMenuItem(null);
   };
 
@@ -356,6 +367,28 @@ const StockAvailability = () => {
     }
   };
 
+  const handleDeleteSubmit = async () => {
+    if (!deleteItem) return;
+    try {
+      setIsSubmittingDelete(true);
+      await fetchWithRefresh(`/api/staff/products/delete/${deleteItem._id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      // Optimistically update local UI
+      setItems(prev => prev.filter(it => it._id !== deleteItem._id));
+      setShowDeleteModal(false);
+      setDeleteItem(null);
+      // Refresh products from server
+      await refetch();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete product. Please try again.');
+    } finally {
+      setIsSubmittingDelete(false);
+    }
+  };
+
           if (isLoading) {
             return (
               <div className="loading-screen">
@@ -469,6 +502,12 @@ const StockAvailability = () => {
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                               <TbBrandStocktwits size={18} />
                               <span>Restock</span>
+                            </span>
+                          </button>
+                          <button className="item-menu-option delete-option" onClick={() => openDeleteForItem(item)}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#dc2626' }}>
+                              <MdDeleteForever size={18} />
+                              <span>Delete</span>
                             </span>
                           </button>
                         </div>
@@ -762,6 +801,36 @@ const StockAvailability = () => {
                 onClick={handleRestockSubmit}
               >
                 {isSubmittingRestock ? 'Updating...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && deleteItem && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="delete-header-title"><MdDeleteForever size={18} style={{ marginRight: 8, color: '#dc2626' }} />Delete Product</h2>
+              <button className="close-btn" onClick={() => setShowDeleteModal(false)}>×</button>
+            </div>
+
+            <div className="modal-body delete-body">
+              <p className="delete-title">{deleteItem.name}</p>
+              <p className="delete-subtext">This action cannot be undone.</p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="cancel-btn" onClick={() => setShowDeleteModal(false)}>
+                Cancel
+              </button>
+              <button
+                className={`confirm-btn ${isSubmittingDelete ? 'loading' : ''}`}
+                disabled={isSubmittingDelete}
+                onClick={handleDeleteSubmit}
+              >
+                {isSubmittingDelete ? 'Deleting...' : 'Confirm Delete'}
               </button>
             </div>
           </div>
