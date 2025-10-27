@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js';
 
-const authenticateAdmin = (req, res, next) => {
+const authenticateAdmin = async (req, res, next) => {
   try {
     // 1️⃣ Get token from headers
     const authHeader = req.headers.authorization;
@@ -12,9 +13,9 @@ const authenticateAdmin = (req, res, next) => {
 
     // 2️⃣ Verify token
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
+    const userRole = await User.findById(decoded._id).select('role');
     // 3️⃣ Check if user role is admin
-    if (!decoded.role || decoded.role !== 'admin') {
+    if (!userRole.role || userRole.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Access denied. Admins only.' });
     }
 

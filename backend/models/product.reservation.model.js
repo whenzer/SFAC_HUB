@@ -24,6 +24,8 @@ const reservationSchema = new mongoose.Schema({
     },
     status: { type: String, enum: ["Pending", "Collected", "Cancelled", "Expired"], default: "Pending"},
     reservedAt: { type: Date, default: Date.now },
+    collectedAt: { type: Date },
+    collectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 
 

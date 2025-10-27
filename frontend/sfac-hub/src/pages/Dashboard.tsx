@@ -120,6 +120,31 @@ const Dashboard = () => {
                   </p>
                   
                   <div className="quick-actions-grid">
+                    {/* Staff Panel Card - Only for staff/admin */}
+                    {(user?.role === 'staff' || user?.role === 'admin') && (
+                      <Link to="/staff" className="dashboard-action-card dashboard-stock-card">
+                        <div className="dashboard-card-icon-container">
+                          <div className="dashboard-card-icon">
+                            <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="dashboard-card-content">
+                          <h3 className="dashboard-card-title">Staff Panel</h3>
+                          <p className="dashboard-card-description">
+                            Manage reservations and operations
+                          </p>
+                          <div className="dashboard-card-action">
+                            <span>Access</span>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </Link>
+                    )}
+
                     {/* Stock Availability Card */}
                     <Link to="/stock-availability" className="dashboard-action-card dashboard-stock-card">
                       <div className="dashboard-card-icon-container">
