@@ -346,8 +346,16 @@
   opacity: 1;
 }
 
+.dashboard-staff-card::before {
+  background: #3b82f6;
+}
+
 .dashboard-stock-card::before {
   background: var(--accent);
+}
+
+.dashboard-admin-card::before {
+  background: var(--purple);
 }
 
 .dashboard-reservation-card::before {
@@ -395,9 +403,19 @@
   opacity: 1;
 }
 
+.dashboard-staff-card .dashboard-card-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
 .dashboard-stock-card .dashboard-card-icon {
   background: linear-gradient(135deg, var(--accent) 0%, #b91c1c 100%);
   box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+}
+
+.dashboard-admin-card .dashboard-card-icon {
+  background: linear-gradient(135deg, var(--purple) 0%, #7c3aed 100%);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
 }
 
 .dashboard-reservation-card .dashboard-card-icon {
@@ -498,7 +516,7 @@
   width: 100%;
 }
 
-.item-name {
+.iitem-name {
   font-weight: 600;
   color: var(--text);
 }

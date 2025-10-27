@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SFACLogo from '../assets/images/SFAC-Logo.png';
+import './Header.css';
 
 interface UserData {
   firstname?: string;
@@ -19,16 +20,11 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ user, logout, className = "dashboard-header" }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Safe display name construction
-  const nameParts = [
-    user?.firstname,
-    user?.middlename,
-    user?.lastname,
-  ].filter(Boolean) as string[];
+  // Safe display name construction - only show first name
   let displayName = "Student";
 
-  if (nameParts.length > 0) {
-    displayName = nameParts.join(" ");
+  if (user?.firstname) {
+    displayName = user.firstname;
   } else if (user?.role) {
     displayName = user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }
@@ -53,15 +49,15 @@ const Header: React.FC<HeaderProps> = ({ user, logout, className = "dashboard-he
           </div>
           
           <div className="header-right">
-            <div className="user-info">
-              <span className="user-name">{displayName}</span>
-              <div className="user-avatar">
+            <div className="uuser-info">
+              <span className="uuser-name">{displayName}</span>
+              <div className="uuser-avatar">
                 <span>{displayName.charAt(0)}</span>
               </div>
             </div>
             <button 
               onClick={() => setShowLogoutModal(true)} 
-              className="logout-btn" 
+              className="llogout-btn" 
               title="Logout"
               aria-label="Logout"
             >

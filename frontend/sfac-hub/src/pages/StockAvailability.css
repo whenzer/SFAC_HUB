@@ -15,7 +15,7 @@
   margin-bottom: 16px;
 }
 
-.search-input {
+.ssearch-input {
   width: 100%;
   padding: 12px 16px 12px 48px;
   border: 2px solid #e5e7eb;
@@ -25,7 +25,7 @@
   background: #f9fafb;
 }
 
-.search-input:focus {
+.ssearch-input:focus {
   outline: none;
   border-color: #dc2626;
   background: white;
@@ -54,7 +54,7 @@
   gap: 8px;
 }
 
-.filter-select {
+.ffilter-select {
   padding: 10px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
@@ -66,7 +66,7 @@
   min-width: 150px;
 }
 
-.filter-select:focus {
+.ffilter-select:focus {
   outline: none;
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
@@ -791,7 +791,7 @@
     flex-direction: column;
   }
   
-  .filter-select {
+  .ffilter-select {
     min-width: auto;
   }
   

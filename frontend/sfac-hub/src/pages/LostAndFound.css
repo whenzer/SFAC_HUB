@@ -1492,23 +1492,14 @@
   }
 }
 
-/* Custom scrollbar styling */
+/* Hide scrollbar for modal */
 .lf-post-modal::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
 
-.lf-post-modal::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.lf-post-modal::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 3px;
-  opacity: 0.6;
-}
-
-.lf-post-modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.5);
+.lf-post-modal {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
 .lf-post-modal-header {

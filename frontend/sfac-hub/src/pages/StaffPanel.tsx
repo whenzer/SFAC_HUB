@@ -170,7 +170,7 @@ const StaffPanel = () => {
 
         return (
           <div className="staff-panel">
-            <Header user={user!} logout={logout} className="staff-header" />
+            <Header user={user!} logout={logout} className="dashboard-header" />
 
             <main className="staff-main">
               <div className="staff-container">
@@ -182,9 +182,9 @@ const StaffPanel = () => {
 
                 {/* Stats Dashboard */}
                 <section className="staff-stats">
-                  <div className="stat-card-modern">
+                  <div className="stat-card-modernn">
                     <div className="stat-icon-container">
-                      <svg className="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="stat-iconn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
@@ -198,9 +198,9 @@ const StaffPanel = () => {
                     </div>
                   </div>
 
-                  <div className="stat-card-modern">
+                  <div className="stat-card-modernn">
                     <div className="stat-icon-container">
-                      <svg className="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="stat-iconn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -214,9 +214,9 @@ const StaffPanel = () => {
                     </div>
                   </div>
 
-                  <div className="stat-card-modern">
+                  <div className="stat-card-modernn">
                     <div className="stat-icon-container">
-                      <svg className="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="stat-iconn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -230,9 +230,9 @@ const StaffPanel = () => {
                     </div>
                   </div>
 
-                  <div className="stat-card-modern">
+                  <div className="stat-card-modernn">
                     <div className="stat-icon-container">
-                      <svg className="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="stat-iconn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                     </div>
@@ -250,7 +250,7 @@ const StaffPanel = () => {
                 {/* Controls Section */}
                 <section className="staff-controls">
                   <div className="controls-header">
-                    <h2 className="controls-title">Reservation Management</h2>
+                    <h2 className="ccontrols-title">Reservation Management</h2>
                     <div className="controls-actions">
                       <div className="search-container">
                         <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,17 +258,17 @@ const StaffPanel = () => {
                         </svg>
                         <input
                           type="text"
-                          placeholder="Search reservations, users, or items..."
+                          placeholder="Search reservations"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="search-input"
+                          className="isearch-input"
                         />
                       </div>
 
                       <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="filter-select"
+                        className="filter-selects"
                       >
                         <option value="all">All Status</option>
                         <option value="Pending">Pending</option>
@@ -280,7 +280,7 @@ const StaffPanel = () => {
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        className="filter-select"
+                        className="filter-selects"
                       >
                         <option value="reservedAt">Sort by Date</option>
                         <option value="user">Sort by User</option>
@@ -290,7 +290,7 @@ const StaffPanel = () => {
 
                       <button
                         onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                        className="sort-button"
+                        className="sort-buttonn"
                       >
                         {sortOrder === 'asc' ? '↑' : '↓'}
                         <span>Sort</span>
@@ -302,7 +302,7 @@ const StaffPanel = () => {
                     <div className="results-count">
                       Showing {filteredReservations.length} of {reservations.length} reservations
                     </div>
-                    <div className="view-toggle">
+                    <div className="view-togglee">
                       <button
                         onClick={() => setViewMode('cards')}
                         className={`view-toggle-btn ${viewMode === 'cards' ? 'active' : ''}`}
@@ -327,7 +327,12 @@ const StaffPanel = () => {
                 {viewMode === 'cards' ? (
                   <section className="reservations-grid">
                     {filteredReservations.map((reservation) => (
-                      <div key={reservation._id} className="reservation-card">
+                      <div 
+                        key={reservation._id} 
+                        className="reservation-card clickable"
+                        onClick={() => openDetailsModal(reservation)}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <div className="reservation-header">
                           <div>
                             <div className="reservation-id">{reservation.reservationID}</div>
@@ -338,7 +343,7 @@ const StaffPanel = () => {
                         </div>
 
                         <div className="reservation-user">
-                          <h3 className="user-name">
+                          <h3 className="user-namee">
                             {reservation.user.firstname} {reservation.user.lastname}
                           </h3>
                           <p className="user-email">{reservation.user.email}</p>
@@ -352,11 +357,11 @@ const StaffPanel = () => {
                         <div className="reservation-details">
                           <div className="detail-item">
                             <div className="detail-label">Quantity</div>
-                            <div className="detail-value">{reservation.quantity}</div>
+                            <div className="ddetail-value">{reservation.quantity}</div>
                           </div>
                           <div className="detail-item">
                             <div className="detail-label">Reserved</div>
-                            <div className="detail-value">
+                            <div className="ddetail-value">
                               {new Date(reservation.reservedAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -365,8 +370,11 @@ const StaffPanel = () => {
                         <div className="reservation-actions">
                           {reservation.status === 'Pending' && (
                             <button
-                              onClick={() => collectReservation(reservation._id)}
-                              className="action-btn primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                collectReservation(reservation._id);
+                              }}
+                              className="action-btnn primary"
                             >
                               <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
@@ -374,7 +382,13 @@ const StaffPanel = () => {
                               Collect
                             </button>
                           )}
-                          <button className="action-btn secondary" onClick={() => openDetailsModal(reservation)}>
+                          <button 
+                            className="action-btnn secondary" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDetailsModal(reservation);
+                            }}
+                          >
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                               <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
@@ -407,7 +421,7 @@ const StaffPanel = () => {
                             </td>
                             <td>
                               <div className="table-user-info">
-                                <div className="table-user-name">
+                                <div className="table-user-namee">
                                   {reservation.user.firstname} {reservation.user.lastname}
                                 </div>
                                 <div className="table-user-email">{reservation.user.email}</div>
@@ -431,7 +445,7 @@ const StaffPanel = () => {
                                 {reservation.status === 'Pending' && (
                                   <button
                                     onClick={() => collectReservation(reservation._id)}
-                                    className="action-btn primary"
+                                    className="action-btnn primary"
                                   >
                                     Collect
                                   </button>
@@ -512,7 +526,7 @@ const StaffPanel = () => {
                               collectReservation(selectedReservation._id);
                               closeDetailsModal();
                             }}
-                            className="action-btn-large primary"
+                            className="action-btnn-large primary"
                           >
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
@@ -526,57 +540,57 @@ const StaffPanel = () => {
                     {/* Reservation Info Grid */}
                     <div className="reservation-info-grid">
                       <div className="info-card">
-                        <div className="info-card-header">
+                        <div className="info-card-headerr">
                           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
-                          <h3>User Information</h3>
+                          <h3 className='userinf'>User Information</h3>
                         </div>
                         <div className="info-card-content">
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Name:</span>
-                            <span className="info-value">{selectedReservation.user.firstname} {selectedReservation.user.middlename || ''} {selectedReservation.user.lastname}</span>
+                            <span className="info-valuee">{selectedReservation.user.firstname} {selectedReservation.user.middlename || ''} {selectedReservation.user.lastname}</span>
                           </div>
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Email:</span>
-                            <span className="info-value">{selectedReservation.user.email}</span>
+                            <span className="info-valuee">{selectedReservation.user.email}</span>
                           </div>
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">User ID:</span>
-                            <span className="info-value">{selectedReservation.user._id}</span>
+                            <span className="info-valuee">{selectedReservation.user._id}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="info-card">
-                        <div className="info-card-header">
+                        <div className="info-card-headerr">
                           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                           </svg>
                           <h3>Item Details</h3>
                         </div>
                         <div className="info-card-content">
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Item:</span>
-                            <span className="info-value">{selectedReservation.item.name}</span>
+                            <span className="info-valuee">{selectedReservation.item.name}</span>
                           </div>
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Category:</span>
-                            <span className="info-value">{selectedReservation.item.category}</span>
+                            <span className="info-valuee">{selectedReservation.item.category}</span>
                           </div>
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Price:</span>
-                            <span className="info-value">${selectedReservation.item.price}</span>
+                            <span className="info-valuee">₱{selectedReservation.item.price}</span>
                           </div>
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Quantity:</span>
-                            <span className="info-value">{selectedReservation.quantity}</span>
+                            <span className="info-valuee">{selectedReservation.quantity}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="info-card">
-                        <div className="info-card-header">
+                        <div className="info-card-headerr">
                           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -605,26 +619,26 @@ const StaffPanel = () => {
                       </div>
 
                       <div className="info-card">
-                        <div className="info-card-header">
+                        <div className="info-card-headerr">
                           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <h3>Additional Info</h3>
                         </div>
                         <div className="info-card-content">
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Reservation ID:</span>
-                            <span className="info-value">{selectedReservation.reservationID}</span>
+                            <span className="info-valuee">{selectedReservation.reservationID}</span>
                           </div>
                           {selectedReservation.purpose && (
-                            <div className="info-row">
+                            <div className="info-roww">
                               <span className="info-label">Purpose:</span>
-                              <span className="info-value">{selectedReservation.purpose}</span>
+                              <span className="info-valuee">{selectedReservation.purpose}</span>
                             </div>
                           )}
-                          <div className="info-row">
+                          <div className="info-roww">
                             <span className="info-label">Total Value:</span>
-                            <span className="info-value">${(selectedReservation.item.price * selectedReservation.quantity).toFixed(2)}</span>
+                            <span className="info-valuee">₱{(selectedReservation.item.price * selectedReservation.quantity).toFixed(2)}</span>
                           </div>
                         </div>
                       </div>

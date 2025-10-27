@@ -435,7 +435,7 @@ const MakeReservation = () => {
 
                 {/* Reservation Form */}
                 <div className="reservation-layout">
-                  <div className="reservation-card">
+                  <div className="rreservation-card">
                     <div className="section-title">
                       <span className="section-icon">📋</span>
                       Reservation Form

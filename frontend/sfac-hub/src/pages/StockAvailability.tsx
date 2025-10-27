@@ -437,7 +437,7 @@ const StockAvailability = () => {
                 placeholder="Search items by name or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+                className="ssearch-input"
               />
               <span className="search-icon">🔍</span>
             </div>
@@ -446,7 +446,7 @@ const StockAvailability = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="filter-select"
+                className="ffilter-select"
               >
                 {categories.map(category => (
                   <option key={category} value={category}>{category}</option>
@@ -456,7 +456,7 @@ const StockAvailability = () => {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="filter-select"
+                className="ffilter-select"
               >
                 {statuses.map(status => (
                   <option key={status} value={status}>{status}</option>

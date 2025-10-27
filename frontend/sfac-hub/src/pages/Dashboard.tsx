@@ -7,6 +7,14 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PerformanceDashboard from '../components/PerformanceDashboard';
 import { Atom } from 'react-loading-indicators';
+import { 
+  MdDashboard, 
+  MdAdminPanelSettings, 
+  MdInventory, 
+  MdEventNote, 
+  MdSearch,
+  MdArrowForward 
+} from 'react-icons/md';
 
 // Define the expected structure for user data (adjust if your data is different)
 interface UserData {
@@ -122,12 +130,10 @@ const Dashboard = () => {
                   <div className="quick-actions-grid">
                     {/* Staff Panel Card - Only for staff/admin */}
                     {(user?.role === 'staff' || user?.role === 'admin') && (
-                      <Link to="/staff" className="dashboard-action-card dashboard-stock-card">
+                      <Link to="/staff" className="dashboard-action-card dashboard-staff-card">
                         <div className="dashboard-card-icon-container">
                           <div className="dashboard-card-icon">
-                            <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd"/>
-                            </svg>
+                            <MdDashboard size={24} color="white" aria-label="Staff Panel Icon" />
                           </div>
                         </div>
                         <div className="dashboard-card-content">
@@ -137,9 +143,7 @@ const Dashboard = () => {
                           </p>
                           <div className="dashboard-card-action">
                             <span>Access</span>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                            </svg>
+                            <MdArrowForward size={16} color="currentColor" aria-label="Navigate to Staff Panel" />
                           </div>
                         </div>
                       </Link>
@@ -150,9 +154,7 @@ const Dashboard = () => {
                       <Link to="/admin" className="dashboard-action-card dashboard-admin-card">
                         <div className="dashboard-card-icon-container">
                           <div className="dashboard-card-icon">
-                            <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd"/>
-                            </svg>
+                            <MdAdminPanelSettings size={24} color="white" aria-label="Admin Panel Icon" />
                           </div>
                         </div>
                         <div className="dashboard-card-content">
@@ -162,9 +164,7 @@ const Dashboard = () => {
                           </p>
                           <div className="dashboard-card-action">
                             <span>Access</span>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                            </svg>
+                            <MdArrowForward size={16} color="currentColor" aria-label="Navigate to Admin Panel" />
                           </div>
                         </div>
                       </Link>
@@ -174,9 +174,7 @@ const Dashboard = () => {
                     <Link to="/stock-availability" className="dashboard-action-card dashboard-stock-card">
                       <div className="dashboard-card-icon-container">
                         <div className="dashboard-card-icon">
-                          <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                          </svg>
+                          <MdInventory size={24} color="white" aria-label="Stock Availability Icon" />
                         </div>
                       </div>
                       <div className="dashboard-card-content">
@@ -186,9 +184,7 @@ const Dashboard = () => {
                         </p>
                         <div className="dashboard-card-action">
                           <span>Access</span>
-                          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                          </svg>
+                          <MdArrowForward size={16} color="currentColor" aria-label="Navigate to Stock Availability" />
                         </div>
                       </div>
                     </Link>
@@ -197,9 +193,7 @@ const Dashboard = () => {
                     <Link to="/make-reservation" className="dashboard-action-card dashboard-reservation-card">
                       <div className="dashboard-card-icon-container">
                         <div className="dashboard-card-icon">
-                          <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
-                          </svg>
+                          <MdEventNote size={24} color="white" aria-label="Make Reservation Icon" />
                         </div>
                       </div>
                       <div className="dashboard-card-content">
@@ -209,9 +203,7 @@ const Dashboard = () => {
                         </p>
                         <div className="dashboard-card-action">
                           <span>Access</span>
-                          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                          </svg>
+                          <MdArrowForward size={16} color="currentColor" aria-label="Navigate to Make Reservation" />
                         </div>
                       </div>
                     </Link>
@@ -220,9 +212,7 @@ const Dashboard = () => {
                     <Link to="/lost-and-found" className="dashboard-action-card dashboard-lost-found-card">
                       <div className="dashboard-card-icon-container">
                         <div className="dashboard-card-icon">
-                          <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-                          </svg>
+                          <MdSearch size={24} color="white" aria-label="Lost & Found Icon" />
                         </div>
                       </div>
                       <div className="dashboard-card-content">
@@ -232,9 +222,7 @@ const Dashboard = () => {
                         </p>
                         <div className="dashboard-card-action">
                           <span>Access</span>
-                          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                          </svg>
+                          <MdArrowForward size={16} color="currentColor" aria-label="Navigate to Lost & Found" />
                         </div>
                       </div>
                     </Link>
@@ -274,7 +262,7 @@ const Dashboard = () => {
                               }}
                             ></div>
                             <div className="item-info">
-                              <span className="item-name">{productName}</span>
+                              <span className="iitem-name">{productName}</span>
                               <span className="item-count">{total} requests</span>
                             </div>
                           </div>

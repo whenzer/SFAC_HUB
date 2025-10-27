@@ -4,7 +4,7 @@
   margin-top: 24px;
 }
 
-.reservation-card {
+.rreservation-card {
   flex: 1;
   background: white;
   border-radius: 8px;
@@ -786,7 +786,7 @@
 }
 
 @media (max-width: 768px) {
-  .reservation-card {
+  .rreservation-card {
     padding: 20px;
   }
   
@@ -811,7 +811,7 @@
 }
 
 @media (max-width: 480px) {
-  .reservation-card {
+  .rreservation-card {
     padding: 16px;
   }
   
@@ -1055,7 +1055,7 @@
   .text-input,
   .text-area,
   .info-card,
-  .reservation-card,
+  .rreservation-card,
   .modal-content {
     border: 2px solid currentColor;
   }
