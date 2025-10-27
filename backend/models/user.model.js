@@ -53,15 +53,6 @@ const userSchema = new mongoose.Schema({
     }]
 });
 
-// // Virtual full name
-// userSchema.virtual('name').get(function () {
-//   return [this.firstname, this.middlename, this.lastname].filter(Boolean).join(' ');
-// });
-
-// // Ensure virtuals are included in JSON
-// userSchema.set('toJSON', { virtuals: true });
-// userSchema.set('toObject', { virtuals: true });
-
 let conn;
 try {
     conn = mongoose.createConnection(process.env.USERS_URI);
