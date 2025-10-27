@@ -145,6 +145,31 @@ const Dashboard = () => {
                       </Link>
                     )}
 
+                    {/* Admin Panel Card - Only for admin */}
+                    {user?.role === 'admin' && (
+                      <Link to="/admin" className="dashboard-action-card dashboard-admin-card">
+                        <div className="dashboard-card-icon-container">
+                          <div className="dashboard-card-icon">
+                            <svg width="24" height="24" fill="white" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="dashboard-card-content">
+                          <h3 className="dashboard-card-title">Admin Panel</h3>
+                          <p className="dashboard-card-description">
+                            Manage users and system administration
+                          </p>
+                          <div className="dashboard-card-action">
+                            <span>Access</span>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </Link>
+                    )}
+
                     {/* Stock Availability Card */}
                     <Link to="/stock-availability" className="dashboard-action-card dashboard-stock-card">
                       <div className="dashboard-card-icon-container">

@@ -10,6 +10,7 @@ import MakeReservation from "./pages/MakeReservation";
 import LostAndFound from "./pages/LostAndFound";
 import Reservations from "./pages/Reservations";
 import StaffPanel from "./pages/StaffPanel";
+import AdminPanel from "./pages/AdminPanel";
 import "./App.css";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/lost-and-found" element={<LostAndFound />} />
         <Route path="/reservations" element={<Reservations />} />
         <Route path="/staff" element={<StaffPanel />} />
+        <Route path="/admin" element={<AdminPanel />} />
         <Route path="/about" element={<About />} />
       </Routes>
     </Router>

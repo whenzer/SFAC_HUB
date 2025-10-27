@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use(authenticateAdmin);
 
-router.post('/', adminController);
+router.get('/', adminController);
 router.post('/createproduct', createProduct);
 router.get('/users', getAllUsers);
 router.put('/users/verify/:userId', verifyUser);
