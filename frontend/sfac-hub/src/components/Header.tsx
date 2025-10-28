@@ -15,9 +15,10 @@ interface HeaderProps {
   user: UserData;
   logout: () => Promise<void>;
   className?: string;
+  hidden?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, logout, className = "dashboard-header" }) => {
+const Header: React.FC<HeaderProps> = ({ user, logout, className = "dashboard-header", hidden = false }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Safe display name construction - only show first name
@@ -37,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ user, logout, className = "dashboard-he
   return (
     <>
       {/* Header */}
-      <header className={className}>
+      <header className={className} style={{ display: hidden ? 'none' : 'block' }}>
         <div className="header-container">
           <div className="header-left">
             <div className="logo-container">

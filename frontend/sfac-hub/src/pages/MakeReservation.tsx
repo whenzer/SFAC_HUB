@@ -406,7 +406,7 @@ const MakeReservation = () => {
         return (
           <div className="dashboard">
             {/* Reusable Header Component */}
-            {user && <Header user={user} logout={logout} />}
+            {user && <Header user={user} logout={logout} hidden={showSummaryModal || showConfirmationModal} />}
 
             {/* Main Content */}
             <main className="dashboard-main">

@@ -170,7 +170,7 @@ const StaffPanel = () => {
 
         return (
           <div className="staff-panel">
-            <Header user={user!} logout={logout} className="dashboard-header" />
+            <Header user={user!} logout={logout} className="dashboard-header" hidden={showDetailsModal} />
 
             <main className="staff-main">
               <div className="staff-container">

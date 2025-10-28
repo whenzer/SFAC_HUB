@@ -400,7 +400,7 @@ const Reservations: React.FC = () => {
 
         return (
           <div className="dashboard">
-            {user && <Header user={user} logout={logout} />}
+            {user && <Header user={user} logout={logout} hidden={isModalOpen} />}
 
             <main className="dashboard-main">
               <div className="dashboard-container">

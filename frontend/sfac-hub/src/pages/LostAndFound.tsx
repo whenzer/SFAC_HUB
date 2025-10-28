@@ -698,7 +698,7 @@ const LostAndFound = () => {
 
         return (
           <div className="lf-dashboard">
-            {user && <Header user={user} logout={logout} />}
+            {user && <Header user={user} logout={logout} hidden={isCreateOpen || isModalOpen} />}
 
             <main className="lf-main">
               <div className="lf-container">

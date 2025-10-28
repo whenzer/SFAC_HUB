@@ -402,7 +402,7 @@ const StockAvailability = () => {
   return (
           <div className="dashboard">
             {/* Reusable Header Component */}
-            {user && <Header user={user} logout={logout} />}
+            {user && <Header user={user} logout={logout} hidden={showCreateModal || showItemModal || showReservationModal || showRestockModal || showDeleteModal} />}
 
       {/* Main Content */}
       <main className="dashboard-main">
