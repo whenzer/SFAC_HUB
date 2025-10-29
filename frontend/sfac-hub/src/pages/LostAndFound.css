@@ -1984,30 +1984,48 @@
 
 /* Responsive Modal Styles */
 @media (max-width: 768px) {
+  .lf-post-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+  
   .lf-post-modal {
-    max-width: 95vw;
-    max-height: 85vh;
+    max-width: 100%;
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
   }
   
   .lf-post-modal-header {
+    flex-shrink: 0;
     padding: 0.75rem 1rem;
+  }
+  
+  .lf-post-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
   }
   
   .lf-post-modal-author {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0;
   }
   
   .lf-post-modal-text {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0;
   }
   
   .lf-post-modal-engagement,
   .lf-post-modal-actions {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0;
   }
   
   .lf-post-modal-comments {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0;
   }
   
   .lf-post-modal-image {

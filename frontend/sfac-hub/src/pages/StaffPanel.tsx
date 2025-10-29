@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -174,6 +175,13 @@ const StaffPanel = () => {
 
             <main className="staff-main">
               <div className="staff-container">
+                {/* Breadcrumb */}
+                <nav className="breadcrumb">
+                  <Link to="/dashboard" className="breadcrumb-link">Dashboard</Link>
+                  <span className="breadcrumb-separator">/</span>
+                  <span className="breadcrumb-current">Staff Panel</span>
+                </nav>
+
                 {/* Hero Section */}
                 <section className="staff-hero">
                   <h1 className="staff-hero-title">Staff Control Center</h1>

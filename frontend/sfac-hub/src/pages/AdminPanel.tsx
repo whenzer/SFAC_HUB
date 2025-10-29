@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ProtectedLayout from '../utils/ProtectedLayout';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -34,6 +35,10 @@ const AdminPanel = () => {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -109,6 +114,31 @@ const AdminPanel = () => {
   const closeDetailsModal = () => {
     setShowDetailsModal(false);
     setSelectedUser(null);
+  };
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+  };
+
+  const openImageModal = () => {
+    setImageError(false);
+    setShowImageModal(true);
+  };
+
+  const openPersonalInfoModal = () => {
+    setShowPersonalInfoModal(true);
+  };
+
+  const closePersonalInfoModal = () => {
+    setShowPersonalInfoModal(false);
+  };
+
+  const openVerificationModal = () => {
+    setShowVerificationModal(true);
+  };
+
+  const closeVerificationModal = () => {
+    setShowVerificationModal(false);
   };
 
   useEffect(() => {
@@ -216,6 +246,13 @@ const AdminPanel = () => {
 
             <main className="admin-main">
               <div className="admin-container">
+                {/* Breadcrumb */}
+                <nav className="breadcrumb">
+                  <Link to="/dashboard" className="breadcrumb-link">Dashboard</Link>
+                  <span className="breadcrumb-separator">/</span>
+                  <span className="breadcrumb-current">Admin Panel</span>
+                </nav>
+
                 {/* Hero Section */}
                 <section className="admin-hero">
                   <h1 className="admin-hero-title">Admin Control Center</h1>
@@ -592,12 +629,15 @@ const AdminPanel = () => {
 
                     {/* User Info Grid */}
                     <div className="user-info-grid">
-                      <div className="info-card">
+                      <div className="info-card clickable-info-card" onClick={openPersonalInfoModal} style={{ cursor: 'pointer' }}>
                         <div className="info-card-header">
                           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                           <h3>Personal Information</h3>
+                          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="expand-icon">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8l4-4 4 4m0 8l-4 4-4-4" />
+                          </svg>
                         </div>
                         <div className="info-card-content">
                           <div className="info-row">
@@ -619,12 +659,15 @@ const AdminPanel = () => {
                         </div>
                       </div>
 
-                      <div className="info-card">
+                      <div className="info-card clickable-info-card" onClick={openVerificationModal} style={{ cursor: 'pointer' }}>
                         <div className="info-card-header">
                           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <h3>Verification Status</h3>
+                          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="expand-icon">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8l4-4 4 4m0 8l-4 4-4-4" />
+                          </svg>
                         </div>
                         <div className="info-card-content">
                           <div className="info-row">
@@ -671,6 +714,16 @@ const AdminPanel = () => {
                               src={selectedUser.idpic.image}
                               alt="User ID"
                               className="id-picture"
+                              onClick={openImageModal}
+                              style={{ cursor: 'pointer' }}
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  setShowImageModal(true);
+                                }
+                              }}
+                              role="button"
+                              aria-label="View full size ID image"
                             />
                             <p className="id-filename">{selectedUser.idpic.filename}</p>
                           </div>
@@ -686,6 +739,181 @@ const AdminPanel = () => {
                     >
                       Close
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Full Size ID Image Modal */}
+            {showImageModal && selectedUser && (
+              <div
+                className="image-modal-overlay"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="image-modal-title"
+                onClick={closeImageModal}
+              >
+                <div 
+                  className="image-modal-content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={closeImageModal}
+                    className="image-modal-close"
+                    aria-label="Close image modal"
+                  >
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+
+                  <h2 id="image-modal-title" className="sr-only">Full Size ID Image</h2>
+
+                  {imageError ? (
+                    <div className="image-error-message">
+                      Failed to load image. It may be missing or corrupted.
+                    </div>
+                  ) : (
+                    <img
+                      src={selectedUser.idpic.image}
+                      alt={`Full size ID of ${selectedUser.firstname} ${selectedUser.lastname}`}
+                      className="full-id-image"
+                      onError={() => setImageError(true)}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Personal Information Modal */}
+            {showPersonalInfoModal && selectedUser && (
+              <div className="modal-overlay" onClick={closePersonalInfoModal}>
+                <div className="modal-content info-modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="info-modal-header">
+                    <div className="modal-title-section">
+                      <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <h2>Personal Information</h2>
+                    </div>
+                    <button
+                      onClick={closePersonalInfoModal}
+                      className="modal-close"
+                      aria-label="Close personal info modal"
+                    >
+                      <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="info-modal-body">
+                    <div className="info-item">
+                      <span className="info-label">Full Name:</span>
+                      <span className="info-value">
+                        {selectedUser.firstname} {selectedUser.middlename ? selectedUser.middlename + ' ' : ''}{selectedUser.lastname}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Email:</span>
+                      <span className="info-value">{selectedUser.email}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Role:</span>
+                      <span className={`info-value role-badge role-${selectedUser.role.toLowerCase()}`}>{selectedUser.role}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">User ID:</span>
+                      <span className="info-value">{selectedUser._id}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Verification Status Modal */}
+            {showVerificationModal && selectedUser && (
+              <div className="modal-overlay" onClick={closeVerificationModal}>
+                <div className="modal-content info-modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="info-modal-header">
+                    <div className="modal-title-section">
+                      <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h2>Verification Status</h2>
+                    </div>
+                    <button
+                      onClick={closeVerificationModal}
+                      className="modal-close"
+                      aria-label="Close verification modal"
+                    >
+                      <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="info-modal-body">
+                    <div className="verification-item">
+                      <div className="verification-header">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span className="verification-label">Email Verification</span>
+                      </div>
+                      <div className={`verification-status ${selectedUser.verifiedEmail ? 'verified' : 'unverified'}`}>
+                        {selectedUser.verifiedEmail ? (
+                          <>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            VERIFIED
+                          </>
+                        ) : (
+                          <>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            UNVERIFIED
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="verification-item">
+                      <div className="verification-header">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                        </svg>
+                        <span className="verification-label">ID Verification</span>
+                      </div>
+                      <div className={`verification-status ${selectedUser.verifiedID ? 'verified' : 'unverified'}`}>
+                        {selectedUser.verifiedID ? (
+                          <>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            VERIFIED
+                          </>
+                        ) : (
+                          <>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            UNVERIFIED
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="verification-summary">
+                      <div className="overall-status">
+                        <span className="overall-label">Overall Status:</span>
+                        <span className={`overall-badge ${selectedUser.verifiedEmail && selectedUser.verifiedID ? 'fully-verified' : 'partially-verified'}`}>
+                          {selectedUser.verifiedEmail && selectedUser.verifiedID ? 'FULLY VERIFIED' : 'UNVERIFIED'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

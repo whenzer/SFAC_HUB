@@ -38,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ user, logout, className = "dashboard-he
   return (
     <>
       {/* Header */}
-      <header className={className} style={{ display: hidden ? 'none' : 'block' }}>
+      <header className={className} style={{ display: (hidden || showLogoutModal) ? 'none' : 'block' }}>
         <div className="header-container">
           <div className="header-left">
             <div className="logo-container">
