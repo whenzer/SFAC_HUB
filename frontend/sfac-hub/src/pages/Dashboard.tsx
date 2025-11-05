@@ -207,8 +207,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </Link>
-
-                    {/* Lost & Found Card */}
+{/* 
                     <Link to="/lost-and-found" className="dashboard-action-card dashboard-lost-found-card">
                       <div className="dashboard-card-icon-container">
                         <div className="dashboard-card-icon">
@@ -225,7 +224,7 @@ const Dashboard = () => {
                           <MdArrowForward size={16} color="currentColor" aria-label="Navigate to Lost & Found" />
                         </div>
                       </div>
-                    </Link>
+                    </Link> */}
                   </div>
                 </section>
 
