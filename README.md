@@ -10,7 +10,7 @@ A modern, full-stack MERN application for SFAC (School of Future Academy of Cebu
 
 
 
-## ✨ Features## ✨ Features
+## ✨ Features
 
 - 📦 **Stock Management** — manage and track items in SFAC’s inventory
 
