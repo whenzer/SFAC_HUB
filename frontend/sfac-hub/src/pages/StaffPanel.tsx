@@ -352,14 +352,14 @@ const StaffPanel = () => {
 
                         <div className="reservation-user">
                           <h3 className="user-namee">
-                            {reservation.user.firstname} {reservation.user.lastname}
+                            {reservation.user?.firstname} {reservation.user?.lastname}
                           </h3>
-                          <p className="user-email">{reservation.user.email}</p>
+                          <p className="user-email">{reservation.user?.email}</p>
                         </div>
 
                         <div className="reservation-item">
-                          <h4 className="item-name">{reservation.item.name}</h4>
-                          <p className="item-category">{reservation.item.category}</p>
+                          <h4 className="item-name">{reservation.item?.name}</h4>
+                          <p className="item-category">{reservation.item?.category}</p>
                         </div>
 
                         <div className="reservation-details">
