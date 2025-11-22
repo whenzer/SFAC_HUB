@@ -143,7 +143,7 @@ function LoginLanding() {
 					</form>
 
 					<div className="form-footer">
-						<a href="#" className="muted-link">Forgot password?</a>
+						{/* <a href="#" className="muted-link">Forgot password?</a> */}
 						<span></span>
 						<span className="muted-text">Need an account? <Link to="/register" className="muted-link strong">Sign up</Link></span>
 					</div>
