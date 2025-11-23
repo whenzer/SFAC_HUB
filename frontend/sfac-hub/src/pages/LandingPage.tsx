@@ -64,7 +64,7 @@ const LandingPage = () => {
           {/* Description */}
           <p className="hero-description">
             Your centralized platform for campus resources. Check stock, make reservations, 
-            and connect with the community through our integrated lost & found system.
+            and connect with the community.
           </p>
           
           {/* CTA Buttons */}
@@ -139,30 +139,6 @@ const LandingPage = () => {
                 <li>Confirmed reservations</li>
               </ul>
               <button className="feature-btn" onClick={() => openModal('reservation')}>
-                Explore Feature
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-                </svg>
-              </button>
-            </div>
-
-            {/* Lost & Found Card */}
-            <div className="feature-card">
-              <div className="feature-icon">
-                <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-                </svg>
-              </div>
-              <h3 className="feature-title">Lost & Found</h3>
-              <p className="feature-description">
-                Community-driven platform to report lost items and help others find their missing belongings.
-              </p>
-              <ul className="feature-list">
-                <li>Social feed interface</li>
-                <li>Admin approval</li>
-                <li>Success tracking</li>
-              </ul>
-              <button className="feature-btn" onClick={() => openModal('lostfound')}>
                 Explore Feature
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
