@@ -510,7 +510,7 @@ function RegistrationPage() {
               {confirmPasswordError && <p className="error-message">{confirmPasswordError}</p>}
               
               {/* ID Upload */}
-              <label className="label">ID Photo</label>
+              <label className="label">ID Picture or Certificate of Registration (if new student)</label>
               {!studentIdPreview ? (
                 <div className={`file-upload ${studentIdError ? 'file-upload-error' : ''}`}>
                   <input 
